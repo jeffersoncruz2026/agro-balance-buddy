@@ -82,7 +82,13 @@ export const CODTMV_ADM_OUTROS = "1.2.13";
 /** Prefixo das contas de Despesas Administrativas com regra própria. */
 export const PREFIXO_ADM = "3.4.01.";
 
-export type RegraAdm = "ADM_OUTROS" | "ADM_RATEIO" | "NORMAL";
+/** Centro de custo das Despesas de Vendas dividido 50/50 (fixo). */
+export const CUSTO_VENDAS_FIXO = "FATURAMENTO";
+/** Linhas que recebem 50% cada dos lançamentos de FATURAMENTO. */
+export const LINHAS_VENDAS_FIXO: Linha[] = ["GENÉTICA", "SEMENTES / GRÃOS"];
+
+export type RegraAdm = "ADM_OUTROS" | "ADM_RATEIO" | "VENDAS_FAT" | "VENDAS_MAP" | "NORMAL";
+
 
 export interface AggRow {
   safra_ano: number;
