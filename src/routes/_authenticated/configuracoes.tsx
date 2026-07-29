@@ -531,6 +531,113 @@ function Configuracoes() {
         </CardContent>
       </Card>
 
+      <Card className="mt-6 max-w-3xl">
+        <CardHeader>
+          <CardTitle className="text-base">
+            Despesas de Vendas — De/Para por centro de custo (NOMECUSTO)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            NOMECUSTO{" "}
+            <span className="font-medium text-foreground">{CUSTO_VENDAS_FIXO}</span> é dividido
+            automaticamente 50% para{" "}
+            <span className="font-medium text-foreground">{LINHAS_VENDAS_FIXO[0]}</span> e 50% para{" "}
+            <span className="font-medium text-foreground">{LINHAS_VENDAS_FIXO[1]}</span> (fixo, não
+            configurável). Os demais centros de custo são alocados diretamente na linha de negócio
+            definida abaixo — sem rateio percentual. Sem mapeamento, o valor cai em OUTROS.
+          </p>
+
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground">NOMECUSTO</label>
+              <Input
+                className="w-64"
+                placeholder="Ex.: COMERCIAL"
+                value={novoCusto}
+                onChange={(e) => setNovoCusto(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Linha de negócio</label>
+              <Select value={novaLinha} onValueChange={setNovaLinha}>
+                <SelectTrigger className="w-56">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LINHAS.map((l) => (
+                    <SelectItem key={l} value={l}>
+                      {l}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={() =>
+                salvarCusto.mutate({ nomecusto: novoCusto, linha_negocio: novaLinha })
+              }
+              disabled={salvarCusto.isPending || !novoCusto.trim()}
+            >
+              Adicionar
+            </Button>
+          </div>
+
+          <div className="overflow-auto rounded-md border border-border">
+            <table className="w-full text-xs">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="px-2 py-2 text-left font-medium">NOMECUSTO</th>
+                  <th className="px-2 py-2 text-left font-medium">Linha de negócio</th>
+                  <th className="px-2 py-2" />
+                </tr>
+              </thead>
+              <tbody>
+                {(custos.data ?? []).map((c) => (
+                  <tr key={c.id} className="border-t border-border">
+                    <td className="px-2 py-1">{c.nomecusto}</td>
+                    <td className="px-2 py-1">
+                      <Select
+                        value={c.linha_negocio}
+                        onValueChange={(v) =>
+                          salvarCusto.mutate({ nomecusto: c.nomecusto, linha_negocio: v })
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-56">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LINHAS.map((l) => (
+                            <SelectItem key={l} value={l}>
+                              {l}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-2 py-1 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => excluirCusto.mutate(c.id)}
+                      >
+                        Remover
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {(custos.data ?? []).length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="px-2 py-3 text-center text-muted-foreground">
+                      Nenhum centro de custo mapeado ainda.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
 
       <Card className="mt-6 max-w-xl">
