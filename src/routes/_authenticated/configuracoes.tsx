@@ -143,6 +143,79 @@ function Configuracoes() {
     onError: (e) => toast.error(e.message),
   });
 
+  // ---- Rateio das Despesas Tributárias ----
+  const [tMes, setTMes] = useState(hoje.getMonth() + 1);
+  const [tAno, setTAno] = useState(hoje.getFullYear());
+  const [pctsTrib, setPctsTrib] = useState<Record<string, string>>({});
+
+  const trib = useQuery({
+    queryKey: ["rateio_trib"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rateio_trib")
+        .select("*")
+        .order("vigencia", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const vigenciasTrib = useMemo(() => {
+    const m = new Map<string, { linha_negocio: string; percentual: number; updated_at: string }[]>();
+    for (const r of trib.data ?? []) {
+      const arr = m.get(r.vigencia) ?? [];
+      arr.push({
+        linha_negocio: r.linha_negocio,
+        percentual: Number(r.percentual),
+        updated_at: r.updated_at,
+      });
+      m.set(r.vigencia, arr);
+    }
+    return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [trib.data]);
+
+  const vigenciaTribSel = `${tAno}-${String(tMes).padStart(2, "0")}-01`;
+
+  useEffect(() => {
+    const atual = (trib.data ?? []).filter((r) => r.vigencia === vigenciaTribSel);
+    const base =
+      atual.length > 0
+        ? atual
+        : (trib.data ?? []).filter(
+            (r) => r.vigencia === (trib.data ?? []).find((x) => x.vigencia <= vigenciaTribSel)?.vigencia,
+          );
+    const next: Record<string, string> = {};
+    for (const l of LINHAS) {
+      const row = base.find((r) => r.linha_negocio === l);
+      next[l] = row ? String(Number(row.percentual)) : "";
+    }
+    setPctsTrib(next);
+  }, [trib.data, vigenciaTribSel]);
+
+  const somaTrib = LINHAS.reduce((a, l) => a + (Number(pctsTrib[l]) || 0), 0);
+
+  const salvarTrib = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("rateio_trib").upsert(
+        LINHAS.map((l) => ({
+          vigencia: vigenciaTribSel,
+          linha_negocio: l,
+          percentual: Number(pctsTrib[l]) || 0,
+        })),
+        { onConflict: "vigencia,linha_negocio" },
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`Percentuais válidos a partir de ${MESES[tMes - 1]}/${tAno}.`);
+      qc.invalidateQueries({ queryKey: ["rateio_trib"] });
+      qc.invalidateQueries({ queryKey: ["balancete"] });
+      qc.invalidateQueries({ queryKey: ["rateio_trib_vigente"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+
 
   return (
     <AppLayout titulo="Configurações" descricao="Parâmetros globais do fechamento gerencial.">
