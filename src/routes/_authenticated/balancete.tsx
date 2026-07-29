@@ -226,11 +226,21 @@ function Balancete() {
           >
             Soma: {somaRateio.toFixed(2)}%
             {somaRateio === 0
-              ? " — sem rateio definido, DESP. ADM / TRIBUT / VENDAS ficam na linha de origem."
+              ? " — sem rateio definido, DESP. TRIBUT / VENDAS ficam na linha de origem."
               : Math.abs(somaRateio - 100) < 0.01
                 ? " — ok."
                 : " — recomendado totalizar 100%."}
           </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            DESP. ADM das contas 3.4.01.* seguem regra própria: centro de custo 01.14.0003 vai 100%
+            para OUTROS e o restante é rateado pelos percentuais{" "}
+            {vigenciaAdm
+              ? `vigentes desde ${MESES[Number(vigenciaAdm.slice(5, 7)) - 1]}/${vigenciaAdm.slice(0, 4)}`
+              : "definidos em Configurações"}{" "}
+            ({LINHAS.map((l) => `${l}: ${(rateioAdm[l] ?? 0).toFixed(2)}%`).join(" · ")}). Edite em
+            Configurações.
+          </p>
+
         </CardContent>
       </Card>
 
