@@ -174,8 +174,8 @@ export function montarRelatorio(
                 col.cat,
                 (r) => r.regra !== "ADM_OUTROS" && r.regra !== "ADM_RATEIO" && daLinha(r),
               );
-          bruto = direto + rateado + (usarAdm && !usarRateio ? 0 : resto);
-          if (usarAdm && !usarRateio) bruto = direto + rateado + resto;
+          bruto = direto + rateado + resto;
+
         } else if (rateada && usarRateio) {
           bruto = soma(safra, col.cat) * ((rateio[linha] || 0) / totalRateio);
         } else {
