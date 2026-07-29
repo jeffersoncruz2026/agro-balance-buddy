@@ -200,9 +200,10 @@ function Balancete() {
       <Card className="mb-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">
-            Rateio manual de despesas compartilhadas — {MESES[mes - 1]}/{ano}
+            Rateio manual de DESP. TRIBUT / VENDAS — {MESES[mes - 1]}/{ano}
           </CardTitle>
         </CardHeader>
+
         <CardContent>
           <div className="flex flex-wrap gap-3">
             {LINHAS.map((l) => (
