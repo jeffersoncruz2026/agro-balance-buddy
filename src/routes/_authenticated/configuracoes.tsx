@@ -62,6 +62,80 @@ function Configuracoes() {
 
   const anoEx = new Date().getFullYear();
 
+  // ---- Rateio das Despesas Administrativas (contas 3.4.01.*) ----
+  const hoje = new Date();
+  const [vMes, setVMes] = useState(hoje.getMonth() + 1);
+  const [vAno, setVAno] = useState(hoje.getFullYear());
+  const [pcts, setPcts] = useState<Record<string, string>>({});
+
+  const adm = useQuery({
+    queryKey: ["rateio_adm"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rateio_adm")
+        .select("*")
+        .order("vigencia", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const vigencias = useMemo(() => {
+    const m = new Map<string, { linha_negocio: string; percentual: number; updated_at: string }[]>();
+    for (const r of adm.data ?? []) {
+      const arr = m.get(r.vigencia) ?? [];
+      arr.push({
+        linha_negocio: r.linha_negocio,
+        percentual: Number(r.percentual),
+        updated_at: r.updated_at,
+      });
+      m.set(r.vigencia, arr);
+    }
+    return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [adm.data]);
+
+  const vigenciaSel = `${vAno}-${String(vMes).padStart(2, "0")}-01`;
+
+  useEffect(() => {
+    const atual = (adm.data ?? []).filter((r) => r.vigencia === vigenciaSel);
+    const base =
+      atual.length > 0
+        ? atual
+        : (adm.data ?? []).filter(
+            (r) => r.vigencia === (adm.data ?? []).find((x) => x.vigencia <= vigenciaSel)?.vigencia,
+          );
+    const next: Record<string, string> = {};
+    for (const l of LINHAS) {
+      const row = base.find((r) => r.linha_negocio === l);
+      next[l] = row ? String(Number(row.percentual)) : "";
+    }
+    setPcts(next);
+  }, [adm.data, vigenciaSel]);
+
+  const somaAdm = LINHAS.reduce((a, l) => a + (Number(pcts[l]) || 0), 0);
+
+  const salvarAdm = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("rateio_adm").upsert(
+        LINHAS.map((l) => ({
+          vigencia: vigenciaSel,
+          linha_negocio: l,
+          percentual: Number(pcts[l]) || 0,
+        })),
+        { onConflict: "vigencia,linha_negocio" },
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`Percentuais válidos a partir de ${MESES[vMes - 1]}/${vAno}.`);
+      qc.invalidateQueries({ queryKey: ["rateio_adm"] });
+      qc.invalidateQueries({ queryKey: ["balancete"] });
+      qc.invalidateQueries({ queryKey: ["rateio_adm_vigente"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+
   return (
     <AppLayout titulo="Configurações" descricao="Parâmetros globais do fechamento gerencial.">
       <Card className="max-w-xl">
