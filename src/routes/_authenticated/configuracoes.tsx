@@ -21,6 +21,8 @@ import {
   CCUSTO_ADM_OUTROS,
   CONTA_ADM_OUTROS,
   CODTMV_ADM_OUTROS,
+  CUSTO_VENDAS_FIXO,
+  LINHAS_VENDAS_FIXO,
   safraLabel,
 } from "@/lib/balancete";
 
