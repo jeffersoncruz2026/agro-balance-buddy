@@ -215,6 +215,52 @@ function Configuracoes() {
     onError: (e) => toast.error(e.message),
   });
 
+  // ---- De/Para das Despesas de Vendas (NOMECUSTO → linha de negócio) ----
+  const [novoCusto, setNovoCusto] = useState("");
+  const [novaLinha, setNovaLinha] = useState<string>(LINHAS[0]);
+
+  const custos = useQuery({
+    queryKey: ["custo_map"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("custo_map")
+        .select("*")
+        .order("nomecusto");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const salvarCusto = useMutation({
+    mutationFn: async (row: { nomecusto: string; linha_negocio: string }) => {
+      const { error } = await supabase
+        .from("custo_map")
+        .upsert(
+          { nomecusto: row.nomecusto.trim().toUpperCase(), linha_negocio: row.linha_negocio },
+          { onConflict: "nomecusto" },
+        );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Mapeamento salvo.");
+      setNovoCusto("");
+      qc.invalidateQueries({ queryKey: ["custo_map"] });
+      qc.invalidateQueries({ queryKey: ["balancete"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const excluirCusto = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("custo_map").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["custo_map"] });
+      qc.invalidateQueries({ queryKey: ["balancete"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
 
   return (
