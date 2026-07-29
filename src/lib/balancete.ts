@@ -141,11 +141,14 @@ export function montarRelatorio(
   safras: number[],
   rateio: Record<string, number>,
   rateioAdm: Record<string, number> = {},
+  rateioTrib: Record<string, number> = {},
 ): Relatorio {
   const totalRateio = LINHAS.reduce((a, l) => a + (rateio[l] || 0), 0);
   const usarRateio = totalRateio > 0;
   const totalAdm = LINHAS.reduce((a, l) => a + (rateioAdm[l] || 0), 0);
   const usarAdm = totalAdm > 0;
+  const totalTrib = LINHAS.reduce((a, l) => a + (rateioTrib[l] || 0), 0);
+  const usarTrib = totalTrib > 0;
 
   const soma = (safra: number, cat: string, filtro?: (r: AggRow) => boolean) =>
     rows
