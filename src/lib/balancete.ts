@@ -74,13 +74,22 @@ export type Valores = Record<ColKey, number>;
 
 export const RATEADAS: Categoria[] = ["DESP. ADM", "DESP. TRIBUT", "DESP. VENDAS"];
 
+/** Centro de custo cujas despesas administrativas vão 100% para OUTROS. */
+export const CCUSTO_ADM_OUTROS = "01.14.0003";
+/** Prefixo das contas de Despesas Administrativas com regra própria. */
+export const PREFIXO_ADM = "3.4.01.";
+
+export type RegraAdm = "ADM_OUTROS" | "ADM_RATEIO" | "NORMAL";
+
 export interface AggRow {
   safra_ano: number;
   linha: string;
   categoria: string;
+  regra?: RegraAdm | string | null;
   valor: number;
   qtd: number;
 }
+
 
 const zero = (): Valores =>
   Object.fromEntries(COLUNAS.map((c) => [c.key, 0])) as Valores;
