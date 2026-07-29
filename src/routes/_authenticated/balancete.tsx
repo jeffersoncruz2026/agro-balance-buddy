@@ -259,6 +259,16 @@ function Balancete() {
             ({LINHAS.map((l) => `${l}: ${(rateioAdm[l] ?? 0).toFixed(2)}%`).join(" · ")}). Edite em
             Configurações.
           </p>
+          {!!vigenciaTrib && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              DESP. TRIBUT usa os percentuais vigentes desde{" "}
+              {MESES[Number(vigenciaTrib.slice(5, 7)) - 1]}/{vigenciaTrib.slice(0, 4)} (
+              {LINHAS.map((l) => `${l}: ${(rateioTrib[l] ?? 0).toFixed(2)}%`).join(" · ")}),
+              ignorando o rateio manual acima. Edite em Configurações.
+            </p>
+          )}
+
+
 
         </CardContent>
       </Card>
