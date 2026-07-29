@@ -96,6 +96,24 @@ function Balancete() {
     return m;
   }, [rateioQ.data]);
 
+  const rateioAdmQ = useQuery({
+    queryKey: ["rateio_adm_vigente", mes, ano],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("rateio_adm_vigente", { p_ano: ano, p_mes: mes });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const rateioAdm = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const r of rateioAdmQ.data ?? []) m[r.linha_negocio] = Number(r.percentual);
+    return m;
+  }, [rateioAdmQ.data]);
+
+  const vigenciaAdm = rateioAdmQ.data?.[0]?.vigencia as string | undefined;
+
+
   const salvarRateio = useMutation({
     mutationFn: async (v: { linha: string; percentual: number }) => {
       const { error } = await supabase.from("rateio").upsert(
