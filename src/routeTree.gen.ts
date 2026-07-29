@@ -16,6 +16,8 @@ import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedDeparaRouteImport } from './routes/_authenticated/depara'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedBalanceteRouteImport } from './routes/_authenticated/balancete'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -51,10 +53,23 @@ const AuthenticatedDeparaRoute = AuthenticatedDeparaRouteImport.update({
   path: '/depara',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBalanceteRoute = AuthenticatedBalanceteRouteImport.update({
+  id: '/balancete',
+  path: '/balancete',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/balancete': typeof AuthenticatedBalanceteRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/depara': typeof AuthenticatedDeparaRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/painel': typeof AuthenticatedPainelRoute
@@ -63,6 +78,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/balancete': typeof AuthenticatedBalanceteRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/depara': typeof AuthenticatedDeparaRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/painel': typeof AuthenticatedPainelRoute
@@ -73,6 +90,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/balancete': typeof AuthenticatedBalanceteRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/depara': typeof AuthenticatedDeparaRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
@@ -80,14 +99,32 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/depara' | '/importar' | '/painel' | '/pendencias'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/balancete'
+    | '/configuracoes'
+    | '/depara'
+    | '/importar'
+    | '/painel'
+    | '/pendencias'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/depara' | '/importar' | '/painel' | '/pendencias'
+  to:
+    | '/'
+    | '/auth'
+    | '/balancete'
+    | '/configuracoes'
+    | '/depara'
+    | '/importar'
+    | '/painel'
+    | '/pendencias'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/balancete'
+    | '/_authenticated/configuracoes'
     | '/_authenticated/depara'
     | '/_authenticated/importar'
     | '/_authenticated/painel'
@@ -151,10 +188,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDeparaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/balancete': {
+      id: '/_authenticated/balancete'
+      path: '/balancete'
+      fullPath: '/balancete'
+      preLoaderRoute: typeof AuthenticatedBalanceteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedBalanceteRoute: typeof AuthenticatedBalanceteRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDeparaRoute: typeof AuthenticatedDeparaRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
@@ -162,6 +215,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedBalanceteRoute: AuthenticatedBalanceteRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDeparaRoute: AuthenticatedDeparaRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
