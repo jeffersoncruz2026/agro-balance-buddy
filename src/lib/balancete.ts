@@ -182,6 +182,9 @@ export function montarRelatorio(
               );
           bruto = direto + rateado + resto;
 
+        } else if (col.key === "despTrib" && usarTrib) {
+          // Despesas tributárias: percentuais configurados com vigência em Configurações.
+          bruto = soma(safra, col.cat) * ((rateioTrib[linha] || 0) / totalTrib);
         } else if (rateada && usarRateio) {
           bruto = soma(safra, col.cat) * ((rateio[linha] || 0) / totalRateio);
         } else {
