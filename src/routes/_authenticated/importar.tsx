@@ -177,6 +177,14 @@ function Importar() {
                 </p>
               )}
 
+              {previa.linhas.every((l) => !l.codtmv) && (
+                <p className="rounded-md bg-accent px-3 py-2 text-xs text-accent-foreground">
+                  A coluna CODTMV não veio preenchida. Sem ela, os lançamentos da conta
+                  3.4.01.10.0003 com CODTMV 1.2.13 não são identificados e entram no rateio em vez
+                  de ir 100% para OUTROS.
+                </p>
+              )}
+
               <div className="overflow-x-auto rounded-md border border-border">
                 <table className="w-full text-xs">
                   <thead className="bg-muted">
