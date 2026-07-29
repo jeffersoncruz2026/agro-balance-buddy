@@ -134,13 +134,14 @@ export function exportarBalancete(rel: Relatorio, mes: number, ano: number) {
   const push = (rotulo: string, safra: number, v: Record<string, number>) =>
     aoa.push([rotulo, safraLabel(safra), ...COLUNAS.map((c) => v[c.key] ?? 0)]);
 
+  const safrasDesc = rel.safras.slice().reverse();
   for (const l of rel.linhas) {
-    rel.safras.forEach((s, i) => push(i === 0 ? l.linha : "", s, l.valores[s]));
+    safrasDesc.forEach((s, i) => push(i === 0 ? l.linha : "", s, l.valores[s]));
   }
-  rel.safras.forEach((s, i) => push(i === 0 ? "TOTAL" : "", s, rel.total[s]));
+  safrasDesc.forEach((s, i) => push(i === 0 ? "TOTAL" : "", s, rel.total[s]));
   aoa.push([]);
   for (const b of rel.blocos) {
-    rel.safras.forEach((s, i) => {
+    safrasDesc.forEach((s, i) => {
       const row: (string | number | null)[] = [i === 0 ? b.rotulo : "", safraLabel(s)];
       for (const c of COLUNAS) row.push(c.key === "saldo" ? b.saldos[s] : null);
       aoa.push(row);
