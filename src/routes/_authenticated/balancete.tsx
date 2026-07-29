@@ -96,6 +96,24 @@ function Balancete() {
     return m;
   }, [rateioQ.data]);
 
+  const rateioAdmQ = useQuery({
+    queryKey: ["rateio_adm_vigente", mes, ano],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("rateio_adm_vigente", { p_ano: ano, p_mes: mes });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const rateioAdm = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const r of rateioAdmQ.data ?? []) m[r.linha_negocio] = Number(r.percentual);
+    return m;
+  }, [rateioAdmQ.data]);
+
+  const vigenciaAdm = rateioAdmQ.data?.[0]?.vigencia as string | undefined;
+
+
   const salvarRateio = useMutation({
     mutationFn: async (v: { linha: string; percentual: number }) => {
       const { error } = await supabase.from("rateio").upsert(
@@ -112,9 +130,10 @@ function Balancete() {
   const safras = [safraAtual - 1, safraAtual];
 
   const rel = useMemo(
-    () => montarRelatorio(agg.data ?? [], safras, rateio),
-    [agg.data, safras.join(), rateio],
+    () => montarRelatorio(agg.data ?? [], safras, rateio, rateioAdm),
+    [agg.data, safras.join(), rateio, rateioAdm],
   );
+
 
   const somaRateio = LINHAS.reduce((a, l) => a + (rateio[l] || 0), 0);
 
@@ -181,9 +200,10 @@ function Balancete() {
       <Card className="mb-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">
-            Rateio manual de despesas compartilhadas — {MESES[mes - 1]}/{ano}
+            Rateio manual de DESP. TRIBUT / VENDAS — {MESES[mes - 1]}/{ano}
           </CardTitle>
         </CardHeader>
+
         <CardContent>
           <div className="flex flex-wrap gap-3">
             {LINHAS.map((l) => (
@@ -206,11 +226,21 @@ function Balancete() {
           >
             Soma: {somaRateio.toFixed(2)}%
             {somaRateio === 0
-              ? " — sem rateio definido, DESP. ADM / TRIBUT / VENDAS ficam na linha de origem."
+              ? " — sem rateio definido, DESP. TRIBUT / VENDAS ficam na linha de origem."
               : Math.abs(somaRateio - 100) < 0.01
                 ? " — ok."
                 : " — recomendado totalizar 100%."}
           </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            DESP. ADM das contas 3.4.01.* seguem regra própria: centro de custo 01.14.0003 vai 100%
+            para OUTROS e o restante é rateado pelos percentuais{" "}
+            {vigenciaAdm
+              ? `vigentes desde ${MESES[Number(vigenciaAdm.slice(5, 7)) - 1]}/${vigenciaAdm.slice(0, 4)}`
+              : "definidos em Configurações"}{" "}
+            ({LINHAS.map((l) => `${l}: ${(rateioAdm[l] ?? 0).toFixed(2)}%`).join(" · ")}). Edite em
+            Configurações.
+          </p>
+
         </CardContent>
       </Card>
 

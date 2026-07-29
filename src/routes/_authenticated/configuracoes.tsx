@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -13,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MESES, safraLabel } from "@/lib/balancete";
+import { LINHAS, MESES, PREFIXO_ADM, CCUSTO_ADM_OUTROS, safraLabel } from "@/lib/balancete";
+
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({
@@ -60,6 +62,80 @@ function Configuracoes() {
 
   const anoEx = new Date().getFullYear();
 
+  // ---- Rateio das Despesas Administrativas (contas 3.4.01.*) ----
+  const hoje = new Date();
+  const [vMes, setVMes] = useState(hoje.getMonth() + 1);
+  const [vAno, setVAno] = useState(hoje.getFullYear());
+  const [pcts, setPcts] = useState<Record<string, string>>({});
+
+  const adm = useQuery({
+    queryKey: ["rateio_adm"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rateio_adm")
+        .select("*")
+        .order("vigencia", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const vigencias = useMemo(() => {
+    const m = new Map<string, { linha_negocio: string; percentual: number; updated_at: string }[]>();
+    for (const r of adm.data ?? []) {
+      const arr = m.get(r.vigencia) ?? [];
+      arr.push({
+        linha_negocio: r.linha_negocio,
+        percentual: Number(r.percentual),
+        updated_at: r.updated_at,
+      });
+      m.set(r.vigencia, arr);
+    }
+    return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  }, [adm.data]);
+
+  const vigenciaSel = `${vAno}-${String(vMes).padStart(2, "0")}-01`;
+
+  useEffect(() => {
+    const atual = (adm.data ?? []).filter((r) => r.vigencia === vigenciaSel);
+    const base =
+      atual.length > 0
+        ? atual
+        : (adm.data ?? []).filter(
+            (r) => r.vigencia === (adm.data ?? []).find((x) => x.vigencia <= vigenciaSel)?.vigencia,
+          );
+    const next: Record<string, string> = {};
+    for (const l of LINHAS) {
+      const row = base.find((r) => r.linha_negocio === l);
+      next[l] = row ? String(Number(row.percentual)) : "";
+    }
+    setPcts(next);
+  }, [adm.data, vigenciaSel]);
+
+  const somaAdm = LINHAS.reduce((a, l) => a + (Number(pcts[l]) || 0), 0);
+
+  const salvarAdm = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("rateio_adm").upsert(
+        LINHAS.map((l) => ({
+          vigencia: vigenciaSel,
+          linha_negocio: l,
+          percentual: Number(pcts[l]) || 0,
+        })),
+        { onConflict: "vigencia,linha_negocio" },
+      );
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`Percentuais válidos a partir de ${MESES[vMes - 1]}/${vAno}.`);
+      qc.invalidateQueries({ queryKey: ["rateio_adm"] });
+      qc.invalidateQueries({ queryKey: ["balancete"] });
+      qc.invalidateQueries({ queryKey: ["rateio_adm_vigente"] });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+
   return (
     <AppLayout titulo="Configurações" descricao="Parâmetros globais do fechamento gerencial.">
       <Card className="max-w-xl">
@@ -93,6 +169,124 @@ function Configuracoes() {
         </CardContent>
       </Card>
 
+      <Card className="mt-6 max-w-3xl">
+        <CardHeader>
+          <CardTitle className="text-base">
+            Rateio das Despesas Administrativas (contas {PREFIXO_ADM}*)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Lançamentos com centro de custo{" "}
+            <span className="font-medium text-foreground">{CCUSTO_ADM_OUTROS}</span> vão 100% para a
+            linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
+            rateados entre todas as linhas conforme os percentuais abaixo — OUTROS recebe a sua
+            fatia do rateio somada aos valores diretos.
+          </p>
+
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Vigente a partir de</label>
+              <Select value={String(vMes)} onValueChange={(v) => setVMes(Number(v))}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MESES.map((m, i) => (
+                    <SelectItem key={m} value={String(i + 1)}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Ano</label>
+              <Input
+                type="number"
+                className="w-28"
+                value={vAno}
+                onChange={(e) => setVAno(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {LINHAS.map((l) => (
+              <div key={l} className="w-44">
+                <label className="text-xs text-muted-foreground">{l}</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0"
+                  value={pcts[l] ?? ""}
+                  onChange={(e) => setPcts((p) => ({ ...p, [l]: e.target.value }))}
+                />
+              </div>
+            ))}
+          </div>
+
+          <p
+            className={`text-xs ${Math.abs(somaAdm - 100) < 0.01 ? "text-muted-foreground" : "text-destructive"}`}
+          >
+            Soma: {somaAdm.toFixed(2)}%{" "}
+            {Math.abs(somaAdm - 100) < 0.01 ? "— ok." : "— deve totalizar 100%."}
+          </p>
+
+          <Button
+            onClick={() => salvarAdm.mutate()}
+            disabled={salvarAdm.isPending || Math.abs(somaAdm - 100) >= 0.01}
+          >
+            Salvar vigência
+          </Button>
+
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Histórico de vigências — meses já fechados continuam usando o percentual da época.
+            </p>
+            <div className="overflow-auto rounded-md border border-border">
+              <table className="w-full text-xs">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-2 py-2 text-left font-medium">Vigente a partir de</th>
+                    {LINHAS.map((l) => (
+                      <th key={l} className="px-2 py-2 text-right font-medium">
+                        {l}
+                      </th>
+                    ))}
+                    <th className="px-2 py-2 text-right font-medium">Alterado em</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vigencias.map(([vig, rows]) => {
+                    const [y, m] = vig.split("-");
+                    const alterado = rows
+                      .map((r) => r.updated_at)
+                      .sort()
+                      .at(-1);
+                    return (
+                      <tr key={vig} className="border-t border-border">
+                        <td className="px-2 py-1">
+                          {MESES[Number(m) - 1]}/{y}
+                        </td>
+                        {LINHAS.map((l) => (
+                          <td key={l} className="num px-2 py-1 text-right">
+                            {(rows.find((r) => r.linha_negocio === l)?.percentual ?? 0).toFixed(2)}%
+                          </td>
+                        ))}
+                        <td className="num px-2 py-1 text-right text-muted-foreground">
+                          {alterado ? new Date(alterado).toLocaleDateString("pt-BR") : "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="mt-6 max-w-xl">
         <CardHeader>
           <CardTitle className="text-base">Como o balancete é montado</CardTitle>
@@ -108,10 +302,13 @@ function Configuracoes() {
             abatimentos.
           </p>
           <p>
-            4. DESP. ADM, TRIBUT e VENDAS são rateadas para as linhas conforme o percentual manual
-            informado a cada mês na tela do balancete.
+            4. DESP. TRIBUT e VENDAS são rateadas conforme o percentual manual informado a cada mês
+            na tela do balancete. As DESP. ADM das contas {PREFIXO_ADM}* seguem a regra própria
+            configurada acima ({CCUSTO_ADM_OUTROS} → 100% OUTROS; demais → rateio percentual
+            vigente).
           </p>
           <p>5. O relatório é sempre consolidado, comparando a safra atual com a anterior.</p>
+
         </CardContent>
       </Card>
     </AppLayout>
