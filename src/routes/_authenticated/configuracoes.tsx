@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LINHAS, MESES, PREFIXO_ADM, CCUSTO_ADM_OUTROS, formatBRL, safraLabel } from "@/lib/balancete";
+import { LINHAS, MESES, PREFIXO_ADM, CCUSTO_ADM_OUTROS, safraLabel } from "@/lib/balancete";
 
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
