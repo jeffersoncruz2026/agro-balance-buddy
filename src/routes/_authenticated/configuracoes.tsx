@@ -169,6 +169,124 @@ function Configuracoes() {
         </CardContent>
       </Card>
 
+      <Card className="mt-6 max-w-3xl">
+        <CardHeader>
+          <CardTitle className="text-base">
+            Rateio das Despesas Administrativas (contas {PREFIXO_ADM}*)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Lançamentos com centro de custo{" "}
+            <span className="font-medium text-foreground">{CCUSTO_ADM_OUTROS}</span> vão 100% para a
+            linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
+            rateados entre todas as linhas conforme os percentuais abaixo — OUTROS recebe a sua
+            fatia do rateio somada aos valores diretos.
+          </p>
+
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Vigente a partir de</label>
+              <Select value={String(vMes)} onValueChange={(v) => setVMes(Number(v))}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MESES.map((m, i) => (
+                    <SelectItem key={m} value={String(i + 1)}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Ano</label>
+              <Input
+                type="number"
+                className="w-28"
+                value={vAno}
+                onChange={(e) => setVAno(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            {LINHAS.map((l) => (
+              <div key={l} className="w-44">
+                <label className="text-xs text-muted-foreground">{l}</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0"
+                  value={pcts[l] ?? ""}
+                  onChange={(e) => setPcts((p) => ({ ...p, [l]: e.target.value }))}
+                />
+              </div>
+            ))}
+          </div>
+
+          <p
+            className={`text-xs ${Math.abs(somaAdm - 100) < 0.01 ? "text-muted-foreground" : "text-destructive"}`}
+          >
+            Soma: {somaAdm.toFixed(2)}%{" "}
+            {Math.abs(somaAdm - 100) < 0.01 ? "— ok." : "— deve totalizar 100%."}
+          </p>
+
+          <Button
+            onClick={() => salvarAdm.mutate()}
+            disabled={salvarAdm.isPending || Math.abs(somaAdm - 100) >= 0.01}
+          >
+            Salvar vigência
+          </Button>
+
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Histórico de vigências — meses já fechados continuam usando o percentual da época.
+            </p>
+            <div className="overflow-auto rounded-md border border-border">
+              <table className="w-full text-xs">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-2 py-2 text-left font-medium">Vigente a partir de</th>
+                    {LINHAS.map((l) => (
+                      <th key={l} className="px-2 py-2 text-right font-medium">
+                        {l}
+                      </th>
+                    ))}
+                    <th className="px-2 py-2 text-right font-medium">Alterado em</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vigencias.map(([vig, rows]) => {
+                    const [y, m] = vig.split("-");
+                    const alterado = rows
+                      .map((r) => r.updated_at)
+                      .sort()
+                      .at(-1);
+                    return (
+                      <tr key={vig} className="border-t border-border">
+                        <td className="px-2 py-1">
+                          {MESES[Number(m) - 1]}/{y}
+                        </td>
+                        {LINHAS.map((l) => (
+                          <td key={l} className="num px-2 py-1 text-right">
+                            {(rows.find((r) => r.linha_negocio === l)?.percentual ?? 0).toFixed(2)}%
+                          </td>
+                        ))}
+                        <td className="num px-2 py-1 text-right text-muted-foreground">
+                          {alterado ? new Date(alterado).toLocaleDateString("pt-BR") : "-"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="mt-6 max-w-xl">
         <CardHeader>
           <CardTitle className="text-base">Como o balancete é montado</CardTitle>
@@ -184,10 +302,13 @@ function Configuracoes() {
             abatimentos.
           </p>
           <p>
-            4. DESP. ADM, TRIBUT e VENDAS são rateadas para as linhas conforme o percentual manual
-            informado a cada mês na tela do balancete.
+            4. DESP. TRIBUT e VENDAS são rateadas conforme o percentual manual informado a cada mês
+            na tela do balancete. As DESP. ADM das contas {PREFIXO_ADM}* seguem a regra própria
+            configurada acima ({CCUSTO_ADM_OUTROS} → 100% OUTROS; demais → rateio percentual
+            vigente).
           </p>
           <p>5. O relatório é sempre consolidado, comparando a safra atual com a anterior.</p>
+
         </CardContent>
       </Card>
     </AppLayout>
