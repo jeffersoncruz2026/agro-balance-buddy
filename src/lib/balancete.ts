@@ -137,9 +137,17 @@ export function montarRelatorio(
   rows: AggRow[],
   safras: number[],
   rateio: Record<string, number>,
+  rateioAdm: Record<string, number> = {},
 ): Relatorio {
   const totalRateio = LINHAS.reduce((a, l) => a + (rateio[l] || 0), 0);
   const usarRateio = totalRateio > 0;
+  const totalAdm = LINHAS.reduce((a, l) => a + (rateioAdm[l] || 0), 0);
+  const usarAdm = totalAdm > 0;
+
+  const soma = (safra: number, cat: string, filtro?: (r: AggRow) => boolean) =>
+    rows
+      .filter((r) => r.safra_ano === safra && r.categoria === cat && (!filtro || filtro(r)))
+      .reduce((a, r) => a + Number(r.valor), 0);
 
   const linhas = LINHAS.map((linha) => {
     const valores: Record<number, Valores> = {};
@@ -147,25 +155,36 @@ export function montarRelatorio(
       const v = zero();
       for (const col of COLUNAS) {
         if (!col.cat) continue;
+        const daLinha = (r: AggRow) =>
+          r.linha === linha || (linha === "OUTROS" && !LINHAS.includes(r.linha as Linha));
         const rateada = RATEADAS.includes(col.cat as Categoria);
         let bruto: number;
-        if (rateada && usarRateio) {
-          const pool = somaCat(rows, safra, col.cat);
-          bruto = pool * ((rateio[linha] || 0) / totalRateio);
+
+        if (col.key === "despAdm") {
+          // Contas 3.4.01.* têm regra própria:
+          // CODCCUSTO 01.14.0003 → 100% OUTROS; demais → rateio percentual configurado.
+          const direto = linha === "OUTROS" ? soma(safra, col.cat, (r) => r.regra === "ADM_OUTROS") : 0;
+          const pool = soma(safra, col.cat, (r) => r.regra === "ADM_RATEIO");
+          const rateado = usarAdm ? pool * ((rateioAdm[linha] || 0) / totalAdm) : 0;
+          const restoPool = soma(safra, col.cat, (r) => r.regra !== "ADM_OUTROS" && r.regra !== "ADM_RATEIO");
+          const resto = usarRateio
+            ? restoPool * ((rateio[linha] || 0) / totalRateio)
+            : soma(
+                safra,
+                col.cat,
+                (r) => r.regra !== "ADM_OUTROS" && r.regra !== "ADM_RATEIO" && daLinha(r),
+              );
+          bruto = direto + rateado + (usarAdm && !usarRateio ? 0 : resto);
+          if (usarAdm && !usarRateio) bruto = direto + rateado + resto;
+        } else if (rateada && usarRateio) {
+          bruto = soma(safra, col.cat) * ((rateio[linha] || 0) / totalRateio);
         } else {
-          bruto = rows
-            .filter(
-              (r) =>
-                r.safra_ano === safra &&
-                r.categoria === col.cat &&
-                (r.linha === linha ||
-                  (linha === "OUTROS" && !LINHAS.includes(r.linha as Linha))),
-            )
-            .reduce((a, r) => a + Number(r.valor), 0);
+          bruto = soma(safra, col.cat, daLinha);
         }
         v[col.key] = Math.abs(bruto);
         if (col.key === "hedge") v[col.key] = bruto;
       }
+
       const deducoes =
         v.devolucao + v.icms + v.pis + v.cofins + v.inssRural + v.outrosAbat;
       v.impostosDevAbat = deducoes;
