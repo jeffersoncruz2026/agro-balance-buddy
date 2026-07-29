@@ -149,8 +149,8 @@ function Balancete() {
   const safras = [safraAtual - 1, safraAtual];
 
   const rel = useMemo(
-    () => montarRelatorio(agg.data ?? [], safras, rateio, rateioAdm),
-    [agg.data, safras.join(), rateio, rateioAdm],
+    () => montarRelatorio(agg.data ?? [], safras, rateio, rateioAdm, rateioTrib),
+    [agg.data, safras.join(), rateio, rateioAdm, rateioTrib],
   );
 
 
