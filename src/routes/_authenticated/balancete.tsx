@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
@@ -287,48 +287,52 @@ function Balancete() {
               ))}
             </tr>
           </thead>
-          {safras
-            .slice()
-            .reverse()
-            .map((safra) => (
-              <tbody key={safra}>
-                <tr className="bg-secondary">
-                  <td
-                    colSpan={COLUNAS.length + 1}
-                    className="px-3 py-1.5 text-left font-semibold text-secondary-foreground"
-                  >
-                    SAFRA {safraLabel(safra)}
-                  </td>
-                </tr>
-                {rel.linhas.map((l) => (
-                  <tr key={l.linha} className="border-t border-border hover:bg-muted/50">
-                    <td className="sticky left-0 z-10 bg-card px-3 py-1.5 font-medium">
-                      {l.linha}
-                    </td>
-                    {COLUNAS.map((c) => (
+          <tbody>
+            {[
+              ...rel.linhas.map((l) => ({
+                rotulo: l.linha,
+                valores: l.valores,
+                total: false,
+              })),
+              { rotulo: "TOTAL", valores: rel.total, total: true },
+            ].map((grupo) => (
+              <Fragment key={grupo.rotulo}>
+                {safras
+                  .slice()
+                  .reverse()
+                  .map((safra, idx) => (
+                    <tr
+                      key={safra}
+                      className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"}`}
+                    >
                       <td
-                        key={c.key}
-                        onClick={() =>
-                          c.cat && setDetalhe({ safra, linha: l.linha, categoria: c.cat })
-                        }
-                        className={`num px-2 py-1.5 text-right ${c.cat ? "cursor-pointer hover:underline" : "font-semibold"}`}
+                        className={`sticky left-0 z-10 px-3 py-1.5 font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
                       >
-                        {formatBRL(l.valores[safra][c.key as ColKey])}
+                        <span className={idx === 0 ? "" : "opacity-0"}>{grupo.rotulo}</span>
+                        <span className="ml-2 text-[10px] font-normal text-muted-foreground">
+                          {safraLabel(safra)}
+                        </span>
                       </td>
-                    ))}
-                  </tr>
-                ))}
-                <tr className="border-t-2 border-primary bg-muted font-semibold">
-                  <td className="sticky left-0 z-10 bg-muted px-3 py-1.5">TOTAL</td>
-                  {COLUNAS.map((c) => (
-                    <td key={c.key} className="num px-2 py-1.5 text-right">
-                      {formatBRL(rel.total[safra][c.key as ColKey])}
-                    </td>
+                      {COLUNAS.map((c) => (
+                        <td
+                          key={c.key}
+                          onClick={() =>
+                            !grupo.total &&
+                            c.cat &&
+                            setDetalhe({ safra, linha: grupo.rotulo, categoria: c.cat })
+                          }
+                          className={`num px-2 py-1.5 text-right ${!grupo.total && c.cat ? "cursor-pointer hover:underline" : "font-semibold"}`}
+                        >
+                          {formatBRL(grupo.valores[safra][c.key as ColKey])}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
-                </tr>
-              </tbody>
+              </Fragment>
             ))}
+          </tbody>
         </table>
+
       </div>
 
       <Card className="mt-6">
