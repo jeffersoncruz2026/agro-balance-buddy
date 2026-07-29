@@ -199,6 +199,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rateio_adm: {
+        Row: {
+          created_at: string
+          id: string
+          linha_negocio: string
+          percentual: number
+          updated_at: string
+          vigencia: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linha_negocio: string
+          percentual?: number
+          updated_at?: string
+          vigencia: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linha_negocio?: string
+          percentual?: number
+          updated_at?: string
+          vigencia?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -210,6 +237,7 @@ export type Database = {
           categoria: string
           linha: string
           qtd: number
+          regra: string
           safra_ano: number
           valor: number
         }[]
@@ -261,6 +289,14 @@ export type Database = {
           produto: string
           qtd: number
           valor: number
+        }[]
+      }
+      rateio_adm_vigente: {
+        Args: { p_ano: number; p_mes: number }
+        Returns: {
+          linha_negocio: string
+          percentual: number
+          vigencia: string
         }[]
       }
     }
