@@ -14,7 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LINHAS, MESES, PREFIXO_ADM, CCUSTO_ADM_OUTROS, safraLabel } from "@/lib/balancete";
+import {
+  LINHAS,
+  MESES,
+  PREFIXO_ADM,
+  CCUSTO_ADM_OUTROS,
+  CONTA_ADM_OUTROS,
+  CODTMV_ADM_OUTROS,
+  safraLabel,
+} from "@/lib/balancete";
 
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
@@ -178,8 +186,10 @@ function Configuracoes() {
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Lançamentos com centro de custo{" "}
-            <span className="font-medium text-foreground">{CCUSTO_ADM_OUTROS}</span> vão 100% para a
-            linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
+            <span className="font-medium text-foreground">{CCUSTO_ADM_OUTROS}</span> — ou com conta{" "}
+            <span className="font-medium text-foreground">{CONTA_ADM_OUTROS}</span> combinada com
+            CODTMV <span className="font-medium text-foreground">{CODTMV_ADM_OUTROS}</span> — vão
+            100% para a linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
             rateados entre todas as linhas conforme os percentuais abaixo — OUTROS recebe a sua
             fatia do rateio somada aos valores diretos.
           </p>
@@ -304,8 +314,8 @@ function Configuracoes() {
           <p>
             4. DESP. TRIBUT e VENDAS são rateadas conforme o percentual manual informado a cada mês
             na tela do balancete. As DESP. ADM das contas {PREFIXO_ADM}* seguem a regra própria
-            configurada acima ({CCUSTO_ADM_OUTROS} → 100% OUTROS; demais → rateio percentual
-            vigente).
+            configurada acima ({CCUSTO_ADM_OUTROS}, ou {CONTA_ADM_OUTROS} com CODTMV{" "}
+            {CODTMV_ADM_OUTROS} → 100% OUTROS; demais → rateio percentual vigente).
           </p>
           <p>5. O relatório é sempre consolidado, comparando a safra atual com a anterior.</p>
 

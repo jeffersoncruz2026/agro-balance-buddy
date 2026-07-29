@@ -11,6 +11,7 @@ export interface LinhaBase {
   vlcusto: number;
   complemento: string | null;
   vcodconta: string | null;
+  codtmv: string | null;
   contacontabil: string | null;
   produto: string | null;
   documento: string | null;
@@ -35,6 +36,7 @@ const ALIASES: Record<string, string[]> = {
   vlcusto: ["VLCUSTO", "VALOR"],
   complemento: ["COMPLEMENTO"],
   vcodconta: ["VCODCONTA", "CODCONTA"],
+  codtmv: ["CODTMV"],
   contacontabil: ["CONTACONTABIL"],
   produto: ["PRODUTO"],
   documento: ["DOCUMENTO"],
@@ -81,7 +83,8 @@ export function parseBase(buffer: ArrayBuffer): {
     const found = header.find((h) => alias.includes(norm(h)));
     if (found) mapa[campo] = found;
   }
-  const faltando = Object.keys(ALIASES).filter((k) => !(k in mapa));
+  const OPCIONAIS = ["codtmv"];
+  const faltando = Object.keys(ALIASES).filter((k) => !(k in mapa) && !OPCIONAIS.includes(k));
 
   const linhas: LinhaBase[] = [];
   let ignoradas = 0;
@@ -106,6 +109,7 @@ export function parseBase(buffer: ArrayBuffer): {
       vlcusto: toNumber(mapa.vlcusto ? r[mapa.vlcusto] : 0),
       complemento: get("complemento"),
       vcodconta: get("vcodconta"),
+      codtmv: get("codtmv"),
       contacontabil: get("contacontabil"),
       produto: get("produto"),
       documento: get("documento"),

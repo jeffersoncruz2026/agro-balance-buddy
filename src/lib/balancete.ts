@@ -76,6 +76,9 @@ export const RATEADAS: Categoria[] = ["DESP. ADM", "DESP. TRIBUT", "DESP. VENDAS
 
 /** Centro de custo cujas despesas administrativas vão 100% para OUTROS. */
 export const CCUSTO_ADM_OUTROS = "01.14.0003";
+/** Conta + tipo de movimento que também vão 100% para OUTROS. */
+export const CONTA_ADM_OUTROS = "3.4.01.10.0003";
+export const CODTMV_ADM_OUTROS = "1.2.13";
 /** Prefixo das contas de Despesas Administrativas com regra própria. */
 export const PREFIXO_ADM = "3.4.01.";
 
