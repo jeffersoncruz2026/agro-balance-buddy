@@ -113,6 +113,25 @@ function Balancete() {
 
   const vigenciaAdm = rateioAdmQ.data?.[0]?.vigencia as string | undefined;
 
+  const rateioTribQ = useQuery({
+    queryKey: ["rateio_trib_vigente", mes, ano],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("rateio_trib_vigente", { p_ano: ano, p_mes: mes });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const rateioTrib = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const r of rateioTribQ.data ?? []) m[r.linha_negocio] = Number(r.percentual);
+    return m;
+  }, [rateioTribQ.data]);
+
+  const vigenciaTrib = rateioTribQ.data?.[0]?.vigencia as string | undefined;
+
+
+
 
   const salvarRateio = useMutation({
     mutationFn: async (v: { linha: string; percentual: number }) => {
@@ -130,8 +149,8 @@ function Balancete() {
   const safras = [safraAtual - 1, safraAtual];
 
   const rel = useMemo(
-    () => montarRelatorio(agg.data ?? [], safras, rateio, rateioAdm),
-    [agg.data, safras.join(), rateio, rateioAdm],
+    () => montarRelatorio(agg.data ?? [], safras, rateio, rateioAdm, rateioTrib),
+    [agg.data, safras.join(), rateio, rateioAdm, rateioTrib],
   );
 
 
@@ -240,6 +259,16 @@ function Balancete() {
             ({LINHAS.map((l) => `${l}: ${(rateioAdm[l] ?? 0).toFixed(2)}%`).join(" · ")}). Edite em
             Configurações.
           </p>
+          {!!vigenciaTrib && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              DESP. TRIBUT usa os percentuais vigentes desde{" "}
+              {MESES[Number(vigenciaTrib.slice(5, 7)) - 1]}/{vigenciaTrib.slice(0, 4)} (
+              {LINHAS.map((l) => `${l}: ${(rateioTrib[l] ?? 0).toFixed(2)}%`).join(" · ")}),
+              ignorando o rateio manual acima. Edite em Configurações.
+            </p>
+          )}
+
+
 
         </CardContent>
       </Card>
