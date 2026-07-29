@@ -59,6 +59,30 @@ export type Database = {
         }
         Relationships: []
       }
+      custo_map: {
+        Row: {
+          created_at: string
+          id: string
+          linha_negocio: string
+          nomecusto: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linha_negocio: string
+          nomecusto: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linha_negocio?: string
+          nomecusto?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       importacoes: {
         Row: {
           arquivo: string
