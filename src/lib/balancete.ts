@@ -188,7 +188,15 @@ export function montarRelatorio(
               );
           bruto = direto + rateado + resto;
 
+        } else if (col.key === "despVendas") {
+          // Despesas de vendas: NOMECUSTO "FATURAMENTO" → 50% GENÉTICA + 50% SEMENTES / GRÃOS
+          // (fixo); demais → De/Para manual NOMECUSTO → linha de negócio.
+          const fatPool = soma(safra, col.cat, (r) => r.regra === "VENDAS_FAT");
+          const fat = LINHAS_VENDAS_FIXO.includes(linha as Linha) ? fatPool * 0.5 : 0;
+          const mapeado = soma(safra, col.cat, (r) => r.regra !== "VENDAS_FAT" && daLinha(r));
+          bruto = fat + mapeado;
         } else if (col.key === "despTrib" && usarTrib) {
+
           // Despesas tributárias: percentuais configurados com vigência em Configurações.
           bruto = soma(safra, col.cat) * ((rateioTrib[linha] || 0) / totalTrib);
         } else if (rateada && usarRateio) {
