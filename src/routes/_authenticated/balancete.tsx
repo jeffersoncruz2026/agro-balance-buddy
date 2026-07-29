@@ -278,8 +278,9 @@ function Balancete() {
           <thead>
             <tr className="bg-primary text-primary-foreground">
               <th className="sticky left-0 z-10 bg-primary px-3 py-2 text-left font-semibold">
-                LINHA DE NEGÓCIO
+                DESCRIÇÃO
               </th>
+              <th className="bg-primary px-2 py-2 text-left font-semibold">ANO</th>
               {COLUNAS.map((c) => (
                 <th key={c.key} className="px-2 py-2 text-right font-semibold whitespace-pre-line">
                   {c.label}
@@ -303,15 +304,18 @@ function Balancete() {
                   .map((safra, idx) => (
                     <tr
                       key={safra}
-                      className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"}`}
+                      className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border/60"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"}`}
                     >
-                      <td
-                        className={`sticky left-0 z-10 px-3 py-1.5 font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
-                      >
-                        <span className={idx === 0 ? "" : "opacity-0"}>{grupo.rotulo}</span>
-                        <span className="ml-2 text-[10px] font-normal text-muted-foreground">
-                          {safraLabel(safra)}
-                        </span>
+                      {idx === 0 && (
+                        <td
+                          rowSpan={safras.length}
+                          className={`sticky left-0 z-10 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
+                        >
+                          {grupo.rotulo}
+                        </td>
+                      )}
+                      <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">
+                        {safraLabel(safra)}
                       </td>
                       {COLUNAS.map((c) => (
                         <td
@@ -343,36 +347,38 @@ function Balancete() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-xs text-muted-foreground">
-                <th className="px-3 py-2 text-left font-medium" />
-                {safras
-                  .slice()
-                  .reverse()
-                  .map((s) => (
-                    <th key={s} className="px-3 py-2 text-right font-medium">
-                      SAFRA {safraLabel(s)}
-                    </th>
-                  ))}
+                <th className="px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
+                <th className="px-3 py-2 text-left font-medium">ANO</th>
+                <th className="px-3 py-2 text-right font-medium">SALDO</th>
               </tr>
             </thead>
             <tbody>
               {rel.blocos.map((b) => (
-                <tr
-                  key={b.rotulo}
-                  className={`border-b border-border ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "text-muted-foreground italic" : ""}`}
-                >
-                  <td className="px-3 py-1.5">{b.rotulo}</td>
+                <Fragment key={b.rotulo}>
                   {safras
                     .slice()
                     .reverse()
-                    .map((s) => (
-                      <td key={s} className="num px-3 py-1.5 text-right">
-                        {formatBRL(b.saldos[s])}
-                      </td>
+                    .map((s, idx) => (
+                      <tr
+                        key={s}
+                        className={`${idx === 0 ? "border-t border-border" : "border-b border-border"} ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "text-muted-foreground italic" : ""}`}
+                      >
+                        {idx === 0 && (
+                          <td rowSpan={safras.length} className="px-3 py-1.5 align-middle">
+                            {b.rotulo}
+                          </td>
+                        )}
+                        <td className="px-3 py-1.5 whitespace-nowrap text-muted-foreground">
+                          {safraLabel(s)}
+                        </td>
+                        <td className="num px-3 py-1.5 text-right">{formatBRL(b.saldos[s])}</td>
+                      </tr>
                     ))}
-                </tr>
+                </Fragment>
               ))}
             </tbody>
           </table>
+
         </CardContent>
       </Card>
 
