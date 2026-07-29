@@ -94,6 +94,7 @@ export type Database = {
           codccusto: string | null
           codcoligada: string | null
           coddepartamento: string | null
+          codtmv: string | null
           complemento: string | null
           contacontabil: string | null
           data: string
@@ -112,6 +113,7 @@ export type Database = {
           codccusto?: string | null
           codcoligada?: string | null
           coddepartamento?: string | null
+          codtmv?: string | null
           complemento?: string | null
           contacontabil?: string | null
           data: string
@@ -130,6 +132,7 @@ export type Database = {
           codccusto?: string | null
           codcoligada?: string | null
           coddepartamento?: string | null
+          codtmv?: string | null
           complemento?: string | null
           contacontabil?: string | null
           data?: string
