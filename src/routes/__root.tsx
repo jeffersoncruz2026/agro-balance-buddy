@@ -81,6 +81,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Geração automática do balancete gerencial agropecuário." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Balancete Gerencial" },
+      { name: "twitter:title", content: "Balancete Gerencial" },
+      { property: "og:description", content: "Geração automática do balancete gerencial agropecuário." },
+      { name: "twitter:description", content: "Geração automática do balancete gerencial agropecuário." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8c66d940-a08d-4da5-a02c-85b99f6feca8/id-preview-7fb20344--a1a417a9-c019-4567-9328-f16800cc5fd3.lovable.app-1785355656040.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8c66d940-a08d-4da5-a02c-85b99f6feca8/id-preview-7fb20344--a1a417a9-c019-4567-9328-f16800cc5fd3.lovable.app-1785355656040.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
