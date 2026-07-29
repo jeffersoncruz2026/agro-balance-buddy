@@ -75,7 +75,12 @@ function Contas() {
   });
 
   const salvar = useMutation({
-    mutationFn: async (row: Record<string, unknown>) => {
+    mutationFn: async (row: {
+      conta: string;
+      categoria: string;
+      descricao: string | null;
+      is_prefixo: boolean;
+    }) => {
       const { error } = await supabase.from("conta_map").upsert(row, { onConflict: "conta" });
       if (error) throw error;
     },
