@@ -157,7 +157,7 @@ export function exportarBalancete(rel: Relatorio, periodo: string, arquivo: stri
   }
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Gerencial");
-  XLSX.writeFile(wb, `Balancete_Gerencial_${MESES[mes - 1]}_${ano}.xlsx`);
+  XLSX.writeFile(wb, arquivo);
 }
 
 export function exportarPlanilha(rows: Record<string, unknown>[], nome: string) {
