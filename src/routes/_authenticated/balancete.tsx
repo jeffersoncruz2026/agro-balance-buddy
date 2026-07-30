@@ -27,8 +27,10 @@ import {
   safraDe,
   safraLabel,
   type AggRow,
+  type Ajuste,
   type ColKey,
 } from "@/lib/balancete";
+
 import { exportarBalancete } from "@/lib/excel";
 import { Download, AlertTriangle } from "lucide-react";
 
