@@ -99,6 +99,20 @@ export interface AggRow {
   qtd: number;
 }
 
+/** Ajuste gerencial manual (+/-) aplicado sobre o valor apurado da base. */
+export interface Ajuste {
+  id: string;
+  categoria: string;
+  linha_negocio: string;
+  safra_ano: number;
+  mes: number;
+  valor: number;
+  descricao: string;
+  user_email?: string | null;
+  created_at?: string;
+}
+
+
 
 const zero = (): Valores =>
   Object.fromEntries(COLUNAS.map((c) => [c.key, 0])) as Valores;
