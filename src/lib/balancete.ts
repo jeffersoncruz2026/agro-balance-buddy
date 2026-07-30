@@ -231,7 +231,11 @@ export function montarRelatorio(
         }
         // Ajustes gerenciais manuais somam (+/-) ao valor apurado da base.
         v[col.key] = Math.abs(bruto) + somaAjuste(safra, col.cat, linha);
-        if (col.key === "hedge") v[col.key] = bruto + somaAjuste(safra, col.cat, linha);
+        // HEDGE e DESP. TRIBUT (contas 3.4.02.*) preservam o sinal real: um
+        // lançamento negativo (ex.: estorno/crédito tributário) deve aparecer
+        // negativo, não ser convertido para positivo.
+        if (col.key === "hedge" || col.key === "despTrib")
+          v[col.key] = bruto + somaAjuste(safra, col.cat, linha);
 
       }
 
