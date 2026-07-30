@@ -205,6 +205,18 @@ function Balancete() {
     },
   });
 
+  const totalBaseDetalhe = (detalheQ.data ?? []).reduce((a, r) => a + Number(r.vlcusto), 0);
+  const ajustesDetalhe = ajustes.filter(
+    (a) =>
+      !!detalhe &&
+      a.safra_ano === detalhe.safra &&
+      a.linha_negocio === detalhe.linha &&
+      a.categoria === detalhe.categoria,
+  );
+  const totalAjusteDetalhe = ajustesDetalhe.reduce((a, r) => a + Number(r.valor), 0);
+
+
+
   return (
     <AppLayout
       titulo="Balancete Gerencial"
