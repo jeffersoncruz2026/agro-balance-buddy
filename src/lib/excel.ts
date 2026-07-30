@@ -122,12 +122,10 @@ export function parseBase(buffer: ArrayBuffer): {
 
 const FMT = '#.##0,00;[Red](#.##0,00);"-"';
 
-export function exportarBalancete(rel: Relatorio, mes: number, ano: number) {
+export function exportarBalancete(rel: Relatorio, periodo: string, arquivo: string) {
   const aoa: (string | number | null)[][] = [];
   aoa.push(["BALANCETE GERENCIAL"]);
-  aoa.push([
-    `PERÍODO: ${MESES[mes - 1]} ${ano.toLocaleString("pt-BR")} e ${MESES[mes - 1]} ${(ano - 1).toLocaleString("pt-BR")}`,
-  ]);
+  aoa.push([`PERÍODO: ${periodo}`]);
   aoa.push([]);
   aoa.push(["DESCRIÇÃO", "ANO", ...COLUNAS.map((c) => c.label.replace("\n", " "))]);
 
@@ -159,7 +157,7 @@ export function exportarBalancete(rel: Relatorio, mes: number, ano: number) {
   }
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Gerencial");
-  XLSX.writeFile(wb, `Balancete_Gerencial_${MESES[mes - 1]}_${ano}.xlsx`);
+  XLSX.writeFile(wb, arquivo);
 }
 
 export function exportarPlanilha(rows: Record<string, unknown>[], nome: string) {
