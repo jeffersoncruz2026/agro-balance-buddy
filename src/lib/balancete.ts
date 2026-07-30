@@ -162,6 +162,7 @@ export function montarRelatorio(
   rateio: Record<string, number>,
   rateioAdm: Record<string, number> = {},
   rateioTrib: Record<string, number> = {},
+  ajustes: Ajuste[] = [],
 ): Relatorio {
   const totalRateio = LINHAS.reduce((a, l) => a + (rateio[l] || 0), 0);
   const usarRateio = totalRateio > 0;
@@ -174,6 +175,16 @@ export function montarRelatorio(
     rows
       .filter((r) => r.safra_ano === safra && r.categoria === cat && (!filtro || filtro(r)))
       .reduce((a, r) => a + Number(r.valor), 0);
+
+  /** Soma dos ajustes gerenciais manuais de uma categoria (opcionalmente por linha). */
+  const somaAjuste = (safra: number, cat: string, linha?: string) =>
+    ajustes
+      .filter(
+        (a) =>
+          a.safra_ano === safra && a.categoria === cat && (!linha || a.linha_negocio === linha),
+      )
+      .reduce((a, r) => a + Number(r.valor), 0);
+
 
   const linhas = LINHAS.map((linha) => {
     const valores: Record<number, Valores> = {};
