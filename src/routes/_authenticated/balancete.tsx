@@ -158,10 +158,29 @@ function Balancete() {
 
   const vigenciaTrib = rateioTribQ.data?.[0]?.vigencia as string | undefined;
 
-  const rel = useMemo(
-    () => montarRelatorio(agg.data ?? [], safras, {}, rateioAdm, rateioTrib),
-    [agg.data, safras.join(), rateioAdm, rateioTrib],
+  /** Ajustes gerenciais manuais do período selecionado. */
+  const ajustesQ = useQuery({
+    queryKey: ["ajustes", safraAtual],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ajustes")
+        .select("*")
+        .in("safra_ano", [safraAtual - 1, safraAtual]);
+      if (error) throw error;
+      return (data ?? []) as unknown as Ajuste[];
+    },
+  });
+
+  const ajustes = useMemo(
+    () => (ajustesQ.data ?? []).filter((a) => mesesSel.includes(a.mes)),
+    [ajustesQ.data, mesesSel],
   );
+
+  const rel = useMemo(
+    () => montarRelatorio(agg.data ?? [], safras, {}, rateioAdm, rateioTrib, ajustes),
+    [agg.data, safras.join(), rateioAdm, rateioTrib, ajustes],
+  );
+
 
   const detalheQ = useQuery({
     queryKey: ["detalhe", safraAtual, mesesSel.join(","), detalhe],
