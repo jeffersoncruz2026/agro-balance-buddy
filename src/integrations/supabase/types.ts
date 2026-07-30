@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ajustes: {
+        Row: {
+          categoria: string
+          created_at: string
+          descricao: string
+          id: string
+          linha_negocio: string
+          mes: number
+          safra_ano: number
+          updated_at: string
+          user_email: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          descricao: string
+          id?: string
+          linha_negocio: string
+          mes: number
+          safra_ano: number
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          descricao?: string
+          id?: string
+          linha_negocio?: string
+          mes?: number
+          safra_ano?: number
+          updated_at?: string
+          user_email?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       configuracoes: {
         Row: {
           id: boolean

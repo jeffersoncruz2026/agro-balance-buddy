@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   AlertTriangle,
   FileSpreadsheet,
+  SlidersHorizontal,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -19,8 +20,10 @@ const NAV = [
   { to: "/depara", label: "De/Para", icon: ArrowLeftRight },
   { to: "/pendencias", label: "Pendências", icon: AlertTriangle },
   { to: "/balancete", label: "Balancete", icon: FileSpreadsheet },
+  { to: "/ajustes", label: "Ajustes", icon: SlidersHorizontal },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
+
 
 export function AppLayout({
   titulo,

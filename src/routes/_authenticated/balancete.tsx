@@ -27,8 +27,10 @@ import {
   safraDe,
   safraLabel,
   type AggRow,
+  type Ajuste,
   type ColKey,
 } from "@/lib/balancete";
+
 import { exportarBalancete } from "@/lib/excel";
 import { Download, AlertTriangle } from "lucide-react";
 
@@ -158,10 +160,29 @@ function Balancete() {
 
   const vigenciaTrib = rateioTribQ.data?.[0]?.vigencia as string | undefined;
 
-  const rel = useMemo(
-    () => montarRelatorio(agg.data ?? [], safras, {}, rateioAdm, rateioTrib),
-    [agg.data, safras.join(), rateioAdm, rateioTrib],
+  /** Ajustes gerenciais manuais do período selecionado. */
+  const ajustesQ = useQuery({
+    queryKey: ["ajustes", safraAtual],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ajustes")
+        .select("*")
+        .in("safra_ano", [safraAtual - 1, safraAtual]);
+      if (error) throw error;
+      return (data ?? []) as unknown as Ajuste[];
+    },
+  });
+
+  const ajustes = useMemo(
+    () => (ajustesQ.data ?? []).filter((a) => mesesSel.includes(a.mes)),
+    [ajustesQ.data, mesesSel],
   );
+
+  const rel = useMemo(
+    () => montarRelatorio(agg.data ?? [], safras, {}, rateioAdm, rateioTrib, ajustes),
+    [agg.data, safras.join(), rateioAdm, rateioTrib, ajustes],
+  );
+
 
   const detalheQ = useQuery({
     queryKey: ["detalhe", safraAtual, mesesSel.join(","), detalhe],
@@ -183,6 +204,18 @@ function Balancete() {
       return partes.flat().sort((a, b) => String(a.data).localeCompare(String(b.data)));
     },
   });
+
+  const totalBaseDetalhe = (detalheQ.data ?? []).reduce((a, r) => a + Number(r.vlcusto), 0);
+  const ajustesDetalhe = ajustes.filter(
+    (a) =>
+      !!detalhe &&
+      a.safra_ano === detalhe.safra &&
+      a.linha_negocio === detalhe.linha &&
+      a.categoria === detalhe.categoria,
+  );
+  const totalAjusteDetalhe = ajustesDetalhe.reduce((a, r) => a + Number(r.valor), 0);
+
+
 
   return (
     <AppLayout
@@ -413,7 +446,8 @@ function Balancete() {
               {detalhe ? safraLabel(detalhe.safra) : ""}
             </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[26rem] overflow-auto rounded-md border border-border">
+          <p className="text-xs font-medium">Lançamentos da base</p>
+          <div className="max-h-[20rem] overflow-auto rounded-md border border-border">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-muted">
                 <tr>
@@ -443,7 +477,53 @@ function Balancete() {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-muted-foreground">Exibindo até 500 lançamentos.</p>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>Exibindo até 500 lançamentos.</span>
+            <span className="num">
+              Subtotal da base: {formatBRL(totalBaseDetalhe)}
+            </span>
+          </div>
+
+          <p className="mt-2 text-xs font-medium">Ajustes gerenciais manuais</p>
+          <div className="max-h-40 overflow-auto rounded-md border border-border">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-muted">
+                <tr>
+                  <th className="px-2 py-2 text-left font-medium">Período</th>
+                  <th className="px-2 py-2 text-left font-medium">Motivo</th>
+                  <th className="px-2 py-2 text-left font-medium">Usuário</th>
+                  <th className="px-2 py-2 text-right font-medium">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ajustesDetalhe.map((a) => (
+                  <tr key={a.id} className="border-t border-border">
+                    <td className="px-2 py-1 whitespace-nowrap">{MESES[a.mes - 1]}</td>
+                    <td className="px-2 py-1">{a.descricao}</td>
+                    <td className="px-2 py-1">{a.user_email ?? "—"}</td>
+                    <td
+                      className={`num px-2 py-1 text-right ${Number(a.valor) < 0 ? "text-destructive" : ""}`}
+                    >
+                      {Number(a.valor) < 0 ? "−" : "+"}
+                      {formatBRL(Math.abs(Number(a.valor)))}
+                    </td>
+                  </tr>
+                ))}
+                {!ajustesDetalhe.length && (
+                  <tr>
+                    <td colSpan={4} className="px-2 py-3 text-center text-muted-foreground">
+                      Nenhum ajuste manual neste cruzamento.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p className="num text-right text-xs font-medium">
+            Base {formatBRL(totalBaseDetalhe)} + ajustes {formatBRL(totalAjusteDetalhe)} ={" "}
+            {formatBRL(totalBaseDetalhe + totalAjusteDetalhe)}
+          </p>
+
         </DialogContent>
       </Dialog>
     </AppLayout>
