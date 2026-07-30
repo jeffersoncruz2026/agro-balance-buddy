@@ -278,7 +278,7 @@ export function montarRelatorio(
   const perSafra = (fn: (safra: number) => number) =>
     Object.fromEntries(safras.map((x) => [x, fn(x)])) as Record<number, number>;
 
-  const outrasOp = perSafra((x) => s("OUTRAS RECEITAS OPERACIONAIS", x) + aj("OUTRAS RECEITAS OPERACIONAIS", x));
+  const outrasOp = perSafra((x) => Math.abs(s("OUTRAS RECEITAS OPERACIONAIS", x)) + aj("OUTRAS RECEITAS OPERACIONAIS", x));
   const naoOperac = perSafra((x) => s("RECEITAS/DESPESAS NÃO OPERAC.", x) + aj("RECEITAS/DESPESAS NÃO OPERAC.", x));
   const totalOutras = perSafra((x) => outrasOp[x] + naoOperac[x]);
   const resultadoAntes = perSafra((x) => total[x].saldo + totalOutras[x]);
