@@ -74,6 +74,23 @@ export type Valores = Record<ColKey, number>;
 
 export const RATEADAS: Categoria[] = ["DESP. ADM", "DESP. TRIBUT", "DESP. VENDAS"];
 
+/**
+ * Colunas cujo valor apurado preserva o sinal real (não é convertido para
+ * módulo/absoluto). Contas 3.2.* (deduções da receita) e 3.4.02.* (despesas
+ * tributárias) devem aparecer negativas quando o lançamento for negativo
+ * (ex.: estorno/crédito).
+ */
+export const PRESERVA_SINAL: ColKey[] = [
+  "hedge",
+  "devolucao",
+  "icms",
+  "pis",
+  "cofins",
+  "inssRural",
+  "outrosAbat",
+  "despTrib",
+];
+
 /** Centro de custo cujas despesas administrativas vão 100% para OUTROS. */
 export const CCUSTO_ADM_OUTROS = "01.14.0003";
 /** Conta + tipo de movimento que também vão 100% para OUTROS. */
@@ -231,7 +248,8 @@ export function montarRelatorio(
         }
         // Ajustes gerenciais manuais somam (+/-) ao valor apurado da base.
         v[col.key] = Math.abs(bruto) + somaAjuste(safra, col.cat, linha);
-        if (col.key === "hedge") v[col.key] = bruto + somaAjuste(safra, col.cat, linha);
+        if (PRESERVA_SINAL.includes(col.key))
+          v[col.key] = bruto + somaAjuste(safra, col.cat, linha);
 
       }
 
