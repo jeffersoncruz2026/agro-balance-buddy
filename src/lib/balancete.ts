@@ -256,23 +256,25 @@ export function montarRelatorio(
   }
 
   const s = (cat: string, safra: number, sinal = 1) => sinal * somaCat(rows, safra, cat);
+  const aj = (cat: string, safra: number) => somaAjuste(safra, cat);
   const perSafra = (fn: (safra: number) => number) =>
     Object.fromEntries(safras.map((x) => [x, fn(x)])) as Record<number, number>;
 
-  const outrasOp = perSafra((x) => s("OUTRAS RECEITAS OPERACIONAIS", x));
-  const naoOperac = perSafra((x) => s("RECEITAS/DESPESAS NÃO OPERAC.", x));
+  const outrasOp = perSafra((x) => s("OUTRAS RECEITAS OPERACIONAIS", x) + aj("OUTRAS RECEITAS OPERACIONAIS", x));
+  const naoOperac = perSafra((x) => s("RECEITAS/DESPESAS NÃO OPERAC.", x) + aj("RECEITAS/DESPESAS NÃO OPERAC.", x));
   const totalOutras = perSafra((x) => outrasOp[x] + naoOperac[x]);
   const resultadoAntes = perSafra((x) => total[x].saldo + totalOutras[x]);
-  const despFin = perSafra((x) => -Math.abs(s("DESPESAS FINANCEIRAS", x)));
-  const recFin = perSafra((x) => Math.abs(s("RECEITAS FINANCEIRAS", x)));
+  const despFin = perSafra((x) => -Math.abs(s("DESPESAS FINANCEIRAS", x)) + aj("DESPESAS FINANCEIRAS", x));
+  const recFin = perSafra((x) => Math.abs(s("RECEITAS FINANCEIRAS", x)) + aj("RECEITAS FINANCEIRAS", x));
   const encargos = perSafra((x) => despFin[x] + recFin[x]);
   const totalFin = perSafra((x) => resultadoAntes[x] + encargos[x]);
-  const ir = perSafra((x) => -Math.abs(s("IMPOSTO DE RENDA", x)));
-  const csll = perSafra((x) => -Math.abs(s("CONTRIBUIÇÃO SOCIAL", x)));
+  const ir = perSafra((x) => -Math.abs(s("IMPOSTO DE RENDA", x)) + aj("IMPOSTO DE RENDA", x));
+  const csll = perSafra((x) => -Math.abs(s("CONTRIBUIÇÃO SOCIAL", x)) + aj("CONTRIBUIÇÃO SOCIAL", x));
   const totalImp = perSafra((x) => ir[x] + csll[x]);
   const lucro = perSafra((x) => totalFin[x] + totalImp[x]);
-  const depBov = perSafra((x) => s("DEPRECIAÇÃO DE BOVINOS", x));
-  const depMaq = perSafra((x) => s("DEPRECIAÇÃO MÁQ/EQUIP/BENS", x));
+  const depBov = perSafra((x) => s("DEPRECIAÇÃO DE BOVINOS", x) + aj("DEPRECIAÇÃO DE BOVINOS", x));
+  const depMaq = perSafra((x) => s("DEPRECIAÇÃO MÁQ/EQUIP/BENS", x) + aj("DEPRECIAÇÃO MÁQ/EQUIP/BENS", x));
+
 
   const blocos: Bloco[] = [
     { rotulo: "OUTRAS RECEITAS OPERACIONAIS", saldos: outrasOp },
