@@ -229,8 +229,10 @@ export function montarRelatorio(
         } else {
           bruto = soma(safra, col.cat, daLinha);
         }
-        v[col.key] = Math.abs(bruto);
-        if (col.key === "hedge") v[col.key] = bruto;
+        // Ajustes gerenciais manuais somam (+/-) ao valor apurado da base.
+        v[col.key] = Math.abs(bruto) + somaAjuste(safra, col.cat, linha);
+        if (col.key === "hedge") v[col.key] = bruto + somaAjuste(safra, col.cat, linha);
+
       }
 
       const deducoes =
