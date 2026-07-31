@@ -347,13 +347,10 @@ export type Database = {
           p_safra: number
         }
         Returns: {
+          complemento: string
           contacontabil: string
           data: string
-          documento: string
           id: number
-          nomecoligada: string
-          nomecusto: string
-          nomedepto: string
           produto: string
           vlcusto: number
         }[]
