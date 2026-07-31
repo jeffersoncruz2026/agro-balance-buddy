@@ -15,6 +15,9 @@ import {
   Settings,
   LogOut,
   Landmark,
+  Scale,
+  FileUp,
+  FileBarChart2,
 } from "lucide-react";
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }> };
@@ -25,6 +28,7 @@ const NAV_RELATORIOS = [
   { to: "/balancete-gerencial", label: "Balancete Gerencial", icon: FileStack },
   { to: "/resultado-financeiro", label: "Resultado Financeiro", icon: Landmark },
   { to: "/desp-adm", label: "Despesas Administrativas", icon: Building2 },
+  { to: "/bp-dre", label: "Balanço Patrimonial e DRE", icon: FileBarChart2 },
 ] as const;
 
 /**
@@ -36,6 +40,8 @@ const NAV_ADMIN = [
   { to: "/importar", label: "Importar base", icon: Upload },
   { to: "/depara", label: "De/Para", icon: ArrowLeftRight },
   { to: "/pendencias", label: "Pendências", icon: AlertTriangle },
+  { to: "/bp-dre-importar", label: "Importar Balancete Contábil", icon: FileUp },
+  { to: "/bp-dre-depara", label: "De/Para BP/DRE", icon: Scale },
   { to: "/ajustes", label: "Ajustes", icon: SlidersHorizontal },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
