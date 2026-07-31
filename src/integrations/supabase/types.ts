@@ -416,11 +416,10 @@ export type Database = {
       resultado_financeiro_detalhe: {
         Args: { p_categoria: string; p_nomeconta: string; p_safra_ano: number }
         Returns: {
+          complemento: string
           contacontabil: string
           data: string
-          documento: string
           id: number
-          nomedepto: string
           produto: string
           vlcusto: number
         }[]
