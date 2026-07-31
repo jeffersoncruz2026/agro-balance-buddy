@@ -355,6 +355,35 @@ export type Database = {
           vlcusto: number
         }[]
       }
+      desp_adm_lancamentos: {
+        Args: {
+          p_ano: number
+          p_mes: number
+          p_nomecoligada?: string
+          p_nomecusto?: string
+          p_nomedepto?: string
+        }
+        Returns: {
+          complemento: string
+          contacontabil: string
+          data: string
+          id: number
+          produto: string
+          vlcusto: number
+        }[]
+      }
+      desp_adm_serie: {
+        Args: { p_ano_ref: number; p_meses?: number; p_mes_ref: number }
+        Returns: {
+          ano: number
+          categoria: string
+          mes: number
+          nomecoligada: string
+          nomecusto: string
+          nomedepto: string
+          valor: number
+        }[]
+      }
       evolucao_saldo: {
         Args: never
         Returns: {

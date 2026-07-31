@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   FileStack,
+  Building2,
   SlidersHorizontal,
   Settings,
   LogOut,
@@ -24,6 +25,7 @@ const NAV = [
   { to: "/balancete", label: "Balancete", icon: FileSpreadsheet },
   { to: "/balancete-gerencial", label: "Balancete Gerencial", icon: FileStack },
   { to: "/resultado-financeiro", label: "Resultado Financeiro", icon: Landmark },
+  { to: "/desp-adm", label: "Despesas Administrativas", icon: Building2 },
   { to: "/ajustes", label: "Ajustes", icon: SlidersHorizontal },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
@@ -49,7 +51,7 @@ export function AppLayout({
 
   return (
     <div className="flex min-h-screen bg-background">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar p-4 text-sidebar-foreground md:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar p-4 text-sidebar-foreground md:flex print:hidden">
         <div className="mb-8 flex items-center gap-2 px-2">
           <Sprout className="size-5 text-sidebar-primary" />
           <span className="font-display text-sm leading-tight font-semibold">
@@ -92,9 +94,9 @@ export function AppLayout({
             <h1 className="font-display text-xl font-semibold">{titulo}</h1>
             {descricao && <p className="mt-1 text-sm text-muted-foreground">{descricao}</p>}
           </div>
-          <div className="flex flex-wrap items-center gap-2">{acoes}</div>
+          <div className="flex flex-wrap items-center gap-2 print:hidden">{acoes}</div>
         </header>
-        <div className="flex gap-1 overflow-x-auto border-b border-border bg-card px-4 py-2 md:hidden">
+        <div className="flex gap-1 overflow-x-auto border-b border-border bg-card px-4 py-2 md:hidden print:hidden">
           {NAV.map(({ to, label }) => (
             <Link
               key={to}
