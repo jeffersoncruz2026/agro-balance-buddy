@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/resultado-financeiro")({
       {
         name: "description",
         content:
-          "Composição do resultado financeiro por natureza da conta, evolução mensal e comparativo entre safras.",
+          "Receitas e Despesas Financeiras analisadas separadamente, por natureza da conta, com os ajustes do Balancete reconciliados.",
       },
     ],
   }),
@@ -54,9 +54,75 @@ type Ajuste = {
   valor: number;
   descricao: string;
 };
+type Item = { categoria: string; nomeconta: string; valor: number };
+type Passo = {
+  nome: string;
+  valor: number;
+  categoria?: string;
+  nomeconta?: string;
+  especial?: boolean;
+  total?: boolean;
+  base: number;
+  delta: number;
+};
 
 const CAT_DESP = "DESPESAS FINANCEIRAS";
 const CAT_REC = "RECEITAS FINANCEIRAS";
+const TOP_N = 8;
+
+function agruparPorNatureza(rows: Linha[], categoria: string): Item[] {
+  const m = new Map<string, number>();
+  for (const r of rows) {
+    if (r.categoria !== categoria) continue;
+    m.set(r.nomeconta, (m.get(r.nomeconta) ?? 0) + Number(r.valor));
+  }
+  return [...m.entries()]
+    .map(([nomeconta, valor]) => ({ categoria, nomeconta, valor }))
+    .filter((i) => Math.abs(i.valor) >= 0.005)
+    .sort((a, b) => Math.abs(b.valor) - Math.abs(a.valor));
+}
+
+/** Monta as barras da cascata; a barra final usa o total já reconciliado com o Balancete. */
+function montarCascata(
+  itens: Item[],
+  ajusteValor: number,
+  totalBalancete: number,
+  rotuloTotal: string,
+): Passo[] {
+  const top = itens.slice(0, TOP_N);
+  const outrasValor = itens.slice(TOP_N).reduce((a, i) => a + i.valor, 0);
+  const passos: Omit<Passo, "base" | "delta">[] = [
+    ...top.map((i) => ({
+      nome: i.nomeconta,
+      valor: i.valor,
+      categoria: i.categoria,
+      nomeconta: i.nomeconta,
+    })),
+    ...(Math.abs(outrasValor) >= 0.005
+      ? [{ nome: "Outras contas", valor: outrasValor, especial: true }]
+      : []),
+    ...(Math.abs(ajusteValor) >= 0.005
+      ? [{ nome: "Ajustes do Balancete", valor: ajusteValor, especial: true }]
+      : []),
+  ];
+
+  let running = 0;
+  const cascata = passos.map((s) => {
+    const antes = running;
+    const depois = running + s.valor;
+    running = depois;
+    return { ...s, base: Math.min(antes, depois), delta: Math.abs(s.valor) };
+  });
+  cascata.push({
+    nome: rotuloTotal,
+    valor: totalBalancete,
+    especial: true,
+    total: true,
+    base: Math.min(0, totalBalancete),
+    delta: Math.abs(totalBalancete),
+  });
+  return cascata;
+}
 
 function ResultadoFinanceiro() {
   const [detalhe, setDetalhe] = useState<{ categoria: string; nomeconta: string } | null>(null);
@@ -149,9 +215,10 @@ function ResultadoFinanceiro() {
     [detalheQ.data, mesesSel],
   );
 
-  const somaCat = (rows: Linha[], ajustes: Ajuste[], cat: string) =>
-    rows.filter((r) => r.categoria === cat).reduce((a, r) => a + Number(r.valor), 0) +
-    ajustes.filter((a) => a.categoria === cat).reduce((a, r) => a + Number(r.valor), 0);
+  const rawSoma = (rows: Linha[], categoria: string) =>
+    rows.filter((r) => r.categoria === categoria).reduce((a, r) => a + Number(r.valor), 0);
+  const somaAjustes = (ajustes: Ajuste[], categoria: string) =>
+    ajustes.filter((a) => a.categoria === categoria).reduce((a, r) => a + Number(r.valor), 0);
 
   const analise = useMemo(() => {
     const rows = (rfQ.data ?? []).filter((r) => mesesSel.includes(r.mes));
@@ -163,77 +230,35 @@ function ResultadoFinanceiro() {
       (a) => a.safra_ano === safraAtual - 1 && mesesSel.includes(a.mes),
     );
 
-    const receitas = somaCat(rows, ajustesAtual, CAT_REC);
-    const despesas = somaCat(rows, ajustesAtual, CAT_DESP);
-    const liquido = receitas + despesas;
+    // Mesma fórmula de sinal usada no Balancete (DESPESAS FINANCEIRAS e
+    // RECEITAS FINANCEIRAS), para o total desta tela bater com o Balancete.
+    const ajusteDesp = somaAjustes(ajustesAtual, CAT_DESP);
+    const ajusteRec = somaAjustes(ajustesAtual, CAT_REC);
+    const despesas = -Math.abs(rawSoma(rows, CAT_DESP)) + ajusteDesp;
+    const receitas = Math.abs(rawSoma(rows, CAT_REC)) + ajusteRec;
+    const liquido = despesas + receitas;
 
-    const receitasAnt = somaCat(rowsAnt, ajustesAnt, CAT_REC);
-    const despesasAnt = somaCat(rowsAnt, ajustesAnt, CAT_DESP);
-    const liquidoAnt = receitasAnt + despesasAnt;
+    const ajusteDespAnt = somaAjustes(ajustesAnt, CAT_DESP);
+    const ajusteRecAnt = somaAjustes(ajustesAnt, CAT_REC);
+    const despesasAnt = -Math.abs(rawSoma(rowsAnt, CAT_DESP)) + ajusteDespAnt;
+    const receitasAnt = Math.abs(rawSoma(rowsAnt, CAT_REC)) + ajusteRecAnt;
+    const liquidoAnt = despesasAnt + receitasAnt;
     const variacao =
       liquidoAnt !== 0 ? ((liquido - liquidoAnt) / Math.abs(liquidoAnt)) * 100 : null;
 
-    // Abertura por natureza (nomeconta), somando os meses selecionados.
-    const porNatureza = new Map<string, { categoria: string; nomeconta: string; valor: number }>();
-    for (const r of rows) {
-      const k = `${r.categoria}|${r.nomeconta}`;
-      const at = porNatureza.get(k);
-      if (at) at.valor += Number(r.valor);
-      else
-        porNatureza.set(k, {
-          categoria: r.categoria,
-          nomeconta: r.nomeconta,
-          valor: Number(r.valor),
-        });
-    }
-    const itens = [...porNatureza.values()]
-      .filter((i) => Math.abs(i.valor) >= 0.005)
-      .sort((a, b) => Math.abs(b.valor) - Math.abs(a.valor));
+    // Abertura por natureza (nomeconta), receitas e despesas separadas.
+    const itensDesp = agruparPorNatureza(rows, CAT_DESP);
+    const itensRec = agruparPorNatureza(rows, CAT_REC);
+    const massaDesp = itensDesp.reduce((a, i) => a + Math.abs(i.valor), 0);
+    const massaRec = itensRec.reduce((a, i) => a + Math.abs(i.valor), 0);
 
-    const massaTotal = itens.reduce((a, i) => a + Math.abs(i.valor), 0);
-
-    const TOP_N = 8;
-    const top = itens.slice(0, TOP_N);
-    const outrasValor = itens.slice(TOP_N).reduce((a, i) => a + i.valor, 0);
-    const ajusteValor = ajustesAtual.reduce((a, r) => a + Number(r.valor), 0);
-
-    type Step = {
-      nome: string;
-      valor: number;
-      categoria?: string;
-      nomeconta?: string;
-      especial?: boolean;
-    };
-    const steps: Step[] = [
-      ...top.map((i) => ({
-        nome: i.nomeconta,
-        valor: i.valor,
-        categoria: i.categoria,
-        nomeconta: i.nomeconta,
-      })),
-      ...(Math.abs(outrasValor) >= 0.005
-        ? [{ nome: "Outras contas", valor: outrasValor, especial: true }]
-        : []),
-      ...(Math.abs(ajusteValor) >= 0.005
-        ? [{ nome: "Ajustes gerenciais", valor: ajusteValor, especial: true }]
-        : []),
-    ];
-
-    let running = 0;
-    const waterfall = steps.map((s) => {
-      const antes = running;
-      const depois = running + s.valor;
-      running = depois;
-      return { ...s, base: Math.min(antes, depois), delta: Math.abs(s.valor) };
-    });
-    waterfall.push({
-      nome: "Resultado Financeiro Líquido",
-      valor: running,
-      especial: true,
-      total: true,
-      base: Math.min(0, running),
-      delta: Math.abs(running),
-    } as (typeof waterfall)[number] & { total: boolean });
+    const cascataDesp = montarCascata(
+      itensDesp,
+      ajusteDesp,
+      despesas,
+      "Total Despesas Financeiras",
+    );
+    const cascataRec = montarCascata(itensRec, ajusteRec, receitas, "Total Receitas Financeiras");
 
     // Evolução mensal, restrita aos meses selecionados (ordem da safra).
     const mensal = mesesOrdem
@@ -255,11 +280,23 @@ function ResultadoFinanceiro() {
         };
       });
 
-    return { receitas, despesas, liquido, variacao, itens, massaTotal, waterfall, mensal };
+    return {
+      receitas,
+      despesas,
+      liquido,
+      variacao,
+      itensDesp,
+      itensRec,
+      massaDesp,
+      massaRec,
+      cascataDesp,
+      cascataRec,
+      mensal,
+    };
   }, [rfQ.data, rfAntQ.data, ajustesQ.data, safraAtual, mesesOrdem, mesesSel, inicioSafra]);
 
   const carregando = rfQ.isLoading || rfAntQ.isLoading;
-  const semDados = !carregando && !erro && analise.itens.length === 0;
+  const semDados = !carregando && !erro && !analise.itensDesp.length && !analise.itensRec.length;
 
   const abrirDetalhe = (s: { especial?: boolean; categoria?: string; nomeconta?: string }) => {
     if (s.especial || !s.categoria || !s.nomeconta) return;
@@ -269,7 +306,7 @@ function ResultadoFinanceiro() {
   return (
     <AppLayout
       titulo="Abertura Resultado Financeiro"
-      descricao={`O que está compondo o resultado financeiro — ${periodoLabel} · safra ${safraLabel(safraAtual)} vs ${safraLabel(safraAtual - 1)}`}
+      descricao={`Receitas e Despesas Financeiras analisadas separadamente — ${periodoLabel} · safra ${safraLabel(safraAtual)} vs ${safraLabel(safraAtual - 1)}`}
     >
       {erro && (
         <div className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
@@ -393,6 +430,9 @@ function ResultadoFinanceiro() {
             >
               {formatBRL(analise.liquido)}
             </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Bate com ENCARGOS FINANCEIROS LÍQUIDOS do Balancete.
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -419,196 +459,75 @@ function ResultadoFinanceiro() {
         </Card>
       </div>
 
+      <SecaoFinanceira
+        titulo="Despesas Financeiras"
+        subtitulo="Cada natureza (Juros, IOF, Tarifas, Variação Cambial...) até o Total Despesas Financeiras — inclui os ajustes gerenciais lançados no Balancete, então o total bate com a linha DESPESAS FINANCEIRAS de lá. Clique numa barra ou linha para ver os lançamentos."
+        cascata={analise.cascataDesp}
+        itens={analise.itensDesp}
+        massaTotal={analise.massaDesp}
+        semDados={semDados}
+        onBarClick={abrirDetalhe}
+        onRowClick={(i) => setDetalhe({ categoria: i.categoria, nomeconta: i.nomeconta })}
+      />
+
+      <SecaoFinanceira
+        titulo="Receitas Financeiras"
+        subtitulo="Cada natureza (Rendimentos, Descontos obtidos, Variação Cambial ativa...) até o Total Receitas Financeiras — inclui os ajustes gerenciais lançados no Balancete, então o total bate com a linha RECEITAS FINANCEIRAS de lá. Clique numa barra ou linha para ver os lançamentos."
+        cascata={analise.cascataRec}
+        itens={analise.itensRec}
+        massaTotal={analise.massaRec}
+        semDados={semDados}
+        onBarClick={abrirDetalhe}
+        onRowClick={(i) => setDetalhe({ categoria: i.categoria, nomeconta: i.nomeconta })}
+      />
+
       <Card className="mt-6">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">
-            Composição do resultado, por natureza da conta
-          </CardTitle>
+          <CardTitle className="text-base">Evolução mensal</CardTitle>
           <p className="text-xs text-muted-foreground">
-            Receitas e despesas financeiras do período selecionado, uma barra por conta, até o
-            Resultado Financeiro Líquido. Clique numa barra para ver os lançamentos.
+            Receitas, Despesas e Resultado Líquido lado a lado, mês a mês.
           </p>
         </CardHeader>
-        <CardContent className="h-96">
+        <CardContent className="h-72">
           {semDados ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum lançamento financeiro neste período.
-            </p>
+            <p className="text-sm text-muted-foreground">Sem dados para exibir.</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={analise.waterfall}
-                margin={{ top: 16, right: 16, left: 0, bottom: 70 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis
-                  dataKey="nome"
-                  tick={{ fontSize: 10 }}
-                  angle={-35}
-                  textAnchor="end"
-                  interval={0}
-                  height={90}
-                />
+              <LineChart data={analise.mensal}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
                 <YAxis
                   tick={{ fontSize: 11 }}
                   tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
                 />
-                <Tooltip
-                  cursor={{ fill: "var(--muted)" }}
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    const p = payload[0].payload as { nome: string; valor: number };
-                    return (
-                      <div className="rounded-md border border-border bg-card px-3 py-2 text-xs shadow-md">
-                        <p className="font-medium">{p.nome}</p>
-                        <p className="num mt-1">{formatBRL(p.valor)}</p>
-                      </div>
-                    );
-                  }}
+                <Tooltip formatter={(v: number) => formatBRL(Number(v))} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Line
+                  type="monotone"
+                  dataKey="Receitas"
+                  stroke="var(--primary)"
+                  dot={false}
+                  strokeWidth={2}
                 />
-                <Bar dataKey="base" stackId="wf" fill="transparent" isAnimationActive={false} />
-                <Bar
-                  dataKey="delta"
-                  stackId="wf"
-                  radius={[3, 3, 0, 0]}
-                  isAnimationActive={false}
-                  onClick={(d: unknown) =>
-                    abrirDetalhe(
-                      (
-                        d as {
-                          payload: { especial?: boolean; categoria?: string; nomeconta?: string };
-                        }
-                      ).payload,
-                    )
-                  }
-                >
-                  {analise.waterfall.map((s, i) => (
-                    <Cell
-                      key={i}
-                      fill={
-                        (s as { total?: boolean }).total
-                          ? "var(--chart-3)"
-                          : s.valor >= 0
-                            ? "var(--primary)"
-                            : "var(--destructive)"
-                      }
-                      cursor={s.especial ? "default" : "pointer"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
+                <Line
+                  type="monotone"
+                  dataKey="Despesas"
+                  stroke="var(--destructive)"
+                  dot={false}
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Líquido"
+                  stroke="var(--chart-3)"
+                  dot={false}
+                  strokeWidth={2}
+                />
+              </LineChart>
             </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Evolução mensal</CardTitle>
-          </CardHeader>
-          <CardContent className="h-72">
-            {semDados ? (
-              <p className="text-sm text-muted-foreground">Sem dados para exibir.</p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={analise.mensal}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="periodo" tick={{ fontSize: 11 }} />
-                  <YAxis
-                    tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
-                  />
-                  <Tooltip formatter={(v: number) => formatBRL(Number(v))} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Line
-                    type="monotone"
-                    dataKey="Receitas"
-                    stroke="var(--primary)"
-                    dot={false}
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Despesas"
-                    stroke="var(--destructive)"
-                    dot={false}
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="Líquido"
-                    stroke="var(--chart-3)"
-                    dot={false}
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Maiores contribuintes (natureza)</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Ordenado pelo peso no total movimentado em Receitas/Despesas Financeiras.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="max-h-72 overflow-auto">
-              <table className="w-full text-xs">
-                <thead className="sticky top-0 bg-card text-muted-foreground">
-                  <tr className="border-b border-border">
-                    <th className="px-2 py-2 text-left font-medium">Natureza</th>
-                    <th className="px-2 py-2 text-right font-medium">Valor</th>
-                    <th className="px-2 py-2 text-right font-medium">%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {analise.itens.map((i) => {
-                    const pct = analise.massaTotal
-                      ? (Math.abs(i.valor) / analise.massaTotal) * 100
-                      : 0;
-                    return (
-                      <tr
-                        key={`${i.categoria}|${i.nomeconta}`}
-                        className="cursor-pointer border-b border-border/60 hover:bg-muted/50"
-                        onClick={() =>
-                          setDetalhe({ categoria: i.categoria, nomeconta: i.nomeconta })
-                        }
-                      >
-                        <td className="relative px-2 py-1.5">
-                          <div
-                            className={`absolute inset-y-0 left-0 ${i.valor >= 0 ? "bg-primary/10" : "bg-destructive/10"}`}
-                            style={{ width: `${Math.min(pct, 100)}%` }}
-                          />
-                          <span className="relative">{i.nomeconta}</span>
-                        </td>
-                        <td
-                          className={`num relative px-2 py-1.5 text-right ${i.valor < 0 ? "text-destructive" : ""}`}
-                        >
-                          {formatBRL(i.valor)}
-                        </td>
-                        <td className="num relative px-2 py-1.5 text-right text-muted-foreground">
-                          {pct.toFixed(1)}%
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {!analise.itens.length && (
-                    <tr>
-                      <td colSpan={3} className="px-2 py-3 text-center text-muted-foreground">
-                        Nenhum lançamento financeiro neste período.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       <Dialog open={!!detalhe} onOpenChange={(o) => !o && setDetalhe(null)}>
         <DialogContent className="max-w-4xl">
@@ -658,5 +577,154 @@ function ResultadoFinanceiro() {
         </DialogContent>
       </Dialog>
     </AppLayout>
+  );
+}
+
+/** Cascata + ranking de uma categoria (Receitas ou Despesas Financeiras). */
+function SecaoFinanceira({
+  titulo,
+  subtitulo,
+  cascata,
+  itens,
+  massaTotal,
+  semDados,
+  onBarClick,
+  onRowClick,
+}: {
+  titulo: string;
+  subtitulo: ReactNode;
+  cascata: Passo[];
+  itens: Item[];
+  massaTotal: number;
+  semDados: boolean;
+  onBarClick: (s: { especial?: boolean; categoria?: string; nomeconta?: string }) => void;
+  onRowClick: (i: Item) => void;
+}) {
+  return (
+    <Card className="mt-6">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">{titulo}</CardTitle>
+        <p className="text-xs text-muted-foreground">{subtitulo}</p>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="h-80 lg:col-span-2">
+            {semDados ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhum lançamento nesta categoria no período.
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={cascata} margin={{ top: 16, right: 8, left: 0, bottom: 70 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis
+                    dataKey="nome"
+                    tick={{ fontSize: 10 }}
+                    angle={-35}
+                    textAnchor="end"
+                    interval={0}
+                    height={90}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "var(--muted)" }}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const p = payload[0].payload as { nome: string; valor: number };
+                      return (
+                        <div className="rounded-md border border-border bg-card px-3 py-2 text-xs shadow-md">
+                          <p className="font-medium">{p.nome}</p>
+                          <p className="num mt-1">{formatBRL(p.valor)}</p>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Bar dataKey="base" stackId="wf" fill="transparent" isAnimationActive={false} />
+                  <Bar
+                    dataKey="delta"
+                    stackId="wf"
+                    radius={[3, 3, 0, 0]}
+                    isAnimationActive={false}
+                    onClick={(d: unknown) =>
+                      onBarClick(
+                        (
+                          d as {
+                            payload: { especial?: boolean; categoria?: string; nomeconta?: string };
+                          }
+                        ).payload,
+                      )
+                    }
+                  >
+                    {cascata.map((s, i) => (
+                      <Cell
+                        key={i}
+                        fill={
+                          s.total
+                            ? "var(--chart-3)"
+                            : s.valor >= 0
+                              ? "var(--primary)"
+                              : "var(--destructive)"
+                        }
+                        cursor={s.especial ? "default" : "pointer"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          <div className="max-h-80 overflow-auto">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-card text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="px-2 py-2 text-left font-medium">Natureza</th>
+                  <th className="px-2 py-2 text-right font-medium">Valor</th>
+                  <th className="px-2 py-2 text-right font-medium">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {itens.map((i) => {
+                  const pct = massaTotal ? (Math.abs(i.valor) / massaTotal) * 100 : 0;
+                  return (
+                    <tr
+                      key={`${i.categoria}|${i.nomeconta}`}
+                      className="cursor-pointer border-b border-border/60 hover:bg-muted/50"
+                      onClick={() => onRowClick(i)}
+                    >
+                      <td className="relative px-2 py-1.5">
+                        <div
+                          className={`absolute inset-y-0 left-0 ${i.valor >= 0 ? "bg-primary/10" : "bg-destructive/10"}`}
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                        <span className="relative">{i.nomeconta}</span>
+                      </td>
+                      <td
+                        className={`num relative px-2 py-1.5 text-right ${i.valor < 0 ? "text-destructive" : ""}`}
+                      >
+                        {formatBRL(i.valor)}
+                      </td>
+                      <td className="num relative px-2 py-1.5 text-right text-muted-foreground">
+                        {pct.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!itens.length && (
+                  <tr>
+                    <td colSpan={3} className="px-2 py-3 text-center text-muted-foreground">
+                      Nenhum lançamento nesta categoria no período.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
