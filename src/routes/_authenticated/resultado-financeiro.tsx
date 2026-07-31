@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatBRL, MESES, safraDe, safraLabel } from "@/lib/balancete";
+import { AlertTriangle } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -70,14 +72,25 @@ function ResultadoFinanceiro() {
   const inicioSafra = cfg.data?.safra_start_month ?? 4;
   const safraPadrao = safraDe(hoje.getFullYear(), hoje.getMonth() + 1, inicioSafra);
   const [safraAtual, setSafraAtual] = useState(safraPadrao);
+  const [meses, setMeses] = useState<number[]>([hoje.getMonth() + 1]);
 
+  /** Meses na ordem do ano-safra (Abril → Março, conforme configuração). */
   const mesesOrdem = useMemo(
     () => Array.from({ length: 12 }, (_, i) => ((inicioSafra - 1 + i) % 12) + 1),
     [inicioSafra],
   );
+  const mesesSel = useMemo(() => mesesOrdem.filter((m) => meses.includes(m)), [mesesOrdem, meses]);
+  const anoCivil = (m: number, safra: number) => (m >= inicioSafra ? safra : safra + 1);
+  const periodoLabel = mesesSel.length
+    ? mesesSel.map((m) => MESES[m - 1]).join(", ")
+    : "nenhum mês selecionado";
+
+  const toggleMes = (m: number) =>
+    setMeses((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
 
   const rfQ = useQuery({
     queryKey: ["resultado_financeiro", safraAtual],
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("resultado_financeiro", {
         p_safra_ano: safraAtual,
@@ -89,6 +102,7 @@ function ResultadoFinanceiro() {
 
   const rfAntQ = useQuery({
     queryKey: ["resultado_financeiro", safraAtual - 1],
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("resultado_financeiro", {
         p_safra_ano: safraAtual - 1,
@@ -100,6 +114,7 @@ function ResultadoFinanceiro() {
 
   const ajustesQ = useQuery({
     queryKey: ["ajustes-financeiro", safraAtual],
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ajustes")
@@ -125,15 +140,28 @@ function ResultadoFinanceiro() {
     },
   });
 
+  const erro = cfg.error || rfQ.error || rfAntQ.error || ajustesQ.error;
+
+  /** Lançamentos do drill-down restritos aos meses selecionados no período. */
+  const detalheFiltrado = useMemo(
+    () =>
+      (detalheQ.data ?? []).filter((r) => mesesSel.includes(Number(String(r.data).slice(5, 7)))),
+    [detalheQ.data, mesesSel],
+  );
+
   const somaCat = (rows: Linha[], ajustes: Ajuste[], cat: string) =>
     rows.filter((r) => r.categoria === cat).reduce((a, r) => a + Number(r.valor), 0) +
     ajustes.filter((a) => a.categoria === cat).reduce((a, r) => a + Number(r.valor), 0);
 
   const analise = useMemo(() => {
-    const rows = rfQ.data ?? [];
-    const rowsAnt = rfAntQ.data ?? [];
-    const ajustesAtual = (ajustesQ.data ?? []).filter((a) => a.safra_ano === safraAtual);
-    const ajustesAnt = (ajustesQ.data ?? []).filter((a) => a.safra_ano === safraAtual - 1);
+    const rows = (rfQ.data ?? []).filter((r) => mesesSel.includes(r.mes));
+    const rowsAnt = (rfAntQ.data ?? []).filter((r) => mesesSel.includes(r.mes));
+    const ajustesAtual = (ajustesQ.data ?? []).filter(
+      (a) => a.safra_ano === safraAtual && mesesSel.includes(a.mes),
+    );
+    const ajustesAnt = (ajustesQ.data ?? []).filter(
+      (a) => a.safra_ano === safraAtual - 1 && mesesSel.includes(a.mes),
+    );
 
     const receitas = somaCat(rows, ajustesAtual, CAT_REC);
     const despesas = somaCat(rows, ajustesAtual, CAT_DESP);
@@ -145,7 +173,7 @@ function ResultadoFinanceiro() {
     const variacao =
       liquidoAnt !== 0 ? ((liquido - liquidoAnt) / Math.abs(liquidoAnt)) * 100 : null;
 
-    // Abertura por natureza (nomeconta), somando os 12 meses da safra.
+    // Abertura por natureza (nomeconta), somando os meses selecionados.
     const porNatureza = new Map<string, { categoria: string; nomeconta: string; valor: number }>();
     for (const r of rows) {
       const k = `${r.categoria}|${r.nomeconta}`;
@@ -207,29 +235,31 @@ function ResultadoFinanceiro() {
       delta: Math.abs(running),
     } as (typeof waterfall)[number] & { total: boolean });
 
-    // Evolução mensal (ordem da safra: abril → março, por padrão).
-    const mensal = mesesOrdem.map((m) => {
-      const doMes = rows.filter((r) => r.mes === m);
-      const rec = doMes
-        .filter((r) => r.categoria === CAT_REC)
-        .reduce((a, r) => a + Number(r.valor), 0);
-      const desp = doMes
-        .filter((r) => r.categoria === CAT_DESP)
-        .reduce((a, r) => a + Number(r.valor), 0);
-      const ano = doMes[0]?.ano ?? (m >= inicioSafra ? safraAtual : safraAtual + 1);
-      return {
-        periodo: `${MESES[m - 1].slice(0, 3)}/${String(ano).slice(2)}`,
-        Receitas: rec,
-        Despesas: desp,
-        Líquido: rec + desp,
-      };
-    });
+    // Evolução mensal, restrita aos meses selecionados (ordem da safra).
+    const mensal = mesesOrdem
+      .filter((m) => mesesSel.includes(m))
+      .map((m) => {
+        const doMes = rows.filter((r) => r.mes === m);
+        const rec = doMes
+          .filter((r) => r.categoria === CAT_REC)
+          .reduce((a, r) => a + Number(r.valor), 0);
+        const desp = doMes
+          .filter((r) => r.categoria === CAT_DESP)
+          .reduce((a, r) => a + Number(r.valor), 0);
+        const ano = doMes[0]?.ano ?? anoCivil(m, safraAtual);
+        return {
+          periodo: `${MESES[m - 1].slice(0, 3)}/${String(ano).slice(2)}`,
+          Receitas: rec,
+          Despesas: desp,
+          Líquido: rec + desp,
+        };
+      });
 
     return { receitas, despesas, liquido, variacao, itens, massaTotal, waterfall, mensal };
-  }, [rfQ.data, rfAntQ.data, ajustesQ.data, safraAtual, mesesOrdem, inicioSafra]);
+  }, [rfQ.data, rfAntQ.data, ajustesQ.data, safraAtual, mesesOrdem, mesesSel, inicioSafra]);
 
   const carregando = rfQ.isLoading || rfAntQ.isLoading;
-  const semDados = !carregando && analise.itens.length === 0;
+  const semDados = !carregando && !erro && analise.itens.length === 0;
 
   const abrirDetalhe = (s: { especial?: boolean; categoria?: string; nomeconta?: string }) => {
     if (s.especial || !s.categoria || !s.nomeconta) return;
@@ -239,23 +269,96 @@ function ResultadoFinanceiro() {
   return (
     <AppLayout
       titulo="Abertura Resultado Financeiro"
-      descricao={`O que está compondo o resultado financeiro — safra ${safraLabel(safraAtual)} vs ${safraLabel(safraAtual - 1)}`}
-      acoes={
-        <Select value={String(safraAtual)} onValueChange={(v) => setSafraAtual(Number(v))}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: 9 }, (_, i) => safraPadrao + 2 - i).map((s) => (
-              <SelectItem key={s} value={String(s)}>
-                {safraLabel(s)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      }
+      descricao={`O que está compondo o resultado financeiro — ${periodoLabel} · safra ${safraLabel(safraAtual)} vs ${safraLabel(safraAtual - 1)}`}
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {erro && (
+        <div className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <div>
+            <p className="font-medium">
+              Não foi possível carregar os dados do resultado financeiro.
+            </p>
+            <p className="mt-0.5">
+              {(erro as { message?: string }).message ?? String(erro)} — se o erro mencionar uma
+              função inexistente, a migration deste recurso ainda não foi sincronizada no banco.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Período da análise</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 flex flex-wrap items-end gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground">Ano-safra</label>
+              <Select value={String(safraAtual)} onValueChange={(v) => setSafraAtual(Number(v))}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 9 }, (_, i) => safraPadrao + 2 - i).map((s) => (
+                    <SelectItem key={s} value={String(s)}>
+                      {safraLabel(s)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setMeses(mesesOrdem)}>
+              Safra inteira
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setMeses(mesesOrdem.slice(0, mesesOrdem.indexOf(hoje.getMonth() + 1) + 1))
+              }
+            >
+              Até o mês atual
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setMeses([])}>
+              Limpar
+            </Button>
+          </div>
+
+          <label className="text-xs text-muted-foreground">
+            Meses ({MESES[inicioSafra - 1]} a {MESES[(inicioSafra + 10) % 12]})
+          </label>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {mesesOrdem.map((m) => {
+              const ativo = meses.includes(m);
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => toggleMes(m)}
+                  className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
+                    ativo
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card hover:bg-muted"
+                  }`}
+                >
+                  {MESES[m - 1]}
+                  <span className="ml-1 opacity-70">
+                    /{String(anoCivil(m, safraAtual)).slice(2)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {!mesesSel.length && (
+            <p className="mt-3 text-xs text-destructive">
+              Selecione ao menos um mês para gerar a análise.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -322,14 +425,14 @@ function ResultadoFinanceiro() {
             Composição do resultado, por natureza da conta
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Receitas e despesas financeiras da safra, uma barra por conta, até o Resultado
-            Financeiro Líquido. Clique numa barra para ver os lançamentos.
+            Receitas e despesas financeiras do período selecionado, uma barra por conta, até o
+            Resultado Financeiro Líquido. Clique numa barra para ver os lançamentos.
           </p>
         </CardHeader>
         <CardContent className="h-96">
           {semDados ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum lançamento financeiro nesta safra.
+              Nenhum lançamento financeiro neste período.
             </p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -496,7 +599,7 @@ function ResultadoFinanceiro() {
                   {!analise.itens.length && (
                     <tr>
                       <td colSpan={3} className="px-2 py-3 text-center text-muted-foreground">
-                        Nenhum lançamento financeiro nesta safra.
+                        Nenhum lançamento financeiro neste período.
                       </td>
                     </tr>
                   )}
@@ -527,7 +630,7 @@ function ResultadoFinanceiro() {
                 </tr>
               </thead>
               <tbody>
-                {(detalheQ.data ?? []).map((r) => (
+                {detalheFiltrado.map((r) => (
                   <tr key={r.id} className="border-t border-border">
                     <td className="num px-2 py-1">
                       {new Date(r.data as string).toLocaleDateString("pt-BR")}
@@ -539,7 +642,7 @@ function ResultadoFinanceiro() {
                     <td className="num px-2 py-1 text-right">{formatBRL(Number(r.vlcusto))}</td>
                   </tr>
                 ))}
-                {!detalheQ.data?.length && (
+                {!detalheFiltrado.length && (
                   <tr>
                     <td colSpan={6} className="px-2 py-3 text-center text-muted-foreground">
                       Nenhum lançamento encontrado.
@@ -550,7 +653,7 @@ function ResultadoFinanceiro() {
             </table>
           </div>
           <p className="num text-right text-xs font-medium">
-            Total: {formatBRL((detalheQ.data ?? []).reduce((a, r) => a + Number(r.vlcusto), 0))}
+            Total: {formatBRL(detalheFiltrado.reduce((a, r) => a + Number(r.vlcusto), 0))}
           </p>
         </DialogContent>
       </Dialog>
