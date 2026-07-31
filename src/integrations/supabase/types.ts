@@ -56,6 +56,179 @@ export type Database = {
         }
         Relationships: []
       }
+      bp_dre_conta_map: {
+        Row: {
+          conta: string
+          created_at: string
+          demonstrativo: string
+          descricao: string | null
+          id: string
+          is_prefixo: boolean
+          linha: string
+          ordem_exibicao: number
+          secao: string | null
+          updated_at: string
+        }
+        Insert: {
+          conta: string
+          created_at?: string
+          demonstrativo: string
+          descricao?: string | null
+          id?: string
+          is_prefixo?: boolean
+          linha: string
+          ordem_exibicao?: number
+          secao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          conta?: string
+          created_at?: string
+          demonstrativo?: string
+          descricao?: string | null
+          id?: string
+          is_prefixo?: boolean
+          linha?: string
+          ordem_exibicao?: number
+          secao?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bp_dre_empresas: {
+        Row: {
+          aliases: string[]
+          created_at: string
+          id: string
+          nome: string
+          responsavel_documento: string | null
+          responsavel_nome: string | null
+          rodape_texto: string | null
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[]
+          created_at?: string
+          id?: string
+          nome: string
+          responsavel_documento?: string | null
+          responsavel_nome?: string | null
+          rodape_texto?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[]
+          created_at?: string
+          id?: string
+          nome?: string
+          responsavel_documento?: string | null
+          responsavel_nome?: string | null
+          rodape_texto?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bp_dre_importacoes: {
+        Row: {
+          ano: number
+          arquivo: string
+          created_at: string
+          empresa_id: string
+          id: string
+          mes: number
+          total_linhas: number
+          user_id: string
+        }
+        Insert: {
+          ano: number
+          arquivo: string
+          created_at?: string
+          empresa_id: string
+          id?: string
+          mes: number
+          total_linhas?: number
+          user_id?: string
+        }
+        Update: {
+          ano?: number
+          arquivo?: string
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          mes?: number
+          total_linhas?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bp_dre_importacoes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "bp_dre_empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bp_dre_lancamentos: {
+        Row: {
+          ano: number
+          anterior: number
+          conta: string
+          creditos: number
+          debitos: number
+          descricao: string | null
+          empresa_id: string
+          id: number
+          importacao_id: string
+          mes: number
+          reduzido: string | null
+          saldo_atual: number
+        }
+        Insert: {
+          ano: number
+          anterior?: number
+          conta: string
+          creditos?: number
+          debitos?: number
+          descricao?: string | null
+          empresa_id: string
+          id?: number
+          importacao_id: string
+          mes: number
+          reduzido?: string | null
+          saldo_atual?: number
+        }
+        Update: {
+          ano?: number
+          anterior?: number
+          conta?: string
+          creditos?: number
+          debitos?: number
+          descricao?: string | null
+          empresa_id?: string
+          id?: number
+          importacao_id?: string
+          mes?: number
+          reduzido?: string | null
+          saldo_atual?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bp_dre_lancamentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "bp_dre_empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bp_dre_lancamentos_importacao_id_fkey"
+            columns: ["importacao_id"]
+            isOneToOne: false
+            referencedRelation: "bp_dre_importacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes: {
         Row: {
           id: boolean
@@ -353,6 +526,15 @@ export type Database = {
           id: number
           produto: string
           vlcusto: number
+        }[]
+      }
+      bp_dre_pendencias: {
+        Args: { p_ano?: number; p_empresa_id?: string; p_mes?: number }
+        Returns: {
+          conta: string
+          descricao: string
+          qtd: number
+          valor: number
         }[]
       }
       desp_adm_lancamentos: {
