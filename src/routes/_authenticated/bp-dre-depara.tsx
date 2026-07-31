@@ -18,9 +18,13 @@ import {
 } from "@/components/ui/select";
 import { formatBRL } from "@/lib/balancete";
 import { exportarPlanilha, lerPlanilhaSimples } from "@/lib/excel";
+import { BP_SECOES, DRE_LINHAS_MAPEAVEIS } from "@/lib/bpdre";
 import { Trash2, Download, Upload } from "lucide-react";
 
 const DEMONSTRATIVOS = ["BP", "DRE"] as const;
+
+const rotuloSecao = (chave: string | null) =>
+  BP_SECOES.find((s) => s.chave === chave)?.rotulo ?? chave ?? "";
 
 export const Route = createFileRoute("/_authenticated/bp-dre-depara")({
   head: () => ({
@@ -170,7 +174,7 @@ function Mapeamento() {
             <label className="text-xs text-muted-foreground">Demonstrativo</label>
             <Select
               value={nova.demonstrativo}
-              onValueChange={(v) => setNova({ ...nova, demonstrativo: v })}
+              onValueChange={(v) => setNova({ ...nova, demonstrativo: v, secao: "", linha: "" })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -184,21 +188,51 @@ function Mapeamento() {
               </SelectContent>
             </Select>
           </div>
-          <div className="min-w-40 flex-1">
-            <label className="text-xs text-muted-foreground">Seção</label>
-            <Input
-              value={nova.secao}
-              onChange={(e) => setNova({ ...nova, secao: e.target.value })}
-              placeholder="Ativo Circulante"
-            />
-          </div>
+          {nova.demonstrativo === "BP" ? (
+            <div className="min-w-48">
+              <label className="text-xs text-muted-foreground">Seção</label>
+              <Select
+                value={nova.secao || undefined}
+                onValueChange={(v) => setNova({ ...nova, secao: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar seção" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BP_SECOES.map((s) => (
+                    <SelectItem key={s.chave} value={s.chave}>
+                      {s.rotulo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
           <div className="min-w-48 flex-1">
             <label className="text-xs text-muted-foreground">Linha</label>
-            <Input
-              value={nova.linha}
-              onChange={(e) => setNova({ ...nova, linha: e.target.value })}
-              placeholder="Caixa e equivalentes"
-            />
+            {nova.demonstrativo === "DRE" ? (
+              <Select
+                value={nova.linha || undefined}
+                onValueChange={(v) => setNova({ ...nova, linha: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar linha da DRE" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DRE_LINHAS_MAPEAVEIS.map((d) => (
+                    <SelectItem key={d.chave} value={d.rotulo}>
+                      {d.rotulo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                value={nova.linha}
+                onChange={(e) => setNova({ ...nova, linha: e.target.value })}
+                placeholder="Caixa e equivalentes"
+              />
+            )}
           </div>
           <div className="w-24">
             <label className="text-xs text-muted-foreground">Ordem</label>
@@ -221,6 +255,8 @@ function Mapeamento() {
           <Button
             onClick={() => {
               if (!nova.conta.trim()) return toast.error("Informe a conta.");
+              if (nova.demonstrativo === "BP" && !nova.secao)
+                return toast.error("Selecione a seção.");
               if (!nova.linha.trim()) return toast.error("Informe a linha.");
               salvar.mutate({ ...nova, secao: nova.secao || null });
               setNova({ ...nova, conta: "", secao: "", linha: "" });
@@ -301,7 +337,9 @@ function Mapeamento() {
                     />
                   </td>
                   <td className="px-3 py-1.5 text-xs text-muted-foreground">{r.demonstrativo}</td>
-                  <td className="px-3 py-1.5 text-xs text-muted-foreground">{r.secao}</td>
+                  <td className="px-3 py-1.5 text-xs text-muted-foreground">
+                    {rotuloSecao(r.secao)}
+                  </td>
                   <td className="px-3 py-1.5">{r.linha}</td>
                   <td className="num px-3 py-1.5 text-right">{r.ordem_exibicao}</td>
                   <td className="px-3 py-1.5 text-right">
@@ -332,7 +370,7 @@ function Pendencias() {
   const [ano, setAno] = useState<string>("");
   const [mes, setMes] = useState<string>("");
   const [novaLinha, setNovaLinha] = useState<
-    Record<string, { demonstrativo: string; linha: string }>
+    Record<string, { demonstrativo: string; secao: string; linha: string }>
   >({});
 
   const empresas = useQuery({
@@ -362,6 +400,7 @@ function Pendencias() {
       conta: string;
       descricao: string | null;
       demonstrativo: string;
+      secao: string | null;
       linha: string;
     }) => {
       const { error } = await supabase.from("bp_dre_conta_map").upsert(
@@ -369,6 +408,7 @@ function Pendencias() {
           conta: v.conta,
           descricao: v.descricao,
           demonstrativo: v.demonstrativo,
+          secao: v.secao,
           linha: v.linha,
           is_prefixo: false,
         },
@@ -448,13 +488,17 @@ function Pendencias() {
                   <th className="px-3 py-2 text-right font-medium">Lançamentos</th>
                   <th className="px-3 py-2 text-right font-medium">Valor</th>
                   <th className="px-3 py-2 text-left font-medium">Demonstrativo</th>
+                  <th className="px-3 py-2 text-left font-medium">Seção</th>
                   <th className="px-3 py-2 text-left font-medium">Linha</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
                 {(pendencias.data ?? []).map((p) => {
-                  const atual = novaLinha[p.conta] ?? { demonstrativo: "BP", linha: "" };
+                  const atual = novaLinha[p.conta] ?? { demonstrativo: "BP", secao: "", linha: "" };
+                  const podeMapear =
+                    atual.linha.trim() !== "" &&
+                    (atual.demonstrativo !== "BP" || atual.secao !== "");
                   return (
                     <tr key={p.conta} className="border-t border-border">
                       <td className="px-3 py-1.5 text-xs">{p.conta}</td>
@@ -467,7 +511,7 @@ function Pendencias() {
                           onValueChange={(v) =>
                             setNovaLinha({
                               ...novaLinha,
-                              [p.conta]: { ...atual, demonstrativo: v },
+                              [p.conta]: { demonstrativo: v, secao: "", linha: "" },
                             })
                           }
                         >
@@ -484,26 +528,70 @@ function Pendencias() {
                         </Select>
                       </td>
                       <td className="px-3 py-1.5">
-                        <div className="flex items-center gap-1">
-                          <Input
-                            className="h-8 w-48"
-                            placeholder="Linha do BP/DRE"
-                            value={atual.linha}
-                            onChange={(e) =>
-                              setNovaLinha({
-                                ...novaLinha,
-                                [p.conta]: { ...atual, linha: e.target.value },
-                              })
+                        {atual.demonstrativo === "BP" ? (
+                          <Select
+                            value={atual.secao || undefined}
+                            onValueChange={(v) =>
+                              setNovaLinha({ ...novaLinha, [p.conta]: { ...atual, secao: v } })
                             }
-                          />
+                          >
+                            <SelectTrigger className="h-8 w-44">
+                              <SelectValue placeholder="Seção" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {BP_SECOES.map((s) => (
+                                <SelectItem key={s.chave} value={s.chave}>
+                                  {s.rotulo}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <div className="flex items-center gap-1">
+                          {atual.demonstrativo === "DRE" ? (
+                            <Select
+                              value={atual.linha || undefined}
+                              onValueChange={(v) =>
+                                setNovaLinha({ ...novaLinha, [p.conta]: { ...atual, linha: v } })
+                              }
+                            >
+                              <SelectTrigger className="h-8 w-56">
+                                <SelectValue placeholder="Linha da DRE" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DRE_LINHAS_MAPEAVEIS.map((d) => (
+                                  <SelectItem key={d.chave} value={d.rotulo}>
+                                    {d.rotulo}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              className="h-8 w-48"
+                              placeholder="Linha do BP"
+                              value={atual.linha}
+                              onChange={(e) =>
+                                setNovaLinha({
+                                  ...novaLinha,
+                                  [p.conta]: { ...atual, linha: e.target.value },
+                                })
+                              }
+                            />
+                          )}
                           <Button
                             size="sm"
-                            disabled={!atual.linha.trim()}
+                            disabled={!podeMapear}
                             onClick={() =>
                               mapear.mutate({
                                 conta: p.conta,
                                 descricao: p.descricao,
                                 demonstrativo: atual.demonstrativo,
+                                secao: atual.demonstrativo === "BP" ? atual.secao : null,
                                 linha: atual.linha.trim(),
                               })
                             }
@@ -517,7 +605,7 @@ function Pendencias() {
                 })}
                 {!pendencias.data?.length && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-sm text-muted-foreground">
+                    <td colSpan={8} className="px-3 py-6 text-center text-sm text-muted-foreground">
                       Nenhuma pendência de conta.
                     </td>
                   </tr>

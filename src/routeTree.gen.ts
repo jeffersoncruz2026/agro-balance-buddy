@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAjustesRouteImport } from './routes/_authenticated/ajustes'
 import { Route as AuthenticatedBalanceteRouteImport } from './routes/_authenticated/balancete'
 import { Route as AuthenticatedBalanceteGerencialRouteImport } from './routes/_authenticated/balancete-gerencial'
+import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
 import { Route as AuthenticatedBpDreDeparaRouteImport } from './routes/_authenticated/bp-dre-depara'
 import { Route as AuthenticatedBpDreImportarRouteImport } from './routes/_authenticated/bp-dre-importar'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -55,6 +56,11 @@ const AuthenticatedBalanceteGerencialRoute =
     path: '/balancete-gerencial',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBpDreRoute = AuthenticatedBpDreRouteImport.update({
+  id: '/bp-dre',
+  path: '/bp-dre',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBpDreDeparaRoute =
   AuthenticatedBpDreDeparaRouteImport.update({
     id: '/bp-dre-depara',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/ajustes': typeof AuthenticatedAjustesRoute
   '/balancete': typeof AuthenticatedBalanceteRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
+  '/bp-dre': typeof AuthenticatedBpDreRoute
   '/bp-dre-depara': typeof AuthenticatedBpDreDeparaRoute
   '/bp-dre-importar': typeof AuthenticatedBpDreImportarRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/ajustes': typeof AuthenticatedAjustesRoute
   '/balancete': typeof AuthenticatedBalanceteRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
+  '/bp-dre': typeof AuthenticatedBpDreRoute
   '/bp-dre-depara': typeof AuthenticatedBpDreDeparaRoute
   '/bp-dre-importar': typeof AuthenticatedBpDreImportarRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/_authenticated/ajustes': typeof AuthenticatedAjustesRoute
   '/_authenticated/balancete': typeof AuthenticatedBalanceteRoute
   '/_authenticated/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
+  '/_authenticated/bp-dre': typeof AuthenticatedBpDreRoute
   '/_authenticated/bp-dre-depara': typeof AuthenticatedBpDreDeparaRoute
   '/_authenticated/bp-dre-importar': typeof AuthenticatedBpDreImportarRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/balancete'
     | '/balancete-gerencial'
+    | '/bp-dre'
     | '/bp-dre-depara'
     | '/bp-dre-importar'
     | '/configuracoes'
@@ -179,6 +189,7 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/balancete'
     | '/balancete-gerencial'
+    | '/bp-dre'
     | '/bp-dre-depara'
     | '/bp-dre-importar'
     | '/configuracoes'
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ajustes'
     | '/_authenticated/balancete'
     | '/_authenticated/balancete-gerencial'
+    | '/_authenticated/bp-dre'
     | '/_authenticated/bp-dre-depara'
     | '/_authenticated/bp-dre-importar'
     | '/_authenticated/configuracoes'
@@ -255,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/balancete-gerencial'
       fullPath: '/balancete-gerencial'
       preLoaderRoute: typeof AuthenticatedBalanceteGerencialRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bp-dre': {
+      id: '/_authenticated/bp-dre'
+      path: '/bp-dre'
+      fullPath: '/bp-dre'
+      preLoaderRoute: typeof AuthenticatedBpDreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bp-dre-depara': {
@@ -327,6 +346,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAjustesRoute: typeof AuthenticatedAjustesRoute
   AuthenticatedBalanceteRoute: typeof AuthenticatedBalanceteRoute
   AuthenticatedBalanceteGerencialRoute: typeof AuthenticatedBalanceteGerencialRoute
+  AuthenticatedBpDreRoute: typeof AuthenticatedBpDreRoute
   AuthenticatedBpDreDeparaRoute: typeof AuthenticatedBpDreDeparaRoute
   AuthenticatedBpDreImportarRoute: typeof AuthenticatedBpDreImportarRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -342,6 +362,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAjustesRoute: AuthenticatedAjustesRoute,
   AuthenticatedBalanceteRoute: AuthenticatedBalanceteRoute,
   AuthenticatedBalanceteGerencialRoute: AuthenticatedBalanceteGerencialRoute,
+  AuthenticatedBpDreRoute: AuthenticatedBpDreRoute,
   AuthenticatedBpDreDeparaRoute: AuthenticatedBpDreDeparaRoute,
   AuthenticatedBpDreImportarRoute: AuthenticatedBpDreImportarRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,

@@ -98,6 +98,8 @@ export type Database = {
       bp_dre_empresas: {
         Row: {
           aliases: string[]
+          contador_documento: string | null
+          contador_nome: string | null
           created_at: string
           id: string
           nome: string
@@ -108,6 +110,8 @@ export type Database = {
         }
         Insert: {
           aliases?: string[]
+          contador_documento?: string | null
+          contador_nome?: string | null
           created_at?: string
           id?: string
           nome: string
@@ -118,6 +122,8 @@ export type Database = {
         }
         Update: {
           aliases?: string[]
+          contador_documento?: string | null
+          contador_nome?: string | null
           created_at?: string
           id?: string
           nome?: string
@@ -528,6 +534,22 @@ export type Database = {
           vlcusto: number
         }[]
       }
+      bp_dre_lancamentos_detalhe: {
+        Args: {
+          p_ano?: number
+          p_demonstrativo?: string
+          p_empresa_id?: string
+          p_linha?: string
+          p_mes?: number
+          p_secao?: string
+        }
+        Returns: {
+          conta: string
+          descricao: string
+          id: number
+          saldo_atual: number
+        }[]
+      }
       bp_dre_pendencias: {
         Args: { p_ano?: number; p_empresa_id?: string; p_mes?: number }
         Returns: {
@@ -535,6 +557,24 @@ export type Database = {
           descricao: string
           qtd: number
           valor: number
+        }[]
+      }
+      bp_dre_periodos: {
+        Args: { p_empresa_id?: string }
+        Returns: {
+          ano: number
+          mes: number
+        }[]
+      }
+      bp_dre_relatorio: {
+        Args: { p_ano?: number; p_empresa_id?: string; p_mes?: number }
+        Returns: {
+          demonstrativo: string
+          linha: string
+          ordem_exibicao: number
+          secao: string
+          valor: number
+          valor_ano_anterior: number
         }[]
       }
       desp_adm_lancamentos: {
