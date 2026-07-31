@@ -12,6 +12,7 @@ import {
   SlidersHorizontal,
   Settings,
   LogOut,
+  Landmark,
 } from "lucide-react";
 
 const NAV = [
@@ -20,10 +21,10 @@ const NAV = [
   { to: "/depara", label: "De/Para", icon: ArrowLeftRight },
   { to: "/pendencias", label: "Pendências", icon: AlertTriangle },
   { to: "/balancete", label: "Balancete", icon: FileSpreadsheet },
+  { to: "/resultado-financeiro", label: "Resultado Financeiro", icon: Landmark },
   { to: "/ajustes", label: "Ajustes", icon: SlidersHorizontal },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
-
 
 export function AppLayout({
   titulo,
