@@ -373,7 +373,7 @@ export type Database = {
         }[]
       }
       desp_adm_serie: {
-        Args: { p_ano_ref: number; p_meses?: number; p_mes_ref: number }
+        Args: { p_ano_ref: number; p_mes_ref: number; p_meses?: number }
         Returns: {
           ano: number
           categoria: string
