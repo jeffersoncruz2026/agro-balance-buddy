@@ -369,7 +369,7 @@ function BalanceteGerencial() {
                   .map((safra, idx) => (
                     <tr
                       key={safra}
-                      className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border/60"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"}`}
+                      className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border/60"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"} ${idx !== 0 ? "text-destructive" : ""}`}
                     >
                       {idx === 0 && (
                         <td
@@ -380,7 +380,7 @@ function BalanceteGerencial() {
                         </td>
                       )}
                       <td
-                        className={`sticky left-40 z-10 w-20 min-w-20 px-2 py-1.5 whitespace-nowrap text-muted-foreground ${grupo.total ? "bg-muted" : "bg-card"}`}
+                        className={`sticky left-40 z-10 w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"} ${grupo.total ? "bg-muted" : "bg-card"}`}
                       >
                         {safraLabel(safra)}
                       </td>
@@ -427,7 +427,7 @@ function BalanceteGerencial() {
                     .map((s, idx) => (
                       <tr
                         key={s}
-                        className={`${idx === 0 ? "border-t border-border" : "border-b border-border"} ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "text-muted-foreground italic" : ""}`}
+                        className={`${idx === 0 ? "border-t border-border" : "border-b border-border"} ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "italic" : ""} ${idx !== 0 ? "text-destructive" : b.informativo ? "text-muted-foreground" : ""}`}
                       >
                         {idx === 0 && (
                           <td
@@ -437,7 +437,9 @@ function BalanceteGerencial() {
                             {b.rotulo}
                           </td>
                         )}
-                        <td className="w-20 min-w-20 px-2 py-1.5 whitespace-nowrap text-muted-foreground">
+                        <td
+                          className={`w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
+                        >
                           {safraLabel(s)}
                         </td>
                         <td className="num px-3 py-1.5 text-right">{formatBRL(b.saldos[s])}</td>
