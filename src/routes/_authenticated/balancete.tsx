@@ -403,10 +403,10 @@ function Balancete() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Resultado consolidado</CardTitle>
         </CardHeader>
-        <CardContent>
-          <table className="w-full text-sm">
+        <CardContent className="px-0">
+          <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-border text-xs text-muted-foreground">
+              <tr className="border-b border-border text-muted-foreground">
                 <th className="w-40 min-w-40 px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
                 <th className="w-20 min-w-20 px-2 py-2 text-left font-medium">ANO</th>
                 <th className="px-3 py-2 text-right font-medium">SALDO</th>
