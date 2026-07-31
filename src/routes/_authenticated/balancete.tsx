@@ -333,10 +333,10 @@ function Balancete() {
         <table className="w-full border-collapse text-xs">
           <thead>
             <tr className="bg-primary text-primary-foreground">
-              <th className="sticky left-0 z-10 bg-primary px-3 py-2 text-left font-semibold">
+              <th className="sticky left-0 z-10 w-40 min-w-40 bg-primary px-3 py-2 text-left font-semibold">
                 DESCRIÇÃO
               </th>
-              <th className="bg-primary px-2 py-2 text-left font-semibold">ANO</th>
+              <th className="w-20 min-w-20 bg-primary px-2 py-2 text-left font-semibold">ANO</th>
               {COLUNAS.map((c) => (
                 <th key={c.key} className="px-2 py-2 text-right font-semibold whitespace-pre-line">
                   {c.label}
@@ -365,12 +365,12 @@ function Balancete() {
                       {idx === 0 && (
                         <td
                           rowSpan={safras.length}
-                          className={`sticky left-0 z-10 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
+                          className={`sticky left-0 z-10 w-40 min-w-40 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
                         >
                           {grupo.rotulo}
                         </td>
                       )}
-                      <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">
+                      <td className="w-20 min-w-20 px-2 py-1.5 whitespace-nowrap text-muted-foreground">
                         {safraLabel(safra)}
                       </td>
                       {COLUNAS.map((c) => (
@@ -403,8 +403,8 @@ function Balancete() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-xs text-muted-foreground">
-                <th className="px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
-                <th className="px-3 py-2 text-left font-medium">ANO</th>
+                <th className="w-40 min-w-40 px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
+                <th className="w-20 min-w-20 px-2 py-2 text-left font-medium">ANO</th>
                 <th className="px-3 py-2 text-right font-medium">SALDO</th>
               </tr>
             </thead>
@@ -420,11 +420,11 @@ function Balancete() {
                         className={`${idx === 0 ? "border-t border-border" : "border-b border-border"} ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "text-muted-foreground italic" : ""}`}
                       >
                         {idx === 0 && (
-                          <td rowSpan={safras.length} className="px-3 py-1.5 align-middle">
+                          <td rowSpan={safras.length} className="w-40 min-w-40 px-3 py-1.5 align-middle">
                             {b.rotulo}
                           </td>
                         )}
-                        <td className="px-3 py-1.5 whitespace-nowrap text-muted-foreground">
+                        <td className="w-20 min-w-20 px-2 py-1.5 whitespace-nowrap text-muted-foreground">
                           {safraLabel(s)}
                         </td>
                         <td className="num px-3 py-1.5 text-right">{formatBRL(b.saldos[s])}</td>
