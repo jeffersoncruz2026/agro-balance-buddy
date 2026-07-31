@@ -279,7 +279,11 @@ export function montarRelatorio(
     Object.fromEntries(safras.map((x) => [x, fn(x)])) as Record<number, number>;
 
   const outrasOp = perSafra((x) => Math.abs(s("OUTRAS RECEITAS OPERACIONAIS", x)) + aj("OUTRAS RECEITAS OPERACIONAIS", x));
-  const naoOperac = perSafra((x) => s("RECEITAS/DESPESAS NÃO OPERAC.", x) + aj("RECEITAS/DESPESAS NÃO OPERAC.", x));
+  // Conta de resultado mista (receita ou despesa): o valor bruto vem com o
+  // sinal contábil da fonte invertido em relação ao sentido econômico —
+  // soma negativa é receita (exibe positivo), soma positiva é despesa
+  // (exibe negativo).
+  const naoOperac = perSafra((x) => -s("RECEITAS/DESPESAS NÃO OPERAC.", x) + aj("RECEITAS/DESPESAS NÃO OPERAC.", x));
   const totalOutras = perSafra((x) => outrasOp[x] + naoOperac[x]);
   const resultadoAntes = perSafra((x) => total[x].saldo + totalOutras[x]);
   const despFin = perSafra((x) => -Math.abs(s("DESPESAS FINANCEIRAS", x)) + aj("DESPESAS FINANCEIRAS", x));
