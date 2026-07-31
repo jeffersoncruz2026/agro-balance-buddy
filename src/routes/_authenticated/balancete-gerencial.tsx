@@ -145,8 +145,6 @@ function BalanceteGerencial() {
     return m;
   }, [rateioAdmQ.data]);
 
-  const vigenciaAdm = rateioAdmQ.data?.[0]?.vigencia as string | undefined;
-
   const rateioTribQ = useQuery({
     queryKey: ["rateio_trib_vigente", refMes, refAno],
     queryFn: async () => {
@@ -164,8 +162,6 @@ function BalanceteGerencial() {
     for (const r of rateioTribQ.data ?? []) m[r.linha_negocio] = Number(r.percentual);
     return m;
   }, [rateioTribQ.data]);
-
-  const vigenciaTrib = rateioTribQ.data?.[0]?.vigencia as string | undefined;
 
   /** Ajustes gerenciais manuais do período selecionado. */
   const ajustesQ = useQuery({
@@ -310,22 +306,6 @@ function BalanceteGerencial() {
             </p>
           )}
 
-          <p className="mt-4 text-xs text-muted-foreground">
-            DESP. ADM das contas 3.4.01.* seguem regra própria: centro de custo 01.14.0003 e a conta
-            3.4.01.10.0003 com CODTMV 1.2.13 vão 100% para OUTROS; o restante é rateado pelos
-            percentuais{" "}
-            {vigenciaAdm
-              ? `vigentes desde ${MESES[Number(vigenciaAdm.slice(5, 7)) - 1]}/${vigenciaAdm.slice(0, 4)}`
-              : "definidos em Configurações"}{" "}
-            ({LINHAS.map((l) => `${l}: ${(rateioAdm[l] ?? 0).toFixed(2)}%`).join(" · ")}).
-          </p>
-          {!!vigenciaTrib && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              DESP. TRIBUT usa os percentuais vigentes desde{" "}
-              {MESES[Number(vigenciaTrib.slice(5, 7)) - 1]}/{vigenciaTrib.slice(0, 4)} (
-              {LINHAS.map((l) => `${l}: ${(rateioTrib[l] ?? 0).toFixed(2)}%`).join(" · ")}).
-            </p>
-          )}
           {!!rel.naoMapeado[safraAtual] && (
             <div className="mt-3 flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertTriangle className="size-4" />
