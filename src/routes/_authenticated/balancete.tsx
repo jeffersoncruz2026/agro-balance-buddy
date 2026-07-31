@@ -336,7 +336,9 @@ function Balancete() {
               <th className="sticky left-0 z-10 w-40 min-w-40 bg-primary px-3 py-2 text-left font-semibold">
                 DESCRIÇÃO
               </th>
-              <th className="w-20 min-w-20 bg-primary px-2 py-2 text-left font-semibold">ANO</th>
+              <th className="sticky left-40 z-10 w-20 min-w-20 bg-primary px-2 py-2 text-left font-semibold">
+                ANO
+              </th>
               {COLUNAS.map((c) => (
                 <th key={c.key} className="px-2 py-2 text-right font-semibold whitespace-pre-line">
                   {c.label}
@@ -370,7 +372,9 @@ function Balancete() {
                           {grupo.rotulo}
                         </td>
                       )}
-                      <td className="w-20 min-w-20 px-2 py-1.5 whitespace-nowrap text-muted-foreground">
+                      <td
+                        className={`sticky left-40 z-10 w-20 min-w-20 px-2 py-1.5 whitespace-nowrap text-muted-foreground ${grupo.total ? "bg-muted" : "bg-card"}`}
+                      >
                         {safraLabel(safra)}
                       </td>
                       {COLUNAS.map((c) => (
