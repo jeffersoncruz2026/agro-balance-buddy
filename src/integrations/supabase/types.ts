@@ -403,28 +403,6 @@ export type Database = {
           vigencia: string
         }[]
       }
-      resultado_financeiro: {
-        Args: { p_safra_ano: number }
-        Returns: {
-          ano: number
-          categoria: string
-          mes: number
-          nomeconta: string
-          valor: number
-        }[]
-      }
-      resultado_financeiro_detalhe: {
-        Args: { p_categoria: string; p_nomeconta: string; p_safra_ano: number }
-        Returns: {
-          contacontabil: string
-          data: string
-          documento: string
-          id: number
-          nomedepto: string
-          produto: string
-          vlcusto: number
-        }[]
-      }
     }
     Enums: {
       [_ in never]: never
