@@ -77,7 +77,7 @@ function AuthPage() {
         <img
           src={logoGrupo.url}
           alt="Grupo Otávio Lage"
-          className="h-14 w-auto"
+          className="h-14 w-auto max-w-[16rem] object-contain"
         />
         <div>
           <h1 className="max-w-md font-display text-4xl leading-tight font-semibold">
