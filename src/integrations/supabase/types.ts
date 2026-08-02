@@ -580,6 +580,7 @@ export type Database = {
       desp_adm_lancamentos: {
         Args: {
           p_ano: number
+          p_contacontabil?: string
           p_mes: number
           p_nomecoligada?: string
           p_nomecusto?: string
@@ -599,6 +600,7 @@ export type Database = {
         Returns: {
           ano: number
           categoria: string
+          contacontabil: string
           mes: number
           nomecoligada: string
           nomecusto: string
