@@ -417,7 +417,7 @@ function BpColuna({
                       </button>
                     </td>
                     <td className="num py-1.5 text-right">
-                      <VariacaoPct atual={l.valor} anterior={l.valorAnoAnterior} />
+                      <VariacaoPct atual={l.valor} anterior={l.valorAnoAnterior} colorir={false} />
                     </td>
                     <td className="num py-1.5 text-right text-muted-foreground">
                       {formatBRL(l.valorAnoAnterior)}
@@ -428,7 +428,11 @@ function BpColuna({
                   <td className="py-1.5 pl-2">{s.subtotalRotulo}</td>
                   <td className="num py-1.5 text-right">{formatBRL(s.subtotal)}</td>
                   <td className="num py-1.5 text-right">
-                    <VariacaoPct atual={s.subtotal} anterior={s.subtotalAnoAnterior} />
+                    <VariacaoPct
+                      atual={s.subtotal}
+                      anterior={s.subtotalAnoAnterior}
+                      colorir={false}
+                    />
                   </td>
                   <td className="num py-1.5 text-right text-muted-foreground">
                     {formatBRL(s.subtotalAnoAnterior)}
@@ -440,7 +444,7 @@ function BpColuna({
               <td className="py-2 pl-2">{total}</td>
               <td className="num py-2 text-right">{formatBRL(totalValor)}</td>
               <td className="num py-2 text-right">
-                <VariacaoPct atual={totalValor} anterior={totalValorAnoAnterior} />
+                <VariacaoPct atual={totalValor} anterior={totalValorAnoAnterior} colorir={false} />
               </td>
               <td className="num py-2 text-right text-muted-foreground">
                 {formatBRL(totalValorAnoAnterior)}
@@ -453,10 +457,25 @@ function BpColuna({
   );
 }
 
-function VariacaoPct({ atual, anterior }: { atual: number; anterior: number }) {
+function VariacaoPct({
+  atual,
+  anterior,
+  colorir = true,
+}: {
+  atual: number;
+  anterior: number;
+  /** No BP, Ativo x Passivo têm direções "favoráveis" opostas para uma mesma alta — melhor não colorir. */
+  colorir?: boolean;
+}) {
   const pct = variacaoPercentual(atual, anterior);
   if (pct === null) return <span className="text-muted-foreground">—</span>;
-  const cor = pct > 0 ? "text-primary" : pct < 0 ? "text-destructive" : "text-muted-foreground";
+  const cor = !colorir
+    ? ""
+    : pct > 0
+      ? "text-primary"
+      : pct < 0
+        ? "text-destructive"
+        : "text-muted-foreground";
   return (
     <span className={cor}>
       {pct > 0 ? "+" : ""}
