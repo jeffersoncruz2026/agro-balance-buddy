@@ -49,6 +49,7 @@ type Linha = {
   nomecoligada: string;
   nomedepto: string;
   nomecusto: string;
+  contacontabil: string;
   valor: number;
 };
 type Item = { nome: string; valor: number };
@@ -79,7 +80,7 @@ function periodosAte(anoRef: number, mesRef: number, n: number) {
   }
   return out;
 }
-function agrupar(rows: Linha[], chave: "nomedepto" | "nomecusto"): Item[] {
+function agrupar(rows: Linha[], chave: "nomedepto" | "nomecusto" | "contacontabil"): Item[] {
   const m = new Map<string, number>();
   for (const r of rows) m.set(r[chave], (m.get(r[chave]) ?? 0) + Number(r.valor));
   return [...m.entries()]
@@ -94,7 +95,11 @@ function DespesasAdministrativas() {
   const [centros, setCentros] = useState<string[]>([]);
   const [empresas, setEmpresas] = useState<string[]>([]);
   const [limiteAlerta, setLimiteAlerta] = useState(10);
-  const [detalhe, setDetalhe] = useState<{ nomedepto?: string; nomecusto?: string } | null>(null);
+  const [detalhe, setDetalhe] = useState<{
+    nomedepto?: string;
+    nomecusto?: string;
+    contacontabil?: string;
+  } | null>(null);
 
   const toggle = (lista: string[], set: (v: string[]) => void, valor: string) =>
     set(lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor]);
@@ -122,6 +127,7 @@ function DespesasAdministrativas() {
         p_mes: refMes,
         p_nomedepto: detalhe?.nomedepto ?? undefined,
         p_nomecusto: detalhe?.nomecusto ?? undefined,
+        p_contacontabil: detalhe?.contacontabil ?? undefined,
       });
       if (error) throw error;
       return data ?? [];
@@ -231,6 +237,7 @@ function DespesasAdministrativas() {
     const rowsAtual = despRows.filter((r) => r.ano === refAno && r.mes === refMes);
     const topCentros = agrupar(rowsAtual, "nomedepto").slice(0, 5);
     const topRubricas = agrupar(rowsAtual, "nomecusto").slice(0, 5);
+    const topContas = agrupar(rowsAtual, "contacontabil").slice(0, 5);
 
     return {
       evolucao,
@@ -243,6 +250,7 @@ function DespesasAdministrativas() {
       cascata,
       topCentros,
       topRubricas,
+      topContas,
     };
   }, [serieQ.data, refAno, refMes, centros, empresas]);
 
@@ -545,12 +553,18 @@ function DespesasAdministrativas() {
         </CardContent>
       </Card>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <RankingCard
           titulo="Top 5 — Centro de custo"
           itens={analise.topCentros}
           total={analise.totalMesAtual}
           onClick={(nome) => setDetalhe({ nomedepto: nome })}
+        />
+        <RankingCard
+          titulo="Top 5 — Conta Contábil"
+          itens={analise.topContas}
+          total={analise.totalMesAtual}
+          onClick={(nome) => setDetalhe({ contacontabil: nome })}
         />
         <RankingCard
           titulo="Top 5 — Rubrica (NOMECUSTO)"
@@ -564,7 +578,8 @@ function DespesasAdministrativas() {
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-base">
-              DESP. ADM · {detalhe?.nomedepto ?? detalhe?.nomecusto} · {mesLabel(refAno, refMes)}
+              DESP. ADM · {detalhe?.nomedepto ?? detalhe?.nomecusto ?? detalhe?.contacontabil} ·{" "}
+              {mesLabel(refAno, refMes)}
             </DialogTitle>
           </DialogHeader>
           <div className="max-h-[24rem] overflow-auto rounded-md border border-border">
