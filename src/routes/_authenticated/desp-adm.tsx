@@ -553,13 +553,7 @@ function DespesasAdministrativas() {
         </CardContent>
       </Card>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <RankingCard
-          titulo="Top 5 — Centro de custo"
-          itens={analise.topCentros}
-          total={analise.totalMesAtual}
-          onClick={(nome) => setDetalhe({ nomedepto: nome })}
-        />
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <RankingCard
           titulo="Top 5 — Conta Contábil"
           itens={analise.topContas}
