@@ -27,7 +27,16 @@ import {
 } from "@/lib/balancete";
 
 import { exportarBalancete } from "@/lib/excel";
-import { Download, AlertTriangle } from "lucide-react";
+import { Download, FileDown, AlertTriangle } from "lucide-react";
+
+/** Imprime só esta página em A4 paisagem, sem afetar o print das demais telas. */
+function exportarPdfPaisagem() {
+  const style = document.createElement("style");
+  style.textContent = "@page { size: A4 landscape; margin: 10mm; }";
+  document.head.appendChild(style);
+  window.print();
+  window.addEventListener("afterprint", () => style.remove(), { once: true });
+}
 
 export const Route = createFileRoute("/_authenticated/balancete-gerencial")({
   head: () => ({
@@ -222,21 +231,26 @@ function BalanceteGerencial() {
       titulo="Balancete Gerencial"
       descricao={`Consolidado do grupo — ${periodoLabel} · safra ${safraLabel(safraAtual)} vs ${safraLabel(safraAtual - 1)} · deduções agrupadas em IMPOSTOS/DEV/ABAT`}
       acoes={
-        <Button
-          onClick={() =>
-            exportarBalancete(
-              rel,
-              `${periodoLabel} — safra ${safraLabel(safraAtual)} e ${safraLabel(safraAtual - 1)}`,
-              `Balancete_Gerencial_${safraAtual}-${safraAtual + 1}.xlsx`,
-            )
-          }
-          disabled={!agg.data?.length}
-        >
-          <Download className="size-4" /> Exportar Excel
-        </Button>
+        <>
+          <Button variant="outline" onClick={exportarPdfPaisagem} disabled={!agg.data?.length}>
+            <FileDown className="size-4" /> Exportar PDF
+          </Button>
+          <Button
+            onClick={() =>
+              exportarBalancete(
+                rel,
+                `${periodoLabel} — safra ${safraLabel(safraAtual)} e ${safraLabel(safraAtual - 1)}`,
+                `Balancete_Gerencial_${safraAtual}-${safraAtual + 1}.xlsx`,
+              )
+            }
+            disabled={!agg.data?.length}
+          >
+            <Download className="size-4" /> Exportar Excel
+          </Button>
+        </>
       }
     >
-      <Card className="mb-6">
+      <Card className="mb-6 print:hidden">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Período do balancete</CardTitle>
         </CardHeader>
