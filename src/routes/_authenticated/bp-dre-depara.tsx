@@ -18,8 +18,14 @@ import {
 } from "@/components/ui/select";
 import { formatBRL } from "@/lib/balancete";
 import { exportarPlanilha, lerPlanilhaSimples } from "@/lib/excel";
-import { BP_SECOES, DRE_LINHAS_MAPEAVEIS } from "@/lib/bpdre";
-import { Trash2, Download, Upload } from "lucide-react";
+import {
+  BP_SECOES,
+  DRE_LINHAS_MAPEAVEIS,
+  gerarModeloDeParaBPDRE,
+  parseDeParaBPDRE,
+  type DeParaBPDREErro,
+} from "@/lib/bpdre";
+import { Trash2, Download, Upload, FileDown } from "lucide-react";
 
 const DEMONSTRATIVOS = ["BP", "DRE"] as const;
 
@@ -68,6 +74,7 @@ function Mapeamento() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busca, setBusca] = useState("");
+  const [errosImportacao, setErrosImportacao] = useState<DeParaBPDREErro[]>([]);
   const [nova, setNova] = useState({
     conta: "",
     is_prefixo: true,
@@ -130,31 +137,24 @@ function Mapeamento() {
 
   async function importarArquivo(file: File) {
     const rows = lerPlanilhaSimples(await file.arrayBuffer());
-    const payload = rows
-      .map((r) => {
-        const conta = String(r["conta"] ?? r["CONTA"] ?? "").trim();
-        const demonstrativo = String(r["demonstrativo"] ?? r["DEMONSTRATIVO"] ?? "")
-          .trim()
-          .toUpperCase();
-        const linha = String(r["linha"] ?? r["LINHA"] ?? "").trim();
-        if (!conta || !linha || !DEMONSTRATIVOS.includes(demonstrativo as never)) return null;
-        return {
-          conta,
-          demonstrativo,
-          linha,
-          secao: String(r["secao"] ?? r["SEÇÃO"] ?? r["SECAO"] ?? "") || null,
-          is_prefixo: String(r["is_prefixo"] ?? r["PREFIXO"] ?? "").toLowerCase() === "true",
-          ordem_exibicao: Number(r["ordem_exibicao"] ?? r["ORDEM"] ?? 0) || 0,
-        };
-      })
-      .filter(Boolean);
-    if (!payload.length)
-      return toast.error("Nenhuma linha válida (colunas: conta, demonstrativo, linha).");
+    const { validas, erros } = parseDeParaBPDRE(rows);
+    setErrosImportacao(erros);
+    if (!validas.length) {
+      return toast.error(
+        erros.length
+          ? `Nenhuma linha válida — ${erros.length} linha(s) com erro. Veja os detalhes abaixo.`
+          : "Nenhuma linha válida (colunas esperadas: Conta, Demonstrativo, Seção, Linha).",
+      );
+    }
     const { error } = await supabase
       .from("bp_dre_conta_map")
-      .upsert(payload as never[], { onConflict: "conta,demonstrativo" });
+      .upsert(validas, { onConflict: "conta,demonstrativo" });
     if (error) return toast.error(error.message);
-    toast.success(`${payload.length} regras importadas.`);
+    if (erros.length) {
+      toast.warning(`${validas.length} regras importadas, ${erros.length} linha(s) com erro.`);
+    } else {
+      toast.success(`${validas.length} regras importadas.`);
+    }
     qc.invalidateQueries();
   }
 
@@ -273,6 +273,9 @@ function Mapeamento() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
+          <Button variant="outline" onClick={() => gerarModeloDeParaBPDRE()}>
+            <FileDown className="size-4" /> Baixar modelo
+          </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
             <Upload className="size-4" /> Importar
           </Button>
@@ -303,6 +306,29 @@ function Mapeamento() {
           </Button>
           <span className="text-xs text-muted-foreground">{filtradas.length} regras</span>
         </div>
+
+        {errosImportacao.length > 0 && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+            <div className="mb-1 flex items-center justify-between font-medium">
+              <span>{errosImportacao.length} linha(s) da planilha não foram importadas:</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 text-destructive"
+                onClick={() => setErrosImportacao([])}
+              >
+                Fechar
+              </Button>
+            </div>
+            <ul className="max-h-40 list-disc space-y-0.5 overflow-auto pl-4">
+              {errosImportacao.map((e, i) => (
+                <li key={i}>
+                  Linha {e.linha}: {e.motivo}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="max-h-[28rem] overflow-auto rounded-md border border-border">
           <table className="w-full text-sm">

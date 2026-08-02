@@ -360,7 +360,14 @@ export function montarBP(linhas: LinhaValor[]): BpCalc {
   const secoes: BpSecaoCalc[] = BP_SECOES.map((s) => {
     const itens = (porSecao.get(norm(s.chave)) ?? [])
       .slice()
-      .sort((a, b) => a.ordem_exibicao - b.ordem_exibicao);
+      .sort((a, b) => a.ordem_exibicao - b.ordem_exibicao)
+      // O Passivo (e o PL) é lançado com sinal de crédito (negativo) no
+      // balancete — o BP sempre apresenta os dois lados em valor absoluto.
+      .map((i) =>
+        s.lado === "passivo"
+          ? { ...i, valor: Math.abs(i.valor), valor_ano_anterior: Math.abs(i.valor_ano_anterior) }
+          : i,
+      );
     const subtotal = itens.reduce((acc, i) => acc + i.valor, 0);
     const subtotalAnoAnterior = itens.reduce((acc, i) => acc + i.valor_ano_anterior, 0);
     return {
@@ -402,4 +409,159 @@ export function montarBP(linhas: LinhaValor[]): BpCalc {
 export function variacaoPercentual(atual: number, anterior: number): number | null {
   if (!anterior) return null;
   return (atual - anterior) / Math.abs(anterior);
+}
+
+export interface DeParaBPDRERow {
+  conta: string;
+  is_prefixo: boolean;
+  demonstrativo: string;
+  secao: string | null;
+  linha: string;
+  ordem_exibicao: number;
+}
+
+export interface DeParaBPDREErro {
+  linha: number;
+  motivo: string;
+}
+
+export interface DeParaBPDREParse {
+  validas: DeParaBPDRERow[];
+  erros: DeParaBPDREErro[];
+}
+
+const ALIASES_DEPARA: Record<string, string[]> = {
+  conta: ["CONTA"],
+  is_prefixo: ["PREFIXO", "ISPREFIXO"],
+  demonstrativo: ["DEMONSTRATIVO"],
+  secao: ["SECAO"],
+  linha: ["LINHA"],
+  ordem_exibicao: ["ORDEM", "ORDEMEXIBICAO"],
+};
+
+const PREFIXO_VERDADEIRO = new Set(["TRUE", "1", "SIM", "S", "V", "VERDADEIRO", "X"]);
+
+/**
+ * Interpreta a planilha de De/Para do BP/DRE reconhecendo cabeçalhos com
+ * variações de acento/maiúsculas (como o parseBase de excel.ts), e valida
+ * cada linha contra as seções fixas do BP e as linhas oficiais da DRE —
+ * em vez de descartar silenciosamente uma linha mal preenchida, devolve o
+ * motivo exato para o usuário corrigir.
+ */
+export function parseDeParaBPDRE(rows: Record<string, unknown>[]): DeParaBPDREParse {
+  const header = rows.length ? Object.keys(rows[0]) : [];
+  const mapa: Record<string, string> = {};
+  for (const [campo, alias] of Object.entries(ALIASES_DEPARA)) {
+    const found = header.find((h) => alias.includes(norm(h)));
+    if (found) mapa[campo] = found;
+  }
+
+  const secoesPorChave = new Map(BP_SECOES.map((s) => [norm(s.chave), s.chave]));
+  const secoesPorRotulo = new Map(BP_SECOES.map((s) => [norm(s.rotulo), s.chave]));
+  const linhasDrePorRotulo = new Map(DRE_LINHAS_MAPEAVEIS.map((d) => [norm(d.rotulo), d.rotulo]));
+
+  const validas: DeParaBPDRERow[] = [];
+  const erros: DeParaBPDREErro[] = [];
+
+  rows.forEach((r, i) => {
+    const numeroLinha = i + 2; // linha 1 é o cabeçalho
+    const get = (campo: string) => {
+      const c = mapa[campo];
+      const v = c ? r[c] : null;
+      return v == null ? "" : String(v).trim();
+    };
+
+    const conta = get("conta");
+    const demonstrativoRaw = get("demonstrativo");
+    const secaoRaw = get("secao");
+    const linhaRaw = get("linha");
+    if (!conta && !demonstrativoRaw && !secaoRaw && !linhaRaw) return; // linha em branco
+
+    if (!conta) {
+      erros.push({ linha: numeroLinha, motivo: "Conta em branco." });
+      return;
+    }
+    const demonstrativo = demonstrativoRaw.toUpperCase();
+    if (!["BP", "DRE"].includes(demonstrativo)) {
+      erros.push({
+        linha: numeroLinha,
+        motivo: `Demonstrativo "${demonstrativoRaw || "(vazio)"}" inválido — use BP ou DRE.`,
+      });
+      return;
+    }
+
+    let secao: string | null = null;
+    if (demonstrativo === "BP") {
+      if (!secaoRaw) {
+        erros.push({ linha: numeroLinha, motivo: "Seção em branco (obrigatória para BP)." });
+        return;
+      }
+      secao = secoesPorChave.get(norm(secaoRaw)) ?? secoesPorRotulo.get(norm(secaoRaw)) ?? null;
+      if (!secao) {
+        erros.push({
+          linha: numeroLinha,
+          motivo: `Seção "${secaoRaw}" não reconhecida. Use exatamente: ${BP_SECOES.map((s) => s.rotulo).join(", ")}.`,
+        });
+        return;
+      }
+    }
+
+    let linha = linhaRaw;
+    if (!linha) {
+      erros.push({ linha: numeroLinha, motivo: "Linha em branco." });
+      return;
+    }
+    if (demonstrativo === "DRE") {
+      const oficial = linhasDrePorRotulo.get(norm(linha));
+      if (!oficial) {
+        erros.push({
+          linha: numeroLinha,
+          motivo: `Linha "${linha}" não é uma linha oficial da DRE — copie exatamente da aba "Linhas DRE" do modelo.`,
+        });
+        return;
+      }
+      linha = oficial;
+    }
+
+    validas.push({
+      conta,
+      is_prefixo: PREFIXO_VERDADEIRO.has(get("is_prefixo").toUpperCase()),
+      demonstrativo,
+      secao,
+      linha,
+      ordem_exibicao: Number(get("ordem_exibicao")) || 0,
+    });
+  });
+
+  return { validas, erros };
+}
+
+/** Gera a planilha-modelo para o usuário preencher o De/Para do BP/DRE, com abas de referência das seções e linhas válidas. */
+export function gerarModeloDeParaBPDRE(arquivo = "modelo_depara_bp_dre.xlsx") {
+  const aoa: (string | number | boolean)[][] = [
+    ["Conta", "Prefixo", "Demonstrativo", "Seção", "Linha", "Ordem"],
+    ["1.1.01", true, "BP", "Ativo Circulante", "Caixa e equivalentes", 1],
+    ["2.1.01", true, "BP", "Passivo Circulante", "Fornecedores e outras contas a pagar", 1],
+    ["3.1", true, "DRE", "", "Receita operacional líquida", 0],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"] = [{ wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 26 }, { wch: 42 }, { wch: 8 }];
+
+  const wsSecoes = XLSX.utils.aoa_to_sheet([
+    ["Seções válidas para contas do BP — copie exatamente como está aqui"],
+    ...BP_SECOES.map((s) => [s.rotulo]),
+  ]);
+  wsSecoes["!cols"] = [{ wch: 40 }];
+
+  const wsLinhasDre = XLSX.utils.aoa_to_sheet([
+    ["Linhas válidas para contas da DRE — copie exatamente como está aqui"],
+    ...DRE_LINHAS_MAPEAVEIS.map((d) => [d.rotulo]),
+  ]);
+  wsLinhasDre["!cols"] = [{ wch: 60 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Modelo");
+  XLSX.utils.book_append_sheet(wb, wsSecoes, "Seções BP");
+  XLSX.utils.book_append_sheet(wb, wsLinhasDre, "Linhas DRE");
+  XLSX.writeFile(wb, arquivo);
 }
