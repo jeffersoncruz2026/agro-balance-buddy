@@ -74,13 +74,14 @@ function AuthPage() {
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
       <section className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground lg:flex">
-        <div className="flex items-center gap-2">
-          <Sprout className="size-6 text-sidebar-primary" />
-          <span className="font-display text-lg font-semibold">Balancete Gerencial</span>
-        </div>
+        <img
+          src={logoGrupo.url}
+          alt="Grupo Otávio Lage"
+          className="h-14 w-auto"
+        />
         <div>
           <h1 className="max-w-md font-display text-4xl leading-tight font-semibold">
-            Do extrato bruto do ERP ao balancete pronto, em minutos.
+            Resultados Gerenciais Grupo Otávio Lage
           </h1>
           <p className="mt-4 max-w-md text-sm text-sidebar-foreground/70">
             De/Para reutilizável, ano-safra de abril a março, comparativo entre safras e
