@@ -79,6 +79,12 @@ function agrupar(rows: Linha[], chave: "nomedepto" | "nomecusto" | "contacontabi
     .filter((i) => i.valor >= 0.005)
     .sort((a, b) => b.valor - a.valor);
 }
+/** "3.4.01.01.0020 - SALARIOS E ORDENADOS" -> "SALARIOS E ORDENADOS" */
+function nomeConta(conta: string) {
+  const idx = conta.indexOf(" - ");
+  const nome = idx >= 0 ? conta.slice(idx + 3).trim() : conta.trim();
+  return nome || conta;
+}
 function formatPct(v: number, sinal = true) {
   return `${sinal && v > 0 ? "+" : ""}${v.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
 }
