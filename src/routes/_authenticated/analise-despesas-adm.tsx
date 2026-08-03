@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchDespAdmSerie } from "@/lib/desp-adm";
 
 import { AppLayout } from "@/components/AppLayout";
+import { ChatBalancete } from "@/components/ChatBalancete";
 import { formatBRL, MESES } from "@/lib/balancete";
 import { ArrowUpRight, ArrowDownRight, Download, SlidersHorizontal, X } from "lucide-react";
 import {
@@ -566,6 +567,16 @@ function AnaliseDespesasAdm() {
         titulo={detalhe?.titulo ?? null}
         linhas={detalheQ.data ?? []}
         onClose={() => setDetalhe(null)}
+      />
+
+      <ChatBalancete
+        contexto={`Mês/ano de referência selecionado na tela: ${refMes}/${refAno}.`}
+        sugestoes={[
+          `Total de DESP. ADM em ${mesReferencia}`,
+          "Comparar com o mês anterior",
+          "Maiores contas contábeis do mês",
+          "Maiores centros de custo do mês",
+        ]}
       />
     </AppLayout>
   );
