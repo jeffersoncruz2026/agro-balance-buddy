@@ -270,8 +270,12 @@ export function montarDRE(linhas: LinhaValor[]): DreLinhaCalc[] {
     let semDados = false;
     if (def.tipo === "linha") {
       const encontrada = porLinha.get(norm(def.rotulo));
-      valor = encontrada?.valor ?? 0;
-      valorAnt = encontrada?.valor_ano_anterior ?? 0;
+      // As contas de resultado são lançadas com sinal de crédito (invertido)
+      // no balancete: negativo no balancete = receita, positivo = despesa.
+      // A DRE inverte o sinal para exibir receita como positivo e despesa
+      // como negativo.
+      valor = -(encontrada?.valor ?? 0);
+      valorAnt = -(encontrada?.valor_ano_anterior ?? 0);
       semDados = !encontrada && valor === 0 && valorAnt === 0;
     } else {
       for (const chaveRef of def.formula ?? []) {
