@@ -137,6 +137,7 @@ function BpDre() {
 
   return (
     <AppLayout
+      ocultarCabecalhoImpressao
       titulo="Balanço Patrimonial e DRE"
       descricao="Demonstrativos contábeis por empresa ou consolidado — linhas e subtotais sempre recalculados a partir do De/Para."
       acoes={
