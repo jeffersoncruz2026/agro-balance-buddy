@@ -2,6 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import type { ComponentType, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import {
   Sprout,
   LayoutDashboard,
@@ -19,6 +20,7 @@ import {
   FileUp,
   FileBarChart2,
   Newspaper,
+  ShieldCheck,
 } from "lucide-react";
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }> };
@@ -48,6 +50,11 @@ const NAV_ADMIN = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
+/** Visível apenas para usuários com papel 'admin'. */
+const NAV_USUARIOS = [
+  { to: "/controle-usuarios", label: "Controle de Usuários", icon: ShieldCheck },
+] as const;
+
 export function AppLayout({
   titulo,
   descricao,
@@ -61,6 +68,7 @@ export function AppLayout({
 }) {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { data: isAdmin } = useIsAdmin();
 
   async function sair() {
     await supabase.auth.signOut();
@@ -85,6 +93,15 @@ export function AppLayout({
             Administrador
           </p>
           <NavLinks itens={NAV_ADMIN} path={path} />
+
+          {isAdmin && (
+            <>
+              <p className="mt-4 mb-1 px-3 text-[11px] font-semibold tracking-wide text-sidebar-foreground/40 uppercase">
+                Usuários
+              </p>
+              <NavLinks itens={NAV_USUARIOS} path={path} />
+            </>
+          )}
         </nav>
         <Button
           variant="ghost"
@@ -125,6 +142,21 @@ export function AppLayout({
               {label}
             </Link>
           ))}
+          {isAdmin && (
+            <>
+              <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+              {NAV_USUARIOS.map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="rounded-md px-3 py-1.5 text-xs whitespace-nowrap text-muted-foreground"
+                  activeProps={{ className: "bg-secondary text-foreground font-medium" }}
+                >
+                  {label}
+                </Link>
+              ))}
+            </>
+          )}
         </div>
         <main className="min-w-0 flex-1 p-6">{children}</main>
       </div>
