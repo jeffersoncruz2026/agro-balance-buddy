@@ -442,7 +442,7 @@ function AnaliseDespesasAdm() {
             Composição da variação — {mesReferencia} vs. mês anterior
           </p>
           <p className="mb-3 text-sm text-muted-foreground">
-            Contribuição de cada centro de custo para a mudança do total
+            Contribuição de cada conta contábil para a mudança do total
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <ComposedChart
