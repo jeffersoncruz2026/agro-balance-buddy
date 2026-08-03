@@ -15,12 +15,12 @@ import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-apr
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAnaliseDespesasAdmRouteImport } from './routes/_authenticated/analise-despesas-adm'
-import { Route as AuthenticatedBalanceteRouteImport } from './routes/_authenticated/balancete'
 import { Route as AuthenticatedBalanceteGerencialRouteImport } from './routes/_authenticated/balancete-gerencial'
 import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
 import { Route as AuthenticatedDespAdmRouteImport } from './routes/_authenticated/desp-adm'
 import { Route as AuthenticatedResultadoFinanceiroRouteImport } from './routes/_authenticated/resultado-financeiro'
 import { Route as AuthenticatedAdminAjustesRouteImport } from './routes/_authenticated/_admin/ajustes'
+import { Route as AuthenticatedAdminBalanceteRouteImport } from './routes/_authenticated/_admin/balancete'
 import { Route as AuthenticatedAdminBpDreDeparaRouteImport } from './routes/_authenticated/_admin/bp-dre-depara'
 import { Route as AuthenticatedAdminBpDreImportarRouteImport } from './routes/_authenticated/_admin/bp-dre-importar'
 import { Route as AuthenticatedAdminConfiguracoesRouteImport } from './routes/_authenticated/_admin/configuracoes'
@@ -59,11 +59,6 @@ const AuthenticatedAnaliseDespesasAdmRoute =
     path: '/analise-despesas-adm',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedBalanceteRoute = AuthenticatedBalanceteRouteImport.update({
-  id: '/balancete',
-  path: '/balancete',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedBalanceteGerencialRoute =
   AuthenticatedBalanceteGerencialRouteImport.update({
     id: '/balancete-gerencial',
@@ -90,6 +85,12 @@ const AuthenticatedAdminAjustesRoute =
   AuthenticatedAdminAjustesRouteImport.update({
     id: '/ajustes',
     path: '/ajustes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBalanceteRoute =
+  AuthenticatedAdminBalanceteRouteImport.update({
+    id: '/balancete',
+    path: '/balancete',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminBpDreDeparaRoute =
@@ -146,12 +147,12 @@ export interface FileRoutesByFullPath {
   '/aguardando-aprovacao': typeof AguardandoAprovacaoRoute
   '/auth': typeof AuthRoute
   '/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
-  '/balancete': typeof AuthenticatedBalanceteRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/bp-dre': typeof AuthenticatedBpDreRoute
   '/desp-adm': typeof AuthenticatedDespAdmRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
   '/ajustes': typeof AuthenticatedAdminAjustesRoute
+  '/balancete': typeof AuthenticatedAdminBalanceteRoute
   '/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
   '/bp-dre-importar': typeof AuthenticatedAdminBpDreImportarRoute
   '/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
@@ -166,12 +167,12 @@ export interface FileRoutesByTo {
   '/aguardando-aprovacao': typeof AguardandoAprovacaoRoute
   '/auth': typeof AuthRoute
   '/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
-  '/balancete': typeof AuthenticatedBalanceteRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/bp-dre': typeof AuthenticatedBpDreRoute
   '/desp-adm': typeof AuthenticatedDespAdmRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
   '/ajustes': typeof AuthenticatedAdminAjustesRoute
+  '/balancete': typeof AuthenticatedAdminBalanceteRoute
   '/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
   '/bp-dre-importar': typeof AuthenticatedAdminBpDreImportarRoute
   '/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
@@ -189,12 +190,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
-  '/_authenticated/balancete': typeof AuthenticatedBalanceteRoute
   '/_authenticated/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/_authenticated/bp-dre': typeof AuthenticatedBpDreRoute
   '/_authenticated/desp-adm': typeof AuthenticatedDespAdmRoute
   '/_authenticated/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
   '/_authenticated/_admin/ajustes': typeof AuthenticatedAdminAjustesRoute
+  '/_authenticated/_admin/balancete': typeof AuthenticatedAdminBalanceteRoute
   '/_authenticated/_admin/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
   '/_authenticated/_admin/bp-dre-importar': typeof AuthenticatedAdminBpDreImportarRoute
   '/_authenticated/_admin/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
@@ -211,12 +212,12 @@ export interface FileRouteTypes {
     | '/aguardando-aprovacao'
     | '/auth'
     | '/analise-despesas-adm'
-    | '/balancete'
     | '/balancete-gerencial'
     | '/bp-dre'
     | '/desp-adm'
     | '/resultado-financeiro'
     | '/ajustes'
+    | '/balancete'
     | '/bp-dre-depara'
     | '/bp-dre-importar'
     | '/configuracoes'
@@ -231,12 +232,12 @@ export interface FileRouteTypes {
     | '/aguardando-aprovacao'
     | '/auth'
     | '/analise-despesas-adm'
-    | '/balancete'
     | '/balancete-gerencial'
     | '/bp-dre'
     | '/desp-adm'
     | '/resultado-financeiro'
     | '/ajustes'
+    | '/balancete'
     | '/bp-dre-depara'
     | '/bp-dre-importar'
     | '/configuracoes'
@@ -253,12 +254,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/_admin'
     | '/_authenticated/analise-despesas-adm'
-    | '/_authenticated/balancete'
     | '/_authenticated/balancete-gerencial'
     | '/_authenticated/bp-dre'
     | '/_authenticated/desp-adm'
     | '/_authenticated/resultado-financeiro'
     | '/_authenticated/_admin/ajustes'
+    | '/_authenticated/_admin/balancete'
     | '/_authenticated/_admin/bp-dre-depara'
     | '/_authenticated/_admin/bp-dre-importar'
     | '/_authenticated/_admin/configuracoes'
@@ -320,13 +321,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnaliseDespesasAdmRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/balancete': {
-      id: '/_authenticated/balancete'
-      path: '/balancete'
-      fullPath: '/balancete'
-      preLoaderRoute: typeof AuthenticatedBalanceteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/balancete-gerencial': {
       id: '/_authenticated/balancete-gerencial'
       path: '/balancete-gerencial'
@@ -360,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/ajustes'
       fullPath: '/ajustes'
       preLoaderRoute: typeof AuthenticatedAdminAjustesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/balancete': {
+      id: '/_authenticated/_admin/balancete'
+      path: '/balancete'
+      fullPath: '/balancete'
+      preLoaderRoute: typeof AuthenticatedAdminBalanceteRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/_admin/bp-dre-depara': {
@@ -423,6 +424,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAjustesRoute: typeof AuthenticatedAdminAjustesRoute
+  AuthenticatedAdminBalanceteRoute: typeof AuthenticatedAdminBalanceteRoute
   AuthenticatedAdminBpDreDeparaRoute: typeof AuthenticatedAdminBpDreDeparaRoute
   AuthenticatedAdminBpDreImportarRoute: typeof AuthenticatedAdminBpDreImportarRoute
   AuthenticatedAdminConfiguracoesRoute: typeof AuthenticatedAdminConfiguracoesRoute
@@ -436,6 +438,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAjustesRoute: AuthenticatedAdminAjustesRoute,
+    AuthenticatedAdminBalanceteRoute: AuthenticatedAdminBalanceteRoute,
     AuthenticatedAdminBpDreDeparaRoute: AuthenticatedAdminBpDreDeparaRoute,
     AuthenticatedAdminBpDreImportarRoute: AuthenticatedAdminBpDreImportarRoute,
     AuthenticatedAdminConfiguracoesRoute: AuthenticatedAdminConfiguracoesRoute,
@@ -455,7 +458,6 @@ const AuthenticatedAdminRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAnaliseDespesasAdmRoute: typeof AuthenticatedAnaliseDespesasAdmRoute
-  AuthenticatedBalanceteRoute: typeof AuthenticatedBalanceteRoute
   AuthenticatedBalanceteGerencialRoute: typeof AuthenticatedBalanceteGerencialRoute
   AuthenticatedBpDreRoute: typeof AuthenticatedBpDreRoute
   AuthenticatedDespAdmRoute: typeof AuthenticatedDespAdmRoute
@@ -465,7 +467,6 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAnaliseDespesasAdmRoute: AuthenticatedAnaliseDespesasAdmRoute,
-  AuthenticatedBalanceteRoute: AuthenticatedBalanceteRoute,
   AuthenticatedBalanceteGerencialRoute: AuthenticatedBalanceteGerencialRoute,
   AuthenticatedBpDreRoute: AuthenticatedBpDreRoute,
   AuthenticatedDespAdmRoute: AuthenticatedDespAdmRoute,
