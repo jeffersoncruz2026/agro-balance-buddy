@@ -192,17 +192,38 @@ function BpDre() {
         </p>
       )}
 
+      <style>{`@media print { @page { size: A4 ${aba === "bp" ? "landscape" : "portrait"}; margin: 10mm; } }`}</style>
+
       {!!periodoAtual && (
         <div className="mt-6 hidden print:block">
-          <h2 className="font-display text-lg font-semibold">
-            {empresaSelecionada?.nome ?? "Consolidado (todas as empresas)"}
-          </h2>
-          <p className="text-sm text-muted-foreground">(Em Reais)</p>
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <h2 className="font-display text-lg font-semibold">
+                {empresaSelecionada?.nome ?? "Consolidado (todas as empresas)"}
+              </h2>
+              <p className="text-sm">
+                {aba === "bp" ? "Balanço Patrimonial" : "Demonstração de Resultado"}
+              </p>
+              <p className="mt-1 text-sm font-semibold">
+                {mesLabel}-{anoSel}
+              </p>
+              <p className="mt-1 text-xs italic text-muted-foreground">(Em Reais)</p>
+            </div>
+            <img
+              src={logoGrupo.url}
+              alt="Grupo Otávio Lage"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
         </div>
       )}
 
       {!!periodoAtual && (
-        <Tabs defaultValue="bp" className="mt-6">
+        <Tabs
+          value={aba}
+          onValueChange={(v) => setAba(v as "bp" | "dre")}
+          className="mt-6 print-compact"
+        >
           <TabsList className="print:hidden">
             <TabsTrigger value="bp">Balanço Patrimonial</TabsTrigger>
             <TabsTrigger value="dre">DRE</TabsTrigger>
@@ -211,6 +232,7 @@ function BpDre() {
             <h3 className="mb-2 hidden text-base font-semibold print:block">
               Balanço Patrimonial — {mesLabel}/{anoSel}
             </h3>
+
             {!bp.consistente && (
               <div className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
