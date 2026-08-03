@@ -332,12 +332,6 @@ function BalanceteGerencial() {
 
       <style>{`
         @media print {
-          .bg-print-area {
-            display: grid;
-            grid-template-columns: 7fr 4fr;
-            gap: 8px;
-            align-items: start;
-          }
           .bg-print-table-wrap {
             overflow: hidden !important;
             border: none !important;
@@ -346,60 +340,28 @@ function BalanceteGerencial() {
           .bg-print-area table {
             table-layout: fixed !important;
             width: 100% !important;
-            font-size: 6.5px !important;
-            line-height: 1.15 !important;
+            font-size: 6px !important;
+            line-height: 1.05 !important;
           }
           .bg-print-area th,
           .bg-print-area td {
-            padding: 1px 2px !important;
+            padding: 0.5px 3px !important;
             position: static !important;
             overflow: hidden;
           }
           .bg-print-area .num {
-            font-size: 6.5px !important;
+            font-size: 6px !important;
             white-space: nowrap !important;
           }
           .bg-print-table-wrap table th:first-child,
           .bg-print-table-wrap table td:first-child {
-            width: 12% !important;
+            width: 13% !important;
             min-width: 0 !important;
           }
           .bg-print-table-wrap table th:nth-child(2),
           .bg-print-table-wrap table td:nth-child(2) {
-            width: 7% !important;
+            width: 6% !important;
             min-width: 0 !important;
-          }
-          .bg-print-table-wrap table th:nth-child(4),
-          .bg-print-table-wrap table td:nth-child(4) {
-            width: 9% !important;
-            min-width: 0 !important;
-          }
-          .bg-print-table-wrap table th:last-child,
-          .bg-print-table-wrap table td:last-child {
-            width: 10% !important;
-            min-width: 0 !important;
-          }
-          .bg-print-card table th:first-child,
-          .bg-print-card table td:first-child {
-            width: 55% !important;
-            min-width: 0 !important;
-          }
-          .bg-print-card table th:nth-child(2),
-          .bg-print-card table td:nth-child(2) {
-            width: 15% !important;
-            min-width: 0 !important;
-          }
-          .bg-print-card {
-            margin-top: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-          }
-          .bg-print-card-header {
-            padding: 0 0 2px 0 !important;
-          }
-          .bg-print-card-title {
-            font-size: 9px !important;
           }
         }
       `}</style>
@@ -473,13 +435,47 @@ function BalanceteGerencial() {
                     ))}
                 </Fragment>
               ))}
+              {/* No print, o Resultado consolidado continua na mesma tabela — só a coluna SALDO é preenchida. */}
+              {rel.blocos.map((b) => (
+                <Fragment key={`print-${b.rotulo}`}>
+                  {safras
+                    .slice()
+                    .reverse()
+                    .map((s, idx) => (
+                      <tr
+                        key={s}
+                        className={`hidden print:table-row ${idx === 0 ? "border-t border-border/60" : ""} ${b.destaque ? "font-semibold" : ""} ${b.informativo ? "italic" : ""} ${idx !== 0 ? "text-destructive" : ""}`}
+                      >
+                        {idx === 0 && (
+                          <td
+                            rowSpan={safras.length}
+                            className="px-3 py-1.5 align-middle font-medium"
+                          >
+                            {b.rotulo}
+                          </td>
+                        )}
+                        <td
+                          className={`px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
+                        >
+                          {safraLabel(s)}
+                        </td>
+                        {COLUNAS_VISIVEIS.slice(0, -1).map((c) => (
+                          <td key={c.key} />
+                        ))}
+                        <td className="num px-2 py-1.5 text-right font-semibold">
+                          {formatBRL(b.saldos[s])}
+                        </td>
+                      </tr>
+                    ))}
+                </Fragment>
+              ))}
             </tbody>
           </table>
         </div>
 
-        <Card className="mt-6 bg-print-card">
-          <CardHeader className="pb-2 bg-print-card-header">
-            <CardTitle className="text-base bg-print-card-title">Resultado consolidado</CardTitle>
+        <Card className="mt-6 print:hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Resultado consolidado</CardTitle>
           </CardHeader>
           <CardContent className="px-0">
             <table className="w-full text-xs">
