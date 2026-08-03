@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-aprovacao'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatBalanceteRouteImport } from './routes/api/chat-balancete'
 import { Route as AuthenticatedResultadoFinanceiroRouteImport } from './routes/_authenticated/resultado-financeiro'
 import { Route as AuthenticatedDespAdmRouteImport } from './routes/_authenticated/desp-adm'
 import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
@@ -47,6 +48,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatBalanceteRoute = ApiChatBalanceteRouteImport.update({
+  id: '/api/chat-balancete',
+  path: '/api/chat-balancete',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedResultadoFinanceiroRoute =
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/bp-dre': typeof AuthenticatedBpDreRoute
   '/desp-adm': typeof AuthenticatedDespAdmRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
+  '/api/chat-balancete': typeof ApiChatBalanceteRoute
   '/ajustes': typeof AuthenticatedAdminAjustesRoute
   '/balancete': typeof AuthenticatedAdminBalanceteRoute
   '/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/bp-dre': typeof AuthenticatedBpDreRoute
   '/desp-adm': typeof AuthenticatedDespAdmRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
+  '/api/chat-balancete': typeof ApiChatBalanceteRoute
   '/ajustes': typeof AuthenticatedAdminAjustesRoute
   '/balancete': typeof AuthenticatedAdminBalanceteRoute
   '/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
@@ -194,6 +202,7 @@ export interface FileRoutesById {
   '/_authenticated/bp-dre': typeof AuthenticatedBpDreRoute
   '/_authenticated/desp-adm': typeof AuthenticatedDespAdmRoute
   '/_authenticated/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
+  '/api/chat-balancete': typeof ApiChatBalanceteRoute
   '/_authenticated/_admin/ajustes': typeof AuthenticatedAdminAjustesRoute
   '/_authenticated/_admin/balancete': typeof AuthenticatedAdminBalanceteRoute
   '/_authenticated/_admin/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/bp-dre'
     | '/desp-adm'
     | '/resultado-financeiro'
+    | '/api/chat-balancete'
     | '/ajustes'
     | '/balancete'
     | '/bp-dre-depara'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/bp-dre'
     | '/desp-adm'
     | '/resultado-financeiro'
+    | '/api/chat-balancete'
     | '/ajustes'
     | '/balancete'
     | '/bp-dre-depara'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bp-dre'
     | '/_authenticated/desp-adm'
     | '/_authenticated/resultado-financeiro'
+    | '/api/chat-balancete'
     | '/_authenticated/_admin/ajustes'
     | '/_authenticated/_admin/balancete'
     | '/_authenticated/_admin/bp-dre-depara'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AguardandoAprovacaoRoute: typeof AguardandoAprovacaoRoute
   AuthRoute: typeof AuthRoute
+  ApiChatBalanceteRoute: typeof ApiChatBalanceteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat-balancete': {
+      id: '/api/chat-balancete'
+      path: '/api/chat-balancete'
+      fullPath: '/api/chat-balancete'
+      preLoaderRoute: typeof ApiChatBalanceteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/resultado-financeiro': {
@@ -481,17 +501,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AguardandoAprovacaoRoute: AguardandoAprovacaoRoute,
   AuthRoute: AuthRoute,
+  ApiChatBalanceteRoute: ApiChatBalanceteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
