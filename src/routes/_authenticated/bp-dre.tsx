@@ -240,7 +240,7 @@ function BpDre() {
                 </span>
               </div>
             )}
-            <div className="grid items-start gap-4 lg:grid-cols-2">
+            <div className="grid items-start gap-4 lg:grid-cols-2 print:grid-cols-2 print:gap-6">
               <BpColuna
                 titulo="Ativo"
                 secoes={secoesAtivo}
@@ -429,8 +429,8 @@ function BpColuna({
   linhasVazias?: number;
 }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="print:border-0 print:bg-transparent print:shadow-none">
+      <CardContent className="pt-6 print:p-0">
         <table className="w-full text-sm">
           <thead className="text-xs text-muted-foreground">
             <tr>
