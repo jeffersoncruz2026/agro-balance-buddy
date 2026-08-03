@@ -29,7 +29,6 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 const NAV_RELATORIOS = [
   { to: "/balancete-gerencial", label: "Balancete Gerencial", icon: FileStack },
   { to: "/resultado-financeiro", label: "Resultado Financeiro", icon: Landmark },
-  { to: "/desp-adm", label: "Despesas Administrativas", icon: Building2 },
   { to: "/analise-despesas-adm", label: "Análise Despesas ADM", icon: Newspaper },
   { to: "/bp-dre", label: "Balanço Patrimonial e DRE", icon: FileBarChart2 },
 ] as const;
@@ -37,6 +36,7 @@ const NAV_RELATORIOS = [
 /** Administrador — visível e acessível apenas para usuários com papel 'admin'. */
 const NAV_ADMIN = [
   { to: "/balancete", label: "Balancete", icon: FileSpreadsheet },
+  { to: "/desp-adm", label: "Despesas Administrativas", icon: Building2 },
   { to: "/painel", label: "Painel", icon: LayoutDashboard },
   { to: "/importar", label: "Importar base", icon: Upload },
   { to: "/depara", label: "De/Para", icon: ArrowLeftRight },

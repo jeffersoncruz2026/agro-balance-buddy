@@ -25,7 +25,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-export const Route = createFileRoute("/_authenticated/desp-adm")({
+export const Route = createFileRoute("/_authenticated/_admin/desp-adm")({
   head: () => ({
     meta: [
       { title: "Despesas Administrativas | Balancete Gerencial" },
@@ -114,7 +114,6 @@ function DespesasAdministrativas() {
       const data = await fetchDespAdmSerie(refAno, refMes, MESES_HISTORICO);
       return data as Linha[];
     },
-
   });
 
   const detalheQ = useQuery({
