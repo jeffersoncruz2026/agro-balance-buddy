@@ -268,11 +268,9 @@ function BpDre() {
             </div>
           </TabsContent>
           <TabsContent value="dre" className="mt-4">
-            <h3 className="mb-2 hidden text-base font-semibold print:block">
-              Demonstração de Resultado — {mesLabel}/{anoSel}
-            </h3>
-            <Card>
-              <CardContent className="pt-6">
+            <Card className="print:border-0 print:bg-transparent print:shadow-none">
+              <CardContent className="pt-6 print:p-0">
+
                 <table className="w-full text-sm">
                   <thead className="text-xs text-muted-foreground">
                     <tr>
