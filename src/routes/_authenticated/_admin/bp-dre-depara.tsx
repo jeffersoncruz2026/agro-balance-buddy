@@ -32,7 +32,7 @@ const DEMONSTRATIVOS = ["BP", "DRE"] as const;
 const rotuloSecao = (chave: string | null) =>
   BP_SECOES.find((s) => s.chave === chave)?.rotulo ?? chave ?? "";
 
-export const Route = createFileRoute("/_authenticated/bp-dre-depara")({
+export const Route = createFileRoute("/_authenticated/_admin/bp-dre-depara")({
   head: () => ({
     meta: [
       { title: "De/Para BP/DRE | Balancete Gerencial" },

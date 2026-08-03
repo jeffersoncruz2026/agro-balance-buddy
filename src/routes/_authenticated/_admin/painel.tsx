@@ -16,7 +16,7 @@ import {
   Legend,
 } from "recharts";
 
-export const Route = createFileRoute("/_authenticated/painel")({
+export const Route = createFileRoute("/_authenticated/_admin/painel")({
   head: () => ({
     meta: [
       { title: "Painel | Balancete Gerencial" },

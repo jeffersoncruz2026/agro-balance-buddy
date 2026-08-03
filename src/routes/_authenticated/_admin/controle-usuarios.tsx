@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,14 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export const Route = createFileRoute("/_authenticated/controle-usuarios")({
-  beforeLoad: async ({ context }) => {
-    const { data, error } = await supabase.rpc("has_role", {
-      _user_id: context.user.id,
-      _role: "admin",
-    });
-    if (error || !data) throw redirect({ to: "/painel" });
-  },
+export const Route = createFileRoute("/_authenticated/_admin/controle-usuarios")({
   head: () => ({
     meta: [{ title: "Controle de Usuários | Balancete Gerencial" }],
   }),
