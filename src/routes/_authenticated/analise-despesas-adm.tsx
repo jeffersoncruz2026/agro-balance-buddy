@@ -96,14 +96,10 @@ function AnaliseDespesasAdm() {
     queryKey: ["desp_adm_serie", refAno, refMes, "analise"],
     retry: 1,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("desp_adm_serie", {
-        p_ano_ref: refAno,
-        p_mes_ref: refMes,
-        p_meses: MESES_HISTORICO,
-      });
-      if (error) throw error;
-      return (data ?? []) as Linha[];
+      const data = await fetchDespAdmSerie(refAno, refMes, MESES_HISTORICO);
+      return data as Linha[];
     },
+
   });
 
   const detalheQ = useQuery({
