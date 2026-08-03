@@ -17,6 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { formatBRL } from "@/lib/balancete";
 import { montarBP, montarDRE, variacaoPercentual, type LinhaValor } from "@/lib/bpdre";
 import { AlertTriangle, Download } from "lucide-react";
+import logoGrupo from "@/assets/logo-grupo.png.asset.json";
+
 
 export const Route = createFileRoute("/_authenticated/bp-dre")({
   head: () => ({
