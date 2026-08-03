@@ -165,21 +165,24 @@ function AnaliseDespesasAdm() {
         : 0;
     const pctSobreReceita = receitaBrutaMes !== 0 ? (totalMesAtual / receitaBrutaMes) * 100 : 0;
 
-    // Ponte: contribuição de cada centro de custo na variação do mês.
-    const centrosAtual = new Map<string, number>();
-    const centrosAnterior = new Map<string, number>();
+    // Ponte: contribuição de cada conta contábil na variação do mês.
+    const contasAtual = new Map<string, number>();
+    const contasAnterior = new Map<string, number>();
     for (const r of despRows) {
       if (r.ano === refAno && r.mes === refMes)
-        centrosAtual.set(r.nomedepto, (centrosAtual.get(r.nomedepto) ?? 0) + Number(r.valor));
+        contasAtual.set(r.contacontabil, (contasAtual.get(r.contacontabil) ?? 0) + Number(r.valor));
       if (r.ano === ant.ano && r.mes === ant.mes)
-        centrosAnterior.set(r.nomedepto, (centrosAnterior.get(r.nomedepto) ?? 0) + Number(r.valor));
+        contasAnterior.set(
+          r.contacontabil,
+          (contasAnterior.get(r.contacontabil) ?? 0) + Number(r.valor),
+        );
     }
-    const nomesCentros = new Set([...centrosAtual.keys(), ...centrosAnterior.keys()]);
+    const nomesContas = new Set([...contasAtual.keys(), ...contasAnterior.keys()]);
     const TOP_N = 6;
-    const deltas = [...nomesCentros]
-      .map((nome) => ({
-        nome,
-        delta: Math.abs(centrosAtual.get(nome) ?? 0) - Math.abs(centrosAnterior.get(nome) ?? 0),
+    const deltas = [...nomesContas]
+      .map((conta) => ({
+        nome: nomeConta(conta),
+        delta: Math.abs(contasAtual.get(conta) ?? 0) - Math.abs(contasAnterior.get(conta) ?? 0),
       }))
       .filter((d) => Math.abs(d.delta) >= 0.005)
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
@@ -187,7 +190,7 @@ function AnaliseDespesasAdm() {
     const outrosDelta = deltas.slice(TOP_N).reduce((a, d) => a + d.delta, 0);
     const passosDelta = [
       ...topDeltas,
-      ...(Math.abs(outrosDelta) >= 0.005 ? [{ nome: "Outros centros", delta: outrosDelta }] : []),
+      ...(Math.abs(outrosDelta) >= 0.005 ? [{ nome: "Outras contas", delta: outrosDelta }] : []),
     ];
 
     let acumulado = totalMesAnterior;
