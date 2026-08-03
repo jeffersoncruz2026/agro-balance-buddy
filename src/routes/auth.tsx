@@ -83,10 +83,6 @@ function AuthPage() {
           <h1 className="max-w-md font-display text-4xl leading-tight font-semibold">
             Resultados Gerenciais Grupo Otávio Lage
           </h1>
-          <p className="mt-4 max-w-md text-sm text-sidebar-foreground/70">
-            De/Para reutilizável, ano-safra de abril a março, comparativo entre safras e
-            rastreabilidade total de cada valor.
-          </p>
         </div>
         <p className="text-xs text-sidebar-foreground/50">
           Vera Cruz · Planagri · OL Látex Tocantins · OL Látex
