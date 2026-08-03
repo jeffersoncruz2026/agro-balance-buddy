@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/_admin")({
       _user_id: context.user.id,
       _role: "admin",
     });
-    if (error || !data) throw redirect({ to: "/balancete" });
+    if (error || !data) throw redirect({ to: "/balancete-gerencial" });
   },
   component: () => <Outlet />,
 });

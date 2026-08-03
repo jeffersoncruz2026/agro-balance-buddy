@@ -34,7 +34,7 @@ import {
 import { exportarBalancete } from "@/lib/excel";
 import { Download, AlertTriangle } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/balancete")({
+export const Route = createFileRoute("/_authenticated/_admin/balancete")({
   head: () => ({
     meta: [
       { title: "Balancete Gerencial | Grupo Agropecuário" },
