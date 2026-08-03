@@ -176,3 +176,35 @@
   font-family: var(--font-mono);
   font-size: 0.8125rem;
 }
+
+@media print {
+  body {
+    background: white;
+  }
+  .print-compact table {
+    font-size: 8.5pt;
+    line-height: 1.15;
+  }
+  .print-compact table td,
+  .print-compact table th {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+  }
+  .print-compact .num {
+    font-size: 8.5pt;
+  }
+  .print-compact [data-slot="card"] {
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  .print-compact [data-slot="card-content"] {
+    padding: 0 !important;
+  }
+  .print-compact,
+  .print-compact table,
+  .print-compact tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
