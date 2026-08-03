@@ -51,11 +51,11 @@ export function ChatBalancete({ contexto, sugestoes = [] }: Props) {
     () =>
       new DefaultChatTransport({
         api: "/api/chat-balancete",
-        headers: async () => {
+        headers: (async (): Promise<Record<string, string>> => {
           const { data } = await supabase.auth.getSession();
           const token = data.session?.access_token;
           return token ? { Authorization: `Bearer ${token}` } : {};
-        },
+        }) as unknown as Record<string, string>,
         body: () => ({ contexto: contextoRef.current }),
       }),
     [],
@@ -145,7 +145,7 @@ export function ChatBalancete({ contexto, sugestoes = [] }: Props) {
                       return (
                         <Tool defaultOpen={false} key={i}>
                           <ToolHeader
-                            type={p.type.replace("tool-", "Consulta: ")}
+                            type={p.type.replace("tool-", "Consulta: ") as `tool-${string}`}
                             state={p.state}
                           />
                           <ToolContent>
