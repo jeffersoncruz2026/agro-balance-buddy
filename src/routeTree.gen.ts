@@ -9,34 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-aprovacao'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
-import { Route as AuthenticatedAnaliseDespesasAdmRouteImport } from './routes/_authenticated/analise-despesas-adm'
-import { Route as AuthenticatedBalanceteGerencialRouteImport } from './routes/_authenticated/balancete-gerencial'
-import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
-import { Route as AuthenticatedDespAdmRouteImport } from './routes/_authenticated/desp-adm'
+import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-aprovacao'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedResultadoFinanceiroRouteImport } from './routes/_authenticated/resultado-financeiro'
-import { Route as AuthenticatedAdminAjustesRouteImport } from './routes/_authenticated/_admin/ajustes'
-import { Route as AuthenticatedAdminBalanceteRouteImport } from './routes/_authenticated/_admin/balancete'
-import { Route as AuthenticatedAdminBpDreDeparaRouteImport } from './routes/_authenticated/_admin/bp-dre-depara'
-import { Route as AuthenticatedAdminBpDreImportarRouteImport } from './routes/_authenticated/_admin/bp-dre-importar'
-import { Route as AuthenticatedAdminConfiguracoesRouteImport } from './routes/_authenticated/_admin/configuracoes'
-import { Route as AuthenticatedAdminControleUsuariosRouteImport } from './routes/_authenticated/_admin/controle-usuarios'
-import { Route as AuthenticatedAdminDeparaRouteImport } from './routes/_authenticated/_admin/depara'
-import { Route as AuthenticatedAdminImportarRouteImport } from './routes/_authenticated/_admin/importar'
-import { Route as AuthenticatedAdminPainelRouteImport } from './routes/_authenticated/_admin/painel'
+import { Route as AuthenticatedDespAdmRouteImport } from './routes/_authenticated/desp-adm'
+import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
+import { Route as AuthenticatedBalanceteGerencialRouteImport } from './routes/_authenticated/balancete-gerencial'
+import { Route as AuthenticatedAnaliseDespesasAdmRouteImport } from './routes/_authenticated/analise-despesas-adm'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAdminPendenciasRouteImport } from './routes/_authenticated/_admin/pendencias'
+import { Route as AuthenticatedAdminPainelRouteImport } from './routes/_authenticated/_admin/painel'
+import { Route as AuthenticatedAdminImportarRouteImport } from './routes/_authenticated/_admin/importar'
+import { Route as AuthenticatedAdminDeparaRouteImport } from './routes/_authenticated/_admin/depara'
+import { Route as AuthenticatedAdminControleUsuariosRouteImport } from './routes/_authenticated/_admin/controle-usuarios'
+import { Route as AuthenticatedAdminConfiguracoesRouteImport } from './routes/_authenticated/_admin/configuracoes'
+import { Route as AuthenticatedAdminBpDreImportarRouteImport } from './routes/_authenticated/_admin/bp-dre-importar'
+import { Route as AuthenticatedAdminBpDreDeparaRouteImport } from './routes/_authenticated/_admin/bp-dre-depara'
+import { Route as AuthenticatedAdminBalanceteRouteImport } from './routes/_authenticated/_admin/balancete'
+import { Route as AuthenticatedAdminAjustesRouteImport } from './routes/_authenticated/_admin/ajustes'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AguardandoAprovacaoRoute = AguardandoAprovacaoRouteImport.update({
@@ -44,36 +40,14 @@ const AguardandoAprovacaoRoute = AguardandoAprovacaoRouteImport.update({
   path: '/aguardando-aprovacao',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
-  id: '/_admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAnaliseDespesasAdmRoute =
-  AuthenticatedAnaliseDespesasAdmRouteImport.update({
-    id: '/analise-despesas-adm',
-    path: '/analise-despesas-adm',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedBalanceteGerencialRoute =
-  AuthenticatedBalanceteGerencialRouteImport.update({
-    id: '/balancete-gerencial',
-    path: '/balancete-gerencial',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedBpDreRoute = AuthenticatedBpDreRouteImport.update({
-  id: '/bp-dre',
-  path: '/bp-dre',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDespAdmRoute = AuthenticatedDespAdmRouteImport.update({
-  id: '/desp-adm',
-  path: '/desp-adm',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedResultadoFinanceiroRoute =
   AuthenticatedResultadoFinanceiroRouteImport.update({
@@ -81,52 +55,36 @@ const AuthenticatedResultadoFinanceiroRoute =
     path: '/resultado-financeiro',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminAjustesRoute =
-  AuthenticatedAdminAjustesRouteImport.update({
-    id: '/ajustes',
-    path: '/ajustes',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
+const AuthenticatedDespAdmRoute = AuthenticatedDespAdmRouteImport.update({
+  id: '/desp-adm',
+  path: '/desp-adm',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBpDreRoute = AuthenticatedBpDreRouteImport.update({
+  id: '/bp-dre',
+  path: '/bp-dre',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBalanceteGerencialRoute =
+  AuthenticatedBalanceteGerencialRouteImport.update({
+    id: '/balancete-gerencial',
+    path: '/balancete-gerencial',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminBalanceteRoute =
-  AuthenticatedAdminBalanceteRouteImport.update({
-    id: '/balancete',
-    path: '/balancete',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
+const AuthenticatedAnaliseDespesasAdmRoute =
+  AuthenticatedAnaliseDespesasAdmRouteImport.update({
+    id: '/analise-despesas-adm',
+    path: '/analise-despesas-adm',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminBpDreDeparaRoute =
-  AuthenticatedAdminBpDreDeparaRouteImport.update({
-    id: '/bp-dre-depara',
-    path: '/bp-dre-depara',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminBpDreImportarRoute =
-  AuthenticatedAdminBpDreImportarRouteImport.update({
-    id: '/bp-dre-importar',
-    path: '/bp-dre-importar',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminConfiguracoesRoute =
-  AuthenticatedAdminConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminControleUsuariosRoute =
-  AuthenticatedAdminControleUsuariosRouteImport.update({
-    id: '/controle-usuarios',
-    path: '/controle-usuarios',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminDeparaRoute =
-  AuthenticatedAdminDeparaRouteImport.update({
-    id: '/depara',
-    path: '/depara',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminImportarRoute =
-  AuthenticatedAdminImportarRouteImport.update({
-    id: '/importar',
-    path: '/importar',
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminPendenciasRoute =
+  AuthenticatedAdminPendenciasRouteImport.update({
+    id: '/pendencias',
+    path: '/pendencias',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminPainelRoute =
@@ -135,10 +93,52 @@ const AuthenticatedAdminPainelRoute =
     path: '/painel',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedAdminPendenciasRoute =
-  AuthenticatedAdminPendenciasRouteImport.update({
-    id: '/pendencias',
-    path: '/pendencias',
+const AuthenticatedAdminImportarRoute =
+  AuthenticatedAdminImportarRouteImport.update({
+    id: '/importar',
+    path: '/importar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminDeparaRoute =
+  AuthenticatedAdminDeparaRouteImport.update({
+    id: '/depara',
+    path: '/depara',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminControleUsuariosRoute =
+  AuthenticatedAdminControleUsuariosRouteImport.update({
+    id: '/controle-usuarios',
+    path: '/controle-usuarios',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminConfiguracoesRoute =
+  AuthenticatedAdminConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBpDreImportarRoute =
+  AuthenticatedAdminBpDreImportarRouteImport.update({
+    id: '/bp-dre-importar',
+    path: '/bp-dre-importar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBpDreDeparaRoute =
+  AuthenticatedAdminBpDreDeparaRouteImport.update({
+    id: '/bp-dre-depara',
+    path: '/bp-dre-depara',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBalanceteRoute =
+  AuthenticatedAdminBalanceteRouteImport.update({
+    id: '/balancete',
+    path: '/balancete',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminAjustesRoute =
+  AuthenticatedAdminAjustesRouteImport.update({
+    id: '/ajustes',
+    path: '/ajustes',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
@@ -279,18 +279,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/aguardando-aprovacao': {
@@ -300,39 +293,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AguardandoAprovacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/_admin': {
-      id: '/_authenticated/_admin'
+    '/_authenticated': {
+      id: '/_authenticated'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/analise-despesas-adm': {
-      id: '/_authenticated/analise-despesas-adm'
-      path: '/analise-despesas-adm'
-      fullPath: '/analise-despesas-adm'
-      preLoaderRoute: typeof AuthenticatedAnaliseDespesasAdmRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/balancete-gerencial': {
-      id: '/_authenticated/balancete-gerencial'
-      path: '/balancete-gerencial'
-      fullPath: '/balancete-gerencial'
-      preLoaderRoute: typeof AuthenticatedBalanceteGerencialRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/bp-dre': {
-      id: '/_authenticated/bp-dre'
-      path: '/bp-dre'
-      fullPath: '/bp-dre'
-      preLoaderRoute: typeof AuthenticatedBpDreRouteImport
+    '/_authenticated/resultado-financeiro': {
+      id: '/_authenticated/resultado-financeiro'
+      path: '/resultado-financeiro'
+      fullPath: '/resultado-financeiro'
+      preLoaderRoute: typeof AuthenticatedResultadoFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/desp-adm': {
@@ -342,67 +321,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDespAdmRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/resultado-financeiro': {
-      id: '/_authenticated/resultado-financeiro'
-      path: '/resultado-financeiro'
-      fullPath: '/resultado-financeiro'
-      preLoaderRoute: typeof AuthenticatedResultadoFinanceiroRouteImport
+    '/_authenticated/bp-dre': {
+      id: '/_authenticated/bp-dre'
+      path: '/bp-dre'
+      fullPath: '/bp-dre'
+      preLoaderRoute: typeof AuthenticatedBpDreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_admin/ajustes': {
-      id: '/_authenticated/_admin/ajustes'
-      path: '/ajustes'
-      fullPath: '/ajustes'
-      preLoaderRoute: typeof AuthenticatedAdminAjustesRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/_authenticated/balancete-gerencial': {
+      id: '/_authenticated/balancete-gerencial'
+      path: '/balancete-gerencial'
+      fullPath: '/balancete-gerencial'
+      preLoaderRoute: typeof AuthenticatedBalanceteGerencialRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_admin/balancete': {
-      id: '/_authenticated/_admin/balancete'
-      path: '/balancete'
-      fullPath: '/balancete'
-      preLoaderRoute: typeof AuthenticatedAdminBalanceteRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/_authenticated/analise-despesas-adm': {
+      id: '/_authenticated/analise-despesas-adm'
+      path: '/analise-despesas-adm'
+      fullPath: '/analise-despesas-adm'
+      preLoaderRoute: typeof AuthenticatedAnaliseDespesasAdmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_admin/bp-dre-depara': {
-      id: '/_authenticated/_admin/bp-dre-depara'
-      path: '/bp-dre-depara'
-      fullPath: '/bp-dre-depara'
-      preLoaderRoute: typeof AuthenticatedAdminBpDreDeparaRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_admin/bp-dre-importar': {
-      id: '/_authenticated/_admin/bp-dre-importar'
-      path: '/bp-dre-importar'
-      fullPath: '/bp-dre-importar'
-      preLoaderRoute: typeof AuthenticatedAdminBpDreImportarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/_admin/configuracoes': {
-      id: '/_authenticated/_admin/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/_admin/controle-usuarios': {
-      id: '/_authenticated/_admin/controle-usuarios'
-      path: '/controle-usuarios'
-      fullPath: '/controle-usuarios'
-      preLoaderRoute: typeof AuthenticatedAdminControleUsuariosRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/_admin/depara': {
-      id: '/_authenticated/_admin/depara'
-      path: '/depara'
-      fullPath: '/depara'
-      preLoaderRoute: typeof AuthenticatedAdminDeparaRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/_admin/importar': {
-      id: '/_authenticated/_admin/importar'
-      path: '/importar'
-      fullPath: '/importar'
-      preLoaderRoute: typeof AuthenticatedAdminImportarRouteImport
+    '/_authenticated/_admin/pendencias': {
+      id: '/_authenticated/_admin/pendencias'
+      path: '/pendencias'
+      fullPath: '/pendencias'
+      preLoaderRoute: typeof AuthenticatedAdminPendenciasRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/_admin/painel': {
@@ -412,11 +363,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPainelRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/_admin/pendencias': {
-      id: '/_authenticated/_admin/pendencias'
-      path: '/pendencias'
-      fullPath: '/pendencias'
-      preLoaderRoute: typeof AuthenticatedAdminPendenciasRouteImport
+    '/_authenticated/_admin/importar': {
+      id: '/_authenticated/_admin/importar'
+      path: '/importar'
+      fullPath: '/importar'
+      preLoaderRoute: typeof AuthenticatedAdminImportarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/depara': {
+      id: '/_authenticated/_admin/depara'
+      path: '/depara'
+      fullPath: '/depara'
+      preLoaderRoute: typeof AuthenticatedAdminDeparaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/controle-usuarios': {
+      id: '/_authenticated/_admin/controle-usuarios'
+      path: '/controle-usuarios'
+      fullPath: '/controle-usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminControleUsuariosRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/configuracoes': {
+      id: '/_authenticated/_admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/bp-dre-importar': {
+      id: '/_authenticated/_admin/bp-dre-importar'
+      path: '/bp-dre-importar'
+      fullPath: '/bp-dre-importar'
+      preLoaderRoute: typeof AuthenticatedAdminBpDreImportarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/bp-dre-depara': {
+      id: '/_authenticated/_admin/bp-dre-depara'
+      path: '/bp-dre-depara'
+      fullPath: '/bp-dre-depara'
+      preLoaderRoute: typeof AuthenticatedAdminBpDreDeparaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/balancete': {
+      id: '/_authenticated/_admin/balancete'
+      path: '/balancete'
+      fullPath: '/balancete'
+      preLoaderRoute: typeof AuthenticatedAdminBalanceteRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/ajustes': {
+      id: '/_authenticated/_admin/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof AuthenticatedAdminAjustesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
   }
