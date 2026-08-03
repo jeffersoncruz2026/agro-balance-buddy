@@ -323,7 +323,16 @@ function BpDre() {
         </Tabs>
       )}
 
+      {!!periodoAtual && (
+        <p className="mt-3 hidden border-t border-border pt-1 text-[9pt] print:block">
+          {aba === "bp"
+            ? "As notas explicativas são parte integrante das demonstrações financeiras"
+            : "* As Demonstrações Financeiras poderão sofrer alterações, se ocorrerem ajustes nos balanços de nossas controladas e/ou por solicitação de seus auditores."}
+        </p>
+      )}
+
       {empresaSelecionada &&
+
         (empresaSelecionada.rodape_texto || empresaSelecionada.responsavel_nome) && (
           <div className="mt-8 hidden print:block">
             {empresaSelecionada.rodape_texto && (
