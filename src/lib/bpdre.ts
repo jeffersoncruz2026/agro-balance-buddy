@@ -361,13 +361,22 @@ export function montarBP(linhas: LinhaValor[]): BpCalc {
     const itens = (porSecao.get(norm(s.chave)) ?? [])
       .slice()
       .sort((a, b) => a.ordem_exibicao - b.ordem_exibicao)
-      // O Passivo (e o PL) é lançado com sinal de crédito (negativo) no
-      // balancete — o BP sempre apresenta os dois lados em valor absoluto.
-      .map((i) =>
-        s.lado === "passivo"
+      // O Passivo e o PL são lançados com sinal de crédito (invertido) no
+      // balancete. Passivo Circulante/Não Circulante são sempre economicamente
+      // positivos, então valor absoluto resolve. Já o PL pode ser
+      // legitimamente negativo (prejuízos acumulados maiores que o capital) —
+      // nesse caso ele vira um saldo devedor e é lançado com sinal positivo,
+      // então abs() mostraria um PL negativo como positivo. Por isso o PL usa
+      // a inversão de sinal (-valor), que preserva o sinal econômico real nos
+      // dois casos, em vez de valor absoluto.
+      .map((i) => {
+        if (s.chave === "PATRIMONIO_LIQUIDO") {
+          return { ...i, valor: -i.valor, valor_ano_anterior: -i.valor_ano_anterior };
+        }
+        return s.lado === "passivo"
           ? { ...i, valor: Math.abs(i.valor), valor_ano_anterior: Math.abs(i.valor_ano_anterior) }
-          : i,
-      );
+          : i;
+      });
     const subtotal = itens.reduce((acc, i) => acc + i.valor, 0);
     const subtotalAnoAnterior = itens.reduce((acc, i) => acc + i.valor_ano_anterior, 0);
     return {
