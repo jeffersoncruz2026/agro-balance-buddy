@@ -53,11 +53,14 @@ export function AppLayout({
   descricao,
   acoes,
   children,
+  ocultarCabecalhoImpressao = false,
 }: {
   titulo: string;
   descricao?: string;
   acoes?: ReactNode;
   children: ReactNode;
+  /** Oculta o cabeçalho da página na impressão (relatórios que têm cabeçalho próprio). */
+  ocultarCabecalhoImpressao?: boolean;
 }) {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -101,7 +104,9 @@ export function AppLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border bg-card px-6 py-5">
+        <header
+          className={`flex flex-wrap items-end justify-between gap-4 border-b border-border bg-card px-6 py-5 ${ocultarCabecalhoImpressao ? "print:hidden" : ""}`}
+        >
           <div>
             <h1 className="font-display text-xl font-semibold">{titulo}</h1>
             {descricao && <p className="mt-1 text-sm text-muted-foreground">{descricao}</p>}

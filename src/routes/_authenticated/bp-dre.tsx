@@ -17,6 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { formatBRL } from "@/lib/balancete";
 import { montarBP, montarDRE, variacaoPercentual, type LinhaValor } from "@/lib/bpdre";
 import { AlertTriangle, Download } from "lucide-react";
+import logoGrupo from "@/assets/logo-grupo.png.asset.json";
+
 
 export const Route = createFileRoute("/_authenticated/bp-dre")({
   head: () => ({
@@ -51,7 +53,9 @@ const MESES_LABEL = [
 
 function BpDre() {
   const [empresaId, setEmpresaId] = useState<string>("");
+  const [aba, setAba] = useState<"bp" | "dre">("bp");
   const [periodo, setPeriodo] = useState<string>("");
+
   const [detalhe, setDetalhe] = useState<{
     demonstrativo: string;
     secao: string | null;
@@ -133,6 +137,7 @@ function BpDre() {
 
   return (
     <AppLayout
+      ocultarCabecalhoImpressao
       titulo="Balanço Patrimonial e DRE"
       descricao="Demonstrativos contábeis por empresa ou consolidado — linhas e subtotais sempre recalculados a partir do De/Para."
       acoes={
@@ -188,26 +193,45 @@ function BpDre() {
         </p>
       )}
 
+      <style>{`@media print { @page { size: A4 ${aba === "bp" ? "landscape" : "portrait"}; margin: 10mm; } }`}</style>
+
       {!!periodoAtual && (
         <div className="mt-6 hidden print:block">
-          <h2 className="font-display text-lg font-semibold">
-            {empresaSelecionada?.nome ?? "Consolidado (todas as empresas)"}
-          </h2>
-          <p className="text-sm text-muted-foreground">(Em Reais)</p>
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <h2 className="font-display text-lg font-semibold">
+                {empresaSelecionada?.nome ?? "Consolidado (todas as empresas)"}
+              </h2>
+              <p className="text-sm">
+                {aba === "bp" ? "Balanço Patrimonial" : "Demonstração de Resultado"}
+              </p>
+              <p className="mt-1 text-sm font-semibold">
+                {mesLabel}-{anoSel}
+              </p>
+              <p className="mt-1 text-xs italic text-muted-foreground">(Em Reais)</p>
+            </div>
+            <img
+              src={logoGrupo.url}
+              alt="Grupo Otávio Lage"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
         </div>
       )}
 
       {!!periodoAtual && (
-        <Tabs defaultValue="bp" className="mt-6">
+        <Tabs
+          value={aba}
+          onValueChange={(v) => setAba(v as "bp" | "dre")}
+          className="mt-6 print-compact"
+        >
           <TabsList className="print:hidden">
             <TabsTrigger value="bp">Balanço Patrimonial</TabsTrigger>
             <TabsTrigger value="dre">DRE</TabsTrigger>
           </TabsList>
           <TabsContent value="bp" className="mt-4">
-            <h3 className="mb-2 hidden text-base font-semibold print:block">
-              Balanço Patrimonial — {mesLabel}/{anoSel}
-            </h3>
             {!bp.consistente && (
+
               <div className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
                 <span>
@@ -217,7 +241,7 @@ function BpDre() {
                 </span>
               </div>
             )}
-            <div className="grid items-start gap-4 lg:grid-cols-2">
+            <div className="grid items-start gap-4 lg:grid-cols-2 print:grid-cols-2 print:gap-6">
               <BpColuna
                 titulo="Ativo"
                 secoes={secoesAtivo}
@@ -245,11 +269,9 @@ function BpDre() {
             </div>
           </TabsContent>
           <TabsContent value="dre" className="mt-4">
-            <h3 className="mb-2 hidden text-base font-semibold print:block">
-              Demonstração de Resultado — {mesLabel}/{anoSel}
-            </h3>
-            <Card>
-              <CardContent className="pt-6">
+            <Card className="print:border-0 print:bg-transparent print:shadow-none">
+              <CardContent className="pt-6 print:p-0">
+
                 <table className="w-full text-sm">
                   <thead className="text-xs text-muted-foreground">
                     <tr>
@@ -302,7 +324,16 @@ function BpDre() {
         </Tabs>
       )}
 
+      {!!periodoAtual && (
+        <p className="mt-3 hidden border-t border-border pt-1 text-[9pt] print:block">
+          {aba === "bp"
+            ? "As notas explicativas são parte integrante das demonstrações financeiras"
+            : "* As Demonstrações Financeiras poderão sofrer alterações, se ocorrerem ajustes nos balanços de nossas controladas e/ou por solicitação de seus auditores."}
+        </p>
+      )}
+
       {empresaSelecionada &&
+
         (empresaSelecionada.rodape_texto || empresaSelecionada.responsavel_nome) && (
           <div className="mt-8 hidden print:block">
             {empresaSelecionada.rodape_texto && (
@@ -399,8 +430,8 @@ function BpColuna({
   linhasVazias?: number;
 }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="print:border-0 print:bg-transparent print:shadow-none">
+      <CardContent className="pt-6 print:p-0">
         <table className="w-full text-sm">
           <thead className="text-xs text-muted-foreground">
             <tr>
