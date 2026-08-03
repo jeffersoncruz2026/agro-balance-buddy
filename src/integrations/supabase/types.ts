@@ -423,6 +423,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          nome: string | null
+          status: Database["public"]["Enums"]["profile_status"]
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          nome?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string | null
+          status?: Database["public"]["Enums"]["profile_status"]
+        }
+        Relationships: []
+      }
       rateio: {
         Row: {
           ano: number
@@ -498,6 +522,27 @@ export type Database = {
           percentual?: number
           updated_at?: string
           vigencia?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -619,6 +664,13 @@ export type Database = {
         }[]
       }
       fn_safra_inicio: { Args: never; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       pendencias_contas: {
         Args: never
         Returns: {
@@ -676,7 +728,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      profile_status: "pendente" | "aprovado" | "rejeitado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -803,6 +856,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      profile_status: ["pendente", "aprovado", "rejeitado"],
+    },
   },
 } as const
