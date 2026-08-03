@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchDespAdmSerie } from "@/lib/desp-adm";
 
 import { AppLayout } from "@/components/AppLayout";
-import { ChatBalancete } from "@/components/ChatBalancete";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -613,16 +613,6 @@ function DespesasAdministrativas() {
           </p>
         </DialogContent>
       </Dialog>
-
-      <ChatBalancete
-        contexto={`Mês/ano de referência selecionado na tela: ${refMes}/${refAno}.`}
-        sugestoes={[
-          `Total de DESP. ADM em ${mesLabel(refAno, refMes)}`,
-          "Comparar os últimos 3 meses",
-          "Maiores contas contábeis do mês",
-          "Maiores centros de custo do mês",
-        ]}
-      />
     </AppLayout>
   );
 }
