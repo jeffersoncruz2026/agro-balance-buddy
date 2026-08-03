@@ -384,6 +384,7 @@ function BpColuna({
   anoSel,
   demonstrativo,
   onDetalhe,
+  linhasVazias = 0,
 }: {
   titulo: string;
   secoes: ReturnType<typeof montarBP>["secoes"];
@@ -394,6 +395,8 @@ function BpColuna({
   anoSel: number | null;
   demonstrativo: string;
   onDetalhe: (v: { demonstrativo: string; secao: string | null; linha: string }) => void;
+  /** Linhas em branco para alinhar o total desta coluna com o da coluna oposta. */
+  linhasVazias?: number;
 }) {
   return (
     <Card>
