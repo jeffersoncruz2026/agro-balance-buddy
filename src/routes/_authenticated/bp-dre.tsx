@@ -121,6 +121,13 @@ function BpDre() {
     },
   });
 
+  const secoesAtivo = useMemo(() => bp.secoes.filter((s) => s.lado === "ativo"), [bp.secoes]);
+  const secoesPassivo = useMemo(() => bp.secoes.filter((s) => s.lado === "passivo"), [bp.secoes]);
+  const contarLinhas = (secoes: typeof bp.secoes) =>
+    secoes.reduce((acc, s) => acc + s.linhas.length + 1, 0);
+  const linhasAtivo = contarLinhas(secoesAtivo);
+  const linhasPassivo = contarLinhas(secoesPassivo);
+
   const empresaSelecionada = (empresas.data ?? []).find((e) => e.id === empresaId);
   const mesLabel = mesSel ? MESES_LABEL[mesSel - 1] : "";
 
@@ -210,10 +217,10 @@ function BpDre() {
                 </span>
               </div>
             )}
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid items-start gap-4 lg:grid-cols-2">
               <BpColuna
                 titulo="Ativo"
-                secoes={bp.secoes.filter((s) => s.lado === "ativo")}
+                secoes={secoesAtivo}
                 total="Total do ativo"
                 totalValor={bp.totalAtivo}
                 totalValorAnoAnterior={bp.totalAtivoAnoAnterior}
@@ -221,10 +228,11 @@ function BpDre() {
                 anoSel={anoSel}
                 demonstrativo="BP"
                 onDetalhe={setDetalhe}
+                linhasVazias={Math.max(0, linhasPassivo - linhasAtivo)}
               />
               <BpColuna
                 titulo="Passivo"
-                secoes={bp.secoes.filter((s) => s.lado === "passivo")}
+                secoes={secoesPassivo}
                 total="Total do passivo + PL"
                 totalValor={bp.totalPassivo}
                 totalValorAnoAnterior={bp.totalPassivoAnoAnterior}
@@ -232,6 +240,7 @@ function BpDre() {
                 anoSel={anoSel}
                 demonstrativo="BP"
                 onDetalhe={setDetalhe}
+                linhasVazias={Math.max(0, linhasAtivo - linhasPassivo)}
               />
             </div>
           </TabsContent>
@@ -375,6 +384,7 @@ function BpColuna({
   anoSel,
   demonstrativo,
   onDetalhe,
+  linhasVazias = 0,
 }: {
   titulo: string;
   secoes: ReturnType<typeof montarBP>["secoes"];
@@ -385,6 +395,8 @@ function BpColuna({
   anoSel: number | null;
   demonstrativo: string;
   onDetalhe: (v: { demonstrativo: string; secao: string | null; linha: string }) => void;
+  /** Linhas em branco para alinhar o total desta coluna com o da coluna oposta. */
+  linhasVazias?: number;
 }) {
   return (
     <Card>
@@ -439,6 +451,14 @@ function BpColuna({
                   </td>
                 </tr>
               </Fragment>
+            ))}
+            {Array.from({ length: linhasVazias }).map((_, i) => (
+              <tr key={`vazia-${i}`} className="border-t border-transparent" aria-hidden>
+                <td className="py-1.5 pl-4">&nbsp;</td>
+                <td />
+                <td />
+                <td />
+              </tr>
             ))}
             <tr className="border-t-2 border-foreground/40 bg-muted/60 font-semibold">
               <td className="py-2 pl-2">{total}</td>
