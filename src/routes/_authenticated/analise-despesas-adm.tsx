@@ -234,6 +234,7 @@ function AnaliseDespesasAdm() {
       pctSobreReceita,
       ponteData,
       maiorAlta,
+      segundaAlta,
       maiorQueda,
       topContas,
       topRubricas,
@@ -244,7 +245,10 @@ function AnaliseDespesasAdm() {
     const direcao = analise.variacaoMoM > 0 ? "alta" : "queda";
     let texto = `As despesas administrativas somaram ${formatBRL(analise.totalMesAtual)} em ${mesReferencia}, ${direcao} de ${formatPct(Math.abs(analise.variacaoMoM), false)} sobre o mês anterior`;
     if (analise.maiorAlta) {
-      texto += `, impulsionada principalmente por ${analise.maiorAlta.nome} (+${formatBRL(analise.maiorAlta.delta)})`;
+      texto += `, impulsionada principalmente pela conta ${analise.maiorAlta.nome} (+${formatBRL(analise.maiorAlta.delta)})`;
+      if (analise.segundaAlta) {
+        texto += ` e ${analise.segundaAlta.nome} (+${formatBRL(analise.segundaAlta.delta)})`;
+      }
     }
     if (analise.maiorQueda) {
       texto += ` e parcialmente compensada pela redução em ${analise.maiorQueda.nome} (${formatBRL(analise.maiorQueda.delta)})`;
@@ -252,6 +256,7 @@ function AnaliseDespesasAdm() {
     texto += `. No período, essas despesas representaram ${analise.pctSobreReceita.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% da receita bruta.`;
     return texto;
   }, [analise, mesReferencia]);
+
 
   const alertaAtivo = Math.abs(analise.variacaoMoM) > LIMITE_ALERTA_PERCENTUAL;
   const mesesOpcoes = useMemo(() => periodosAte(hoje.getFullYear(), hoje.getMonth() + 1, 25), []);
