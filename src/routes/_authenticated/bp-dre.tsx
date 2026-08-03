@@ -452,6 +452,14 @@ function BpColuna({
                 </tr>
               </Fragment>
             ))}
+            {Array.from({ length: linhasVazias }).map((_, i) => (
+              <tr key={`vazia-${i}`} className="border-t border-transparent" aria-hidden>
+                <td className="py-1.5 pl-4">&nbsp;</td>
+                <td />
+                <td />
+                <td />
+              </tr>
+            ))}
             <tr className="border-t-2 border-foreground/40 bg-muted/60 font-semibold">
               <td className="py-2 pl-2">{total}</td>
               <td className="num py-2 text-right">{formatBRL(totalValor)}</td>
