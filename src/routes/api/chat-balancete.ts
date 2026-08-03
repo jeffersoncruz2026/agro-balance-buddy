@@ -70,8 +70,8 @@ async function serieCompleta(supabase: Supa, ano: number, mes: number, meses: nu
 }
 
 function limitar<T>(linhas: T[]) {
-  if (linhas.length <= MAX_LINHAS) return { linhas, truncado: false, total: linhas.length };
-  return { linhas: linhas.slice(0, MAX_LINHAS), truncado: true, total: linhas.length };
+  if (linhas.length <= MAX_LINHAS) return { linhas, truncado: false, quantidade: linhas.length };
+  return { linhas: linhas.slice(0, MAX_LINHAS), truncado: true, quantidade: linhas.length };
 }
 
 function criarFerramentas(supabase: Supa) {
@@ -126,10 +126,10 @@ function criarFerramentas(supabase: Supa) {
         const { data, error } = await supabase.rpc("desp_adm_lancamentos", {
           p_ano: ano,
           p_mes: mes,
-          p_nomedepto: nomedepto,
-          p_nomecusto: nomecusto,
-          p_nomecoligada: nomecoligada,
-          p_contacontabil: contacontabil,
+          p_nomedepto: nomedepto ?? undefined,
+          p_nomecusto: nomecusto ?? undefined,
+          p_nomecoligada: nomecoligada ?? undefined,
+          p_contacontabil: contacontabil ?? undefined,
         });
         if (error) throw new Error(error.message);
         const linhas = (data ?? []) as unknown as { vlcusto: number }[];
@@ -250,7 +250,7 @@ export const Route = createFileRoute("/api/chat-balancete")({
           system: `${SISTEMA}\n\nData atual: ${hoje.toISOString().slice(0, 10)}.${
             contexto ? `\nFiltros atualmente selecionados na tela: ${contexto}` : ""
           }`,
-          messages: convertToModelMessages(body.messages as UIMessage[]),
+          messages: await convertToModelMessages(body.messages as UIMessage[]),
           tools: criarFerramentas(supabase),
           stopWhen: stepCountIs(50),
         });
