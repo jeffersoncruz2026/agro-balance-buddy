@@ -79,6 +79,12 @@ function agrupar(rows: Linha[], chave: "nomedepto" | "nomecusto" | "contacontabi
     .filter((i) => i.valor >= 0.005)
     .sort((a, b) => b.valor - a.valor);
 }
+/** "3.4.01.01.0020 - SALARIOS E ORDENADOS" -> "SALARIOS E ORDENADOS" */
+function nomeConta(conta: string) {
+  const idx = conta.indexOf(" - ");
+  const nome = idx >= 0 ? conta.slice(idx + 3).trim() : conta.trim();
+  return nome || conta;
+}
 function formatPct(v: number, sinal = true) {
   return `${sinal && v > 0 ? "+" : ""}${v.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
 }
@@ -159,21 +165,24 @@ function AnaliseDespesasAdm() {
         : 0;
     const pctSobreReceita = receitaBrutaMes !== 0 ? (totalMesAtual / receitaBrutaMes) * 100 : 0;
 
-    // Ponte: contribuição de cada centro de custo na variação do mês.
-    const centrosAtual = new Map<string, number>();
-    const centrosAnterior = new Map<string, number>();
+    // Ponte: contribuição de cada conta contábil na variação do mês.
+    const contasAtual = new Map<string, number>();
+    const contasAnterior = new Map<string, number>();
     for (const r of despRows) {
       if (r.ano === refAno && r.mes === refMes)
-        centrosAtual.set(r.nomedepto, (centrosAtual.get(r.nomedepto) ?? 0) + Number(r.valor));
+        contasAtual.set(r.contacontabil, (contasAtual.get(r.contacontabil) ?? 0) + Number(r.valor));
       if (r.ano === ant.ano && r.mes === ant.mes)
-        centrosAnterior.set(r.nomedepto, (centrosAnterior.get(r.nomedepto) ?? 0) + Number(r.valor));
+        contasAnterior.set(
+          r.contacontabil,
+          (contasAnterior.get(r.contacontabil) ?? 0) + Number(r.valor),
+        );
     }
-    const nomesCentros = new Set([...centrosAtual.keys(), ...centrosAnterior.keys()]);
+    const nomesContas = new Set([...contasAtual.keys(), ...contasAnterior.keys()]);
     const TOP_N = 6;
-    const deltas = [...nomesCentros]
-      .map((nome) => ({
-        nome,
-        delta: Math.abs(centrosAtual.get(nome) ?? 0) - Math.abs(centrosAnterior.get(nome) ?? 0),
+    const deltas = [...nomesContas]
+      .map((conta) => ({
+        nome: nomeConta(conta),
+        delta: Math.abs(contasAtual.get(conta) ?? 0) - Math.abs(contasAnterior.get(conta) ?? 0),
       }))
       .filter((d) => Math.abs(d.delta) >= 0.005)
       .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
@@ -181,7 +190,7 @@ function AnaliseDespesasAdm() {
     const outrosDelta = deltas.slice(TOP_N).reduce((a, d) => a + d.delta, 0);
     const passosDelta = [
       ...topDeltas,
-      ...(Math.abs(outrosDelta) >= 0.005 ? [{ nome: "Outros centros", delta: outrosDelta }] : []),
+      ...(Math.abs(outrosDelta) >= 0.005 ? [{ nome: "Outras contas", delta: outrosDelta }] : []),
     ];
 
     let acumulado = totalMesAnterior;
@@ -205,7 +214,10 @@ function AnaliseDespesasAdm() {
     }
     ponteData.push({ nome: "Mês atual", base: 0, valor: acumulado, tipo: "total" });
 
-    const maiorAlta = topDeltas.filter((d) => d.delta > 0).sort((a, b) => b.delta - a.delta)[0];
+    const altas = topDeltas.filter((d) => d.delta > 0).sort((a, b) => b.delta - a.delta);
+    const maiorAlta = altas[0];
+    const segundaAlta =
+      altas[1] && maiorAlta && altas[1].delta >= maiorAlta.delta * 0.25 ? altas[1] : undefined;
     const maiorQueda = topDeltas.filter((d) => d.delta < 0).sort((a, b) => a.delta - b.delta)[0];
 
     const rowsAtual = despRows.filter((r) => r.ano === refAno && r.mes === refMes);
@@ -222,6 +234,7 @@ function AnaliseDespesasAdm() {
       pctSobreReceita,
       ponteData,
       maiorAlta,
+      segundaAlta,
       maiorQueda,
       topContas,
       topRubricas,
@@ -232,7 +245,10 @@ function AnaliseDespesasAdm() {
     const direcao = analise.variacaoMoM > 0 ? "alta" : "queda";
     let texto = `As despesas administrativas somaram ${formatBRL(analise.totalMesAtual)} em ${mesReferencia}, ${direcao} de ${formatPct(Math.abs(analise.variacaoMoM), false)} sobre o mês anterior`;
     if (analise.maiorAlta) {
-      texto += `, impulsionada principalmente por ${analise.maiorAlta.nome} (+${formatBRL(analise.maiorAlta.delta)})`;
+      texto += `, impulsionada principalmente pela conta ${analise.maiorAlta.nome} (+${formatBRL(analise.maiorAlta.delta)})`;
+      if (analise.segundaAlta) {
+        texto += ` e ${analise.segundaAlta.nome} (+${formatBRL(analise.segundaAlta.delta)})`;
+      }
     }
     if (analise.maiorQueda) {
       texto += ` e parcialmente compensada pela redução em ${analise.maiorQueda.nome} (${formatBRL(analise.maiorQueda.delta)})`;
@@ -240,6 +256,7 @@ function AnaliseDespesasAdm() {
     texto += `. No período, essas despesas representaram ${analise.pctSobreReceita.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% da receita bruta.`;
     return texto;
   }, [analise, mesReferencia]);
+
 
   const alertaAtivo = Math.abs(analise.variacaoMoM) > LIMITE_ALERTA_PERCENTUAL;
   const mesesOpcoes = useMemo(() => periodosAte(hoje.getFullYear(), hoje.getMonth() + 1, 25), []);
@@ -425,7 +442,7 @@ function AnaliseDespesasAdm() {
             Composição da variação — {mesReferencia} vs. mês anterior
           </p>
           <p className="mb-3 text-sm text-muted-foreground">
-            Contribuição de cada centro de custo para a mudança do total
+            Contribuição de cada conta contábil para a mudança do total
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <ComposedChart
