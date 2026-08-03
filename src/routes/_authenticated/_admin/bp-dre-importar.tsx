@@ -19,7 +19,7 @@ import { formatBRL } from "@/lib/balancete";
 import { encontrarEmpresa, parseBalanceteContabil, type BalanceteContabilParse } from "@/lib/bpdre";
 import { Upload, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/bp-dre-importar")({
+export const Route = createFileRoute("/_authenticated/_admin/bp-dre-importar")({
   head: () => ({
     meta: [
       { title: "Importar Balancete Contábil | Balancete Gerencial" },

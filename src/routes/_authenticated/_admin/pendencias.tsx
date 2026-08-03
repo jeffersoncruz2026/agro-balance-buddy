@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { CATEGORIAS, LINHAS, formatBRL, sugerirLinha } from "@/lib/balancete";
 
-export const Route = createFileRoute("/_authenticated/pendencias")({
+export const Route = createFileRoute("/_authenticated/_admin/pendencias")({
   head: () => ({
     meta: [
       { title: "Pendências | Balancete Gerencial" },

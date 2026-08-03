@@ -35,10 +35,7 @@ const NAV_RELATORIOS = [
   { to: "/bp-dre", label: "Balanço Patrimonial e DRE", icon: FileBarChart2 },
 ] as const;
 
-/**
- * Administrador — base, mapeamentos e configurações. Futuramente deve ficar
- * visível só para o usuário admin/DEV (jeffersoncardosomb@gmail.com).
- */
+/** Administrador — visível e acessível apenas para usuários com papel 'admin'. */
 const NAV_ADMIN = [
   { to: "/painel", label: "Painel", icon: LayoutDashboard },
   { to: "/importar", label: "Importar base", icon: Upload },
@@ -48,10 +45,6 @@ const NAV_ADMIN = [
   { to: "/bp-dre-depara", label: "De/Para BP/DRE", icon: Scale },
   { to: "/ajustes", label: "Ajustes", icon: SlidersHorizontal },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
-] as const;
-
-/** Visível apenas para usuários com papel 'admin'. */
-const NAV_USUARIOS = [
   { to: "/controle-usuarios", label: "Controle de Usuários", icon: ShieldCheck },
 ] as const;
 
@@ -89,17 +82,12 @@ export function AppLayout({
         <nav className="flex flex-1 flex-col gap-1">
           <NavLinks itens={NAV_RELATORIOS} path={path} />
 
-          <p className="mt-4 mb-1 px-3 text-[11px] font-semibold tracking-wide text-sidebar-foreground/40 uppercase">
-            Administrador
-          </p>
-          <NavLinks itens={NAV_ADMIN} path={path} />
-
           {isAdmin && (
             <>
               <p className="mt-4 mb-1 px-3 text-[11px] font-semibold tracking-wide text-sidebar-foreground/40 uppercase">
-                Usuários
+                Administrador
               </p>
-              <NavLinks itens={NAV_USUARIOS} path={path} />
+              <NavLinks itens={NAV_ADMIN} path={path} />
             </>
           )}
         </nav>
@@ -131,21 +119,10 @@ export function AppLayout({
               {label}
             </Link>
           ))}
-          <span className="mx-1 h-4 w-px shrink-0 bg-border" />
-          {NAV_ADMIN.map(({ to, label }) => (
-            <Link
-              key={to}
-              to={to}
-              className="rounded-md px-3 py-1.5 text-xs whitespace-nowrap text-muted-foreground"
-              activeProps={{ className: "bg-secondary text-foreground font-medium" }}
-            >
-              {label}
-            </Link>
-          ))}
           {isAdmin && (
             <>
               <span className="mx-1 h-4 w-px shrink-0 bg-border" />
-              {NAV_USUARIOS.map(({ to, label }) => (
+              {NAV_ADMIN.map(({ to, label }) => (
                 <Link
                   key={to}
                   to={to}

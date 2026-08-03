@@ -13,21 +13,22 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AguardandoAprovacaoRouteImport } from './routes/aguardando-aprovacao'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedAjustesRouteImport } from './routes/_authenticated/ajustes'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAnaliseDespesasAdmRouteImport } from './routes/_authenticated/analise-despesas-adm'
 import { Route as AuthenticatedBalanceteRouteImport } from './routes/_authenticated/balancete'
 import { Route as AuthenticatedBalanceteGerencialRouteImport } from './routes/_authenticated/balancete-gerencial'
 import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
-import { Route as AuthenticatedBpDreDeparaRouteImport } from './routes/_authenticated/bp-dre-depara'
-import { Route as AuthenticatedBpDreImportarRouteImport } from './routes/_authenticated/bp-dre-importar'
-import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
-import { Route as AuthenticatedControleUsuariosRouteImport } from './routes/_authenticated/controle-usuarios'
-import { Route as AuthenticatedDeparaRouteImport } from './routes/_authenticated/depara'
 import { Route as AuthenticatedDespAdmRouteImport } from './routes/_authenticated/desp-adm'
-import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
-import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
-import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
 import { Route as AuthenticatedResultadoFinanceiroRouteImport } from './routes/_authenticated/resultado-financeiro'
+import { Route as AuthenticatedAdminAjustesRouteImport } from './routes/_authenticated/_admin/ajustes'
+import { Route as AuthenticatedAdminBpDreDeparaRouteImport } from './routes/_authenticated/_admin/bp-dre-depara'
+import { Route as AuthenticatedAdminBpDreImportarRouteImport } from './routes/_authenticated/_admin/bp-dre-importar'
+import { Route as AuthenticatedAdminConfiguracoesRouteImport } from './routes/_authenticated/_admin/configuracoes'
+import { Route as AuthenticatedAdminControleUsuariosRouteImport } from './routes/_authenticated/_admin/controle-usuarios'
+import { Route as AuthenticatedAdminDeparaRouteImport } from './routes/_authenticated/_admin/depara'
+import { Route as AuthenticatedAdminImportarRouteImport } from './routes/_authenticated/_admin/importar'
+import { Route as AuthenticatedAdminPainelRouteImport } from './routes/_authenticated/_admin/painel'
+import { Route as AuthenticatedAdminPendenciasRouteImport } from './routes/_authenticated/_admin/pendencias'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -48,9 +49,8 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAjustesRoute = AuthenticatedAjustesRouteImport.update({
-  id: '/ajustes',
-  path: '/ajustes',
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/_admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAnaliseDespesasAdmRoute =
@@ -75,53 +75,9 @@ const AuthenticatedBpDreRoute = AuthenticatedBpDreRouteImport.update({
   path: '/bp-dre',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBpDreDeparaRoute =
-  AuthenticatedBpDreDeparaRouteImport.update({
-    id: '/bp-dre-depara',
-    path: '/bp-dre-depara',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedBpDreImportarRoute =
-  AuthenticatedBpDreImportarRouteImport.update({
-    id: '/bp-dre-importar',
-    path: '/bp-dre-importar',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedConfiguracoesRoute =
-  AuthenticatedConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedControleUsuariosRoute =
-  AuthenticatedControleUsuariosRouteImport.update({
-    id: '/controle-usuarios',
-    path: '/controle-usuarios',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDeparaRoute = AuthenticatedDeparaRouteImport.update({
-  id: '/depara',
-  path: '/depara',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedDespAdmRoute = AuthenticatedDespAdmRouteImport.update({
   id: '/desp-adm',
   path: '/desp-adm',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
-  id: '/importar',
-  path: '/importar',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
-  id: '/painel',
-  path: '/painel',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPendenciasRoute = AuthenticatedPendenciasRouteImport.update({
-  id: '/pendencias',
-  path: '/pendencias',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedResultadoFinanceiroRoute =
@@ -130,46 +86,100 @@ const AuthenticatedResultadoFinanceiroRoute =
     path: '/resultado-financeiro',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminAjustesRoute =
+  AuthenticatedAdminAjustesRouteImport.update({
+    id: '/ajustes',
+    path: '/ajustes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBpDreDeparaRoute =
+  AuthenticatedAdminBpDreDeparaRouteImport.update({
+    id: '/bp-dre-depara',
+    path: '/bp-dre-depara',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBpDreImportarRoute =
+  AuthenticatedAdminBpDreImportarRouteImport.update({
+    id: '/bp-dre-importar',
+    path: '/bp-dre-importar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminConfiguracoesRoute =
+  AuthenticatedAdminConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminControleUsuariosRoute =
+  AuthenticatedAdminControleUsuariosRouteImport.update({
+    id: '/controle-usuarios',
+    path: '/controle-usuarios',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminDeparaRoute =
+  AuthenticatedAdminDeparaRouteImport.update({
+    id: '/depara',
+    path: '/depara',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminImportarRoute =
+  AuthenticatedAdminImportarRouteImport.update({
+    id: '/importar',
+    path: '/importar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPainelRoute =
+  AuthenticatedAdminPainelRouteImport.update({
+    id: '/painel',
+    path: '/painel',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPendenciasRoute =
+  AuthenticatedAdminPendenciasRouteImport.update({
+    id: '/pendencias',
+    path: '/pendencias',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/aguardando-aprovacao': typeof AguardandoAprovacaoRoute
   '/auth': typeof AuthRoute
-  '/ajustes': typeof AuthenticatedAjustesRoute
   '/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
   '/balancete': typeof AuthenticatedBalanceteRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/bp-dre': typeof AuthenticatedBpDreRoute
-  '/bp-dre-depara': typeof AuthenticatedBpDreDeparaRoute
-  '/bp-dre-importar': typeof AuthenticatedBpDreImportarRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/controle-usuarios': typeof AuthenticatedControleUsuariosRoute
-  '/depara': typeof AuthenticatedDeparaRoute
   '/desp-adm': typeof AuthenticatedDespAdmRoute
-  '/importar': typeof AuthenticatedImportarRoute
-  '/painel': typeof AuthenticatedPainelRoute
-  '/pendencias': typeof AuthenticatedPendenciasRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
+  '/ajustes': typeof AuthenticatedAdminAjustesRoute
+  '/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
+  '/bp-dre-importar': typeof AuthenticatedAdminBpDreImportarRoute
+  '/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
+  '/controle-usuarios': typeof AuthenticatedAdminControleUsuariosRoute
+  '/depara': typeof AuthenticatedAdminDeparaRoute
+  '/importar': typeof AuthenticatedAdminImportarRoute
+  '/painel': typeof AuthenticatedAdminPainelRoute
+  '/pendencias': typeof AuthenticatedAdminPendenciasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/aguardando-aprovacao': typeof AguardandoAprovacaoRoute
   '/auth': typeof AuthRoute
-  '/ajustes': typeof AuthenticatedAjustesRoute
   '/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
   '/balancete': typeof AuthenticatedBalanceteRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/bp-dre': typeof AuthenticatedBpDreRoute
-  '/bp-dre-depara': typeof AuthenticatedBpDreDeparaRoute
-  '/bp-dre-importar': typeof AuthenticatedBpDreImportarRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/controle-usuarios': typeof AuthenticatedControleUsuariosRoute
-  '/depara': typeof AuthenticatedDeparaRoute
   '/desp-adm': typeof AuthenticatedDespAdmRoute
-  '/importar': typeof AuthenticatedImportarRoute
-  '/painel': typeof AuthenticatedPainelRoute
-  '/pendencias': typeof AuthenticatedPendenciasRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
+  '/ajustes': typeof AuthenticatedAdminAjustesRoute
+  '/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
+  '/bp-dre-importar': typeof AuthenticatedAdminBpDreImportarRoute
+  '/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
+  '/controle-usuarios': typeof AuthenticatedAdminControleUsuariosRoute
+  '/depara': typeof AuthenticatedAdminDeparaRoute
+  '/importar': typeof AuthenticatedAdminImportarRoute
+  '/painel': typeof AuthenticatedAdminPainelRoute
+  '/pendencias': typeof AuthenticatedAdminPendenciasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,21 +187,22 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/aguardando-aprovacao': typeof AguardandoAprovacaoRoute
   '/auth': typeof AuthRoute
-  '/_authenticated/ajustes': typeof AuthenticatedAjustesRoute
+  '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
   '/_authenticated/balancete': typeof AuthenticatedBalanceteRoute
   '/_authenticated/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/_authenticated/bp-dre': typeof AuthenticatedBpDreRoute
-  '/_authenticated/bp-dre-depara': typeof AuthenticatedBpDreDeparaRoute
-  '/_authenticated/bp-dre-importar': typeof AuthenticatedBpDreImportarRoute
-  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/_authenticated/controle-usuarios': typeof AuthenticatedControleUsuariosRoute
-  '/_authenticated/depara': typeof AuthenticatedDeparaRoute
   '/_authenticated/desp-adm': typeof AuthenticatedDespAdmRoute
-  '/_authenticated/importar': typeof AuthenticatedImportarRoute
-  '/_authenticated/painel': typeof AuthenticatedPainelRoute
-  '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
   '/_authenticated/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
+  '/_authenticated/_admin/ajustes': typeof AuthenticatedAdminAjustesRoute
+  '/_authenticated/_admin/bp-dre-depara': typeof AuthenticatedAdminBpDreDeparaRoute
+  '/_authenticated/_admin/bp-dre-importar': typeof AuthenticatedAdminBpDreImportarRoute
+  '/_authenticated/_admin/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
+  '/_authenticated/_admin/controle-usuarios': typeof AuthenticatedAdminControleUsuariosRoute
+  '/_authenticated/_admin/depara': typeof AuthenticatedAdminDeparaRoute
+  '/_authenticated/_admin/importar': typeof AuthenticatedAdminImportarRoute
+  '/_authenticated/_admin/painel': typeof AuthenticatedAdminPainelRoute
+  '/_authenticated/_admin/pendencias': typeof AuthenticatedAdminPendenciasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,62 +210,63 @@ export interface FileRouteTypes {
     | '/'
     | '/aguardando-aprovacao'
     | '/auth'
-    | '/ajustes'
     | '/analise-despesas-adm'
     | '/balancete'
     | '/balancete-gerencial'
     | '/bp-dre'
+    | '/desp-adm'
+    | '/resultado-financeiro'
+    | '/ajustes'
     | '/bp-dre-depara'
     | '/bp-dre-importar'
     | '/configuracoes'
     | '/controle-usuarios'
     | '/depara'
-    | '/desp-adm'
     | '/importar'
     | '/painel'
     | '/pendencias'
-    | '/resultado-financeiro'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/aguardando-aprovacao'
     | '/auth'
-    | '/ajustes'
     | '/analise-despesas-adm'
     | '/balancete'
     | '/balancete-gerencial'
     | '/bp-dre'
+    | '/desp-adm'
+    | '/resultado-financeiro'
+    | '/ajustes'
     | '/bp-dre-depara'
     | '/bp-dre-importar'
     | '/configuracoes'
     | '/controle-usuarios'
     | '/depara'
-    | '/desp-adm'
     | '/importar'
     | '/painel'
     | '/pendencias'
-    | '/resultado-financeiro'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/aguardando-aprovacao'
     | '/auth'
-    | '/_authenticated/ajustes'
+    | '/_authenticated/_admin'
     | '/_authenticated/analise-despesas-adm'
     | '/_authenticated/balancete'
     | '/_authenticated/balancete-gerencial'
     | '/_authenticated/bp-dre'
-    | '/_authenticated/bp-dre-depara'
-    | '/_authenticated/bp-dre-importar'
-    | '/_authenticated/configuracoes'
-    | '/_authenticated/controle-usuarios'
-    | '/_authenticated/depara'
     | '/_authenticated/desp-adm'
-    | '/_authenticated/importar'
-    | '/_authenticated/painel'
-    | '/_authenticated/pendencias'
     | '/_authenticated/resultado-financeiro'
+    | '/_authenticated/_admin/ajustes'
+    | '/_authenticated/_admin/bp-dre-depara'
+    | '/_authenticated/_admin/bp-dre-importar'
+    | '/_authenticated/_admin/configuracoes'
+    | '/_authenticated/_admin/controle-usuarios'
+    | '/_authenticated/_admin/depara'
+    | '/_authenticated/_admin/importar'
+    | '/_authenticated/_admin/painel'
+    | '/_authenticated/_admin/pendencias'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -294,11 +306,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/ajustes': {
-      id: '/_authenticated/ajustes'
-      path: '/ajustes'
-      fullPath: '/ajustes'
-      preLoaderRoute: typeof AuthenticatedAjustesRouteImport
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/analise-despesas-adm': {
@@ -329,67 +341,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBpDreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/bp-dre-depara': {
-      id: '/_authenticated/bp-dre-depara'
-      path: '/bp-dre-depara'
-      fullPath: '/bp-dre-depara'
-      preLoaderRoute: typeof AuthenticatedBpDreDeparaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/bp-dre-importar': {
-      id: '/_authenticated/bp-dre-importar'
-      path: '/bp-dre-importar'
-      fullPath: '/bp-dre-importar'
-      preLoaderRoute: typeof AuthenticatedBpDreImportarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/configuracoes': {
-      id: '/_authenticated/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/controle-usuarios': {
-      id: '/_authenticated/controle-usuarios'
-      path: '/controle-usuarios'
-      fullPath: '/controle-usuarios'
-      preLoaderRoute: typeof AuthenticatedControleUsuariosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/depara': {
-      id: '/_authenticated/depara'
-      path: '/depara'
-      fullPath: '/depara'
-      preLoaderRoute: typeof AuthenticatedDeparaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/desp-adm': {
       id: '/_authenticated/desp-adm'
       path: '/desp-adm'
       fullPath: '/desp-adm'
       preLoaderRoute: typeof AuthenticatedDespAdmRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/importar': {
-      id: '/_authenticated/importar'
-      path: '/importar'
-      fullPath: '/importar'
-      preLoaderRoute: typeof AuthenticatedImportarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/painel': {
-      id: '/_authenticated/painel'
-      path: '/painel'
-      fullPath: '/painel'
-      preLoaderRoute: typeof AuthenticatedPainelRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/pendencias': {
-      id: '/_authenticated/pendencias'
-      path: '/pendencias'
-      fullPath: '/pendencias'
-      preLoaderRoute: typeof AuthenticatedPendenciasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/resultado-financeiro': {
@@ -399,42 +355,120 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedResultadoFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/_admin/ajustes': {
+      id: '/_authenticated/_admin/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof AuthenticatedAdminAjustesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/bp-dre-depara': {
+      id: '/_authenticated/_admin/bp-dre-depara'
+      path: '/bp-dre-depara'
+      fullPath: '/bp-dre-depara'
+      preLoaderRoute: typeof AuthenticatedAdminBpDreDeparaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/bp-dre-importar': {
+      id: '/_authenticated/_admin/bp-dre-importar'
+      path: '/bp-dre-importar'
+      fullPath: '/bp-dre-importar'
+      preLoaderRoute: typeof AuthenticatedAdminBpDreImportarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/configuracoes': {
+      id: '/_authenticated/_admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/controle-usuarios': {
+      id: '/_authenticated/_admin/controle-usuarios'
+      path: '/controle-usuarios'
+      fullPath: '/controle-usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminControleUsuariosRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/depara': {
+      id: '/_authenticated/_admin/depara'
+      path: '/depara'
+      fullPath: '/depara'
+      preLoaderRoute: typeof AuthenticatedAdminDeparaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/importar': {
+      id: '/_authenticated/_admin/importar'
+      path: '/importar'
+      fullPath: '/importar'
+      preLoaderRoute: typeof AuthenticatedAdminImportarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/painel': {
+      id: '/_authenticated/_admin/painel'
+      path: '/painel'
+      fullPath: '/painel'
+      preLoaderRoute: typeof AuthenticatedAdminPainelRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/pendencias': {
+      id: '/_authenticated/_admin/pendencias'
+      path: '/pendencias'
+      fullPath: '/pendencias'
+      preLoaderRoute: typeof AuthenticatedAdminPendenciasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAjustesRoute: typeof AuthenticatedAdminAjustesRoute
+  AuthenticatedAdminBpDreDeparaRoute: typeof AuthenticatedAdminBpDreDeparaRoute
+  AuthenticatedAdminBpDreImportarRoute: typeof AuthenticatedAdminBpDreImportarRoute
+  AuthenticatedAdminConfiguracoesRoute: typeof AuthenticatedAdminConfiguracoesRoute
+  AuthenticatedAdminControleUsuariosRoute: typeof AuthenticatedAdminControleUsuariosRoute
+  AuthenticatedAdminDeparaRoute: typeof AuthenticatedAdminDeparaRoute
+  AuthenticatedAdminImportarRoute: typeof AuthenticatedAdminImportarRoute
+  AuthenticatedAdminPainelRoute: typeof AuthenticatedAdminPainelRoute
+  AuthenticatedAdminPendenciasRoute: typeof AuthenticatedAdminPendenciasRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminAjustesRoute: AuthenticatedAdminAjustesRoute,
+    AuthenticatedAdminBpDreDeparaRoute: AuthenticatedAdminBpDreDeparaRoute,
+    AuthenticatedAdminBpDreImportarRoute: AuthenticatedAdminBpDreImportarRoute,
+    AuthenticatedAdminConfiguracoesRoute: AuthenticatedAdminConfiguracoesRoute,
+    AuthenticatedAdminControleUsuariosRoute:
+      AuthenticatedAdminControleUsuariosRoute,
+    AuthenticatedAdminDeparaRoute: AuthenticatedAdminDeparaRoute,
+    AuthenticatedAdminImportarRoute: AuthenticatedAdminImportarRoute,
+    AuthenticatedAdminPainelRoute: AuthenticatedAdminPainelRoute,
+    AuthenticatedAdminPendenciasRoute: AuthenticatedAdminPendenciasRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAjustesRoute: typeof AuthenticatedAjustesRoute
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAnaliseDespesasAdmRoute: typeof AuthenticatedAnaliseDespesasAdmRoute
   AuthenticatedBalanceteRoute: typeof AuthenticatedBalanceteRoute
   AuthenticatedBalanceteGerencialRoute: typeof AuthenticatedBalanceteGerencialRoute
   AuthenticatedBpDreRoute: typeof AuthenticatedBpDreRoute
-  AuthenticatedBpDreDeparaRoute: typeof AuthenticatedBpDreDeparaRoute
-  AuthenticatedBpDreImportarRoute: typeof AuthenticatedBpDreImportarRoute
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
-  AuthenticatedControleUsuariosRoute: typeof AuthenticatedControleUsuariosRoute
-  AuthenticatedDeparaRoute: typeof AuthenticatedDeparaRoute
   AuthenticatedDespAdmRoute: typeof AuthenticatedDespAdmRoute
-  AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
-  AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
-  AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
   AuthenticatedResultadoFinanceiroRoute: typeof AuthenticatedResultadoFinanceiroRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAjustesRoute: AuthenticatedAjustesRoute,
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAnaliseDespesasAdmRoute: AuthenticatedAnaliseDespesasAdmRoute,
   AuthenticatedBalanceteRoute: AuthenticatedBalanceteRoute,
   AuthenticatedBalanceteGerencialRoute: AuthenticatedBalanceteGerencialRoute,
   AuthenticatedBpDreRoute: AuthenticatedBpDreRoute,
-  AuthenticatedBpDreDeparaRoute: AuthenticatedBpDreDeparaRoute,
-  AuthenticatedBpDreImportarRoute: AuthenticatedBpDreImportarRoute,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
-  AuthenticatedControleUsuariosRoute: AuthenticatedControleUsuariosRoute,
-  AuthenticatedDeparaRoute: AuthenticatedDeparaRoute,
   AuthenticatedDespAdmRoute: AuthenticatedDespAdmRoute,
-  AuthenticatedImportarRoute: AuthenticatedImportarRoute,
-  AuthenticatedPainelRoute: AuthenticatedPainelRoute,
-  AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,
   AuthenticatedResultadoFinanceiroRoute: AuthenticatedResultadoFinanceiroRoute,
 }
 
@@ -450,3 +484,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

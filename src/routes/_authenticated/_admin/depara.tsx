@@ -20,7 +20,7 @@ import { CATEGORIAS, LINHAS } from "@/lib/balancete";
 import { exportarPlanilha, lerPlanilhaSimples } from "@/lib/excel";
 import { Trash2, Download, Upload } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/depara")({
+export const Route = createFileRoute("/_authenticated/_admin/depara")({
   head: () => ({
     meta: [
       { title: "De/Para | Balancete Gerencial" },

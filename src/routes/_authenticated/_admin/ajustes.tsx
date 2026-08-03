@@ -25,7 +25,7 @@ import {
 } from "@/lib/balancete";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/ajustes")({
+export const Route = createFileRoute("/_authenticated/_admin/ajustes")({
   head: () => ({
     meta: [
       { title: "Ajustes Gerenciais | Balancete" },

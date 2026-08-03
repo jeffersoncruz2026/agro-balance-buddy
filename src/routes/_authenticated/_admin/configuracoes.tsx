@@ -27,7 +27,7 @@ import {
 } from "@/lib/balancete";
 
 
-export const Route = createFileRoute("/_authenticated/configuracoes")({
+export const Route = createFileRoute("/_authenticated/_admin/configuracoes")({
   head: () => ({
     meta: [
       { title: "Configurações | Balancete Gerencial" },

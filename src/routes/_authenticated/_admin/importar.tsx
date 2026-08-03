@@ -11,7 +11,7 @@ import { parseBase, type LinhaBase } from "@/lib/excel";
 import { formatBRL, sugerirLinha } from "@/lib/balancete";
 import { Upload, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/importar")({
+export const Route = createFileRoute("/_authenticated/_admin/importar")({
   head: () => ({
     meta: [
       { title: "Importar base | Balancete Gerencial" },
