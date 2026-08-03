@@ -612,6 +612,16 @@ function DespesasAdministrativas() {
           </p>
         </DialogContent>
       </Dialog>
+
+      <ChatBalancete
+        contexto={`Mês/ano de referência selecionado na tela: ${refMes}/${refAno}.`}
+        sugestoes={[
+          `Total de DESP. ADM em ${mesLabel(refAno, refMes)}`,
+          "Comparar os últimos 3 meses",
+          "Maiores contas contábeis do mês",
+          "Maiores centros de custo do mês",
+        ]}
+      />
     </AppLayout>
   );
 }
