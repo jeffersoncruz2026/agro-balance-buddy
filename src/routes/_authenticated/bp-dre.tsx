@@ -53,7 +53,9 @@ const MESES_LABEL = [
 
 function BpDre() {
   const [empresaId, setEmpresaId] = useState<string>("");
+  const [aba, setAba] = useState<"bp" | "dre">("bp");
   const [periodo, setPeriodo] = useState<string>("");
+
   const [detalhe, setDetalhe] = useState<{
     demonstrativo: string;
     secao: string | null;
