@@ -214,7 +214,10 @@ function AnaliseDespesasAdm() {
     }
     ponteData.push({ nome: "Mês atual", base: 0, valor: acumulado, tipo: "total" });
 
-    const maiorAlta = topDeltas.filter((d) => d.delta > 0).sort((a, b) => b.delta - a.delta)[0];
+    const altas = topDeltas.filter((d) => d.delta > 0).sort((a, b) => b.delta - a.delta);
+    const maiorAlta = altas[0];
+    const segundaAlta =
+      altas[1] && maiorAlta && altas[1].delta >= maiorAlta.delta * 0.25 ? altas[1] : undefined;
     const maiorQueda = topDeltas.filter((d) => d.delta < 0).sort((a, b) => a.delta - b.delta)[0];
 
     const rowsAtual = despRows.filter((r) => r.ano === refAno && r.mes === refMes);
