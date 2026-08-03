@@ -330,121 +330,196 @@ function BalanceteGerencial() {
         </CardContent>
       </Card>
 
-      <div className="overflow-auto rounded-md border border-border bg-card">
-        <table className="w-full border-collapse text-xs">
-          <thead>
-            <tr className="bg-primary text-primary-foreground">
-              <th className="sticky left-0 z-10 w-40 min-w-40 bg-primary px-3 py-2 text-left font-semibold">
-                DESCRIÇÃO
-              </th>
-              <th className="sticky left-40 z-10 w-20 min-w-20 bg-primary px-2 py-2 text-left font-semibold">
-                ANO
-              </th>
-              {COLUNAS_VISIVEIS.map((c) => (
-                <th key={c.key} className="px-2 py-2 text-right font-semibold whitespace-pre-line">
-                  {c.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              ...rel.linhas.map((l) => ({
-                rotulo: l.linha,
-                valores: l.valores,
-                total: false,
-              })),
-              { rotulo: "TOTAL", valores: rel.total, total: true },
-            ].map((grupo) => (
-              <Fragment key={grupo.rotulo}>
-                {safras
-                  .slice()
-                  .reverse()
-                  .map((safra, idx) => (
-                    <tr
-                      key={safra}
-                      className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border/60"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"} ${idx !== 0 ? "text-destructive" : ""}`}
-                    >
-                      {idx === 0 && (
-                        <td
-                          rowSpan={safras.length}
-                          className={`sticky left-0 z-10 w-40 min-w-40 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
-                        >
-                          {grupo.rotulo}
-                        </td>
-                      )}
-                      <td
-                        className={`sticky left-40 z-10 w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"} ${grupo.total ? "bg-muted" : "bg-card"}`}
-                      >
-                        {safraLabel(safra)}
-                      </td>
-                      {COLUNAS_VISIVEIS.map((c) => (
-                        <td
-                          key={c.key}
-                          onClick={() =>
-                            !grupo.total &&
-                            c.cat &&
-                            setDetalhe({ safra, linha: grupo.rotulo, categoria: c.cat })
-                          }
-                          className={`num px-2 py-1.5 text-right ${!grupo.total && c.cat ? "cursor-pointer hover:underline" : "font-semibold"}`}
-                        >
-                          {formatBRL(grupo.valores[safra][c.key as ColKey])}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <style>{`
+        @media print {
+          .bg-print-table-wrap {
+            overflow: hidden !important;
+            border: none !important;
+            border-radius: 0 !important;
+          }
+          .bg-print-area table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            font-size: 6px !important;
+            line-height: 1.05 !important;
+          }
+          .bg-print-area th,
+          .bg-print-area td {
+            padding: 0.5px 3px !important;
+            position: static !important;
+            overflow: hidden;
+          }
+          .bg-print-area .num {
+            font-size: 6px !important;
+            white-space: nowrap !important;
+          }
+          .bg-print-table-wrap table th:first-child,
+          .bg-print-table-wrap table td:first-child {
+            width: 13% !important;
+            min-width: 0 !important;
+          }
+          .bg-print-table-wrap table th:nth-child(2),
+          .bg-print-table-wrap table td:nth-child(2) {
+            width: 6% !important;
+            min-width: 0 !important;
+          }
+        }
+      `}</style>
 
-      <Card className="mt-6">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Resultado consolidado</CardTitle>
-        </CardHeader>
-        <CardContent className="px-0">
-          <table className="w-full text-xs">
+      <div className="bg-print-area">
+        <div className="bg-print-table-wrap overflow-auto rounded-md border border-border bg-card">
+          <table className="w-full border-collapse text-xs">
             <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="w-40 min-w-40 px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
-                <th className="w-20 min-w-20 px-2 py-2 text-left font-medium">ANO</th>
-                <th className="px-3 py-2 text-right font-medium">SALDO</th>
+              <tr className="bg-primary text-primary-foreground">
+                <th className="sticky left-0 z-10 w-40 min-w-40 bg-primary px-3 py-2 text-left font-semibold">
+                  DESCRIÇÃO
+                </th>
+                <th className="sticky left-40 z-10 w-20 min-w-20 bg-primary px-2 py-2 text-left font-semibold">
+                  ANO
+                </th>
+                {COLUNAS_VISIVEIS.map((c) => (
+                  <th
+                    key={c.key}
+                    className="px-2 py-2 text-right font-semibold whitespace-pre-line"
+                  >
+                    {c.label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
+              {[
+                ...rel.linhas.map((l) => ({
+                  rotulo: l.linha,
+                  valores: l.valores,
+                  total: false,
+                })),
+                { rotulo: "TOTAL", valores: rel.total, total: true },
+              ].map((grupo) => (
+                <Fragment key={grupo.rotulo}>
+                  {safras
+                    .slice()
+                    .reverse()
+                    .map((safra, idx) => (
+                      <tr
+                        key={safra}
+                        className={`${idx === 0 ? "border-t-2 border-primary" : "border-t border-border/60"} ${grupo.total ? "bg-muted font-semibold" : "hover:bg-muted/50"} ${idx !== 0 ? "text-destructive" : ""}`}
+                      >
+                        {idx === 0 && (
+                          <td
+                            rowSpan={safras.length}
+                            className={`sticky left-0 z-10 w-40 min-w-40 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
+                          >
+                            {grupo.rotulo}
+                          </td>
+                        )}
+                        <td
+                          className={`sticky left-40 z-10 w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"} ${grupo.total ? "bg-muted" : "bg-card"}`}
+                        >
+                          {safraLabel(safra)}
+                        </td>
+                        {COLUNAS_VISIVEIS.map((c) => (
+                          <td
+                            key={c.key}
+                            onClick={() =>
+                              !grupo.total &&
+                              c.cat &&
+                              setDetalhe({ safra, linha: grupo.rotulo, categoria: c.cat })
+                            }
+                            className={`num px-2 py-1.5 text-right ${!grupo.total && c.cat ? "cursor-pointer hover:underline" : "font-semibold"}`}
+                          >
+                            {formatBRL(grupo.valores[safra][c.key as ColKey])}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                </Fragment>
+              ))}
+              {/* No print, o Resultado consolidado continua na mesma tabela — só a coluna SALDO é preenchida. */}
               {rel.blocos.map((b) => (
-                <Fragment key={b.rotulo}>
+                <Fragment key={`print-${b.rotulo}`}>
                   {safras
                     .slice()
                     .reverse()
                     .map((s, idx) => (
                       <tr
                         key={s}
-                        className={`${idx === 0 ? "border-t border-border" : "border-b border-border"} ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "italic" : ""} ${idx !== 0 ? "text-destructive" : b.informativo ? "text-muted-foreground" : ""}`}
+                        className={`hidden print:table-row ${idx === 0 ? "border-t border-border/60" : ""} ${b.destaque ? "font-semibold" : ""} ${b.informativo ? "italic" : ""} ${idx !== 0 ? "text-destructive" : ""}`}
                       >
                         {idx === 0 && (
                           <td
                             rowSpan={safras.length}
-                            className="w-40 min-w-40 px-3 py-1.5 align-middle"
+                            className="px-3 py-1.5 align-middle font-medium"
                           >
                             {b.rotulo}
                           </td>
                         )}
                         <td
-                          className={`w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
+                          className={`px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
                         >
                           {safraLabel(s)}
                         </td>
-                        <td className="num px-3 py-1.5 text-right">{formatBRL(b.saldos[s])}</td>
+                        {COLUNAS_VISIVEIS.slice(0, -1).map((c) => (
+                          <td key={c.key} />
+                        ))}
+                        <td className="num px-2 py-1.5 text-right font-semibold">
+                          {formatBRL(b.saldos[s])}
+                        </td>
                       </tr>
                     ))}
                 </Fragment>
               ))}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
+        </div>
+
+        <Card className="mt-6 print:hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Resultado consolidado</CardTitle>
+          </CardHeader>
+          <CardContent className="px-0">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="w-40 min-w-40 px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
+                  <th className="w-20 min-w-20 px-2 py-2 text-left font-medium">ANO</th>
+                  <th className="px-3 py-2 text-right font-medium">SALDO</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rel.blocos.map((b) => (
+                  <Fragment key={b.rotulo}>
+                    {safras
+                      .slice()
+                      .reverse()
+                      .map((s, idx) => (
+                        <tr
+                          key={s}
+                          className={`${idx === 0 ? "border-t border-border" : "border-b border-border"} ${b.destaque ? "bg-muted font-semibold" : ""} ${b.informativo ? "italic" : ""} ${idx !== 0 ? "text-destructive" : b.informativo ? "text-muted-foreground" : ""}`}
+                        >
+                          {idx === 0 && (
+                            <td
+                              rowSpan={safras.length}
+                              className="w-40 min-w-40 px-3 py-1.5 align-middle"
+                            >
+                              {b.rotulo}
+                            </td>
+                          )}
+                          <td
+                            className={`w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
+                          >
+                            {safraLabel(s)}
+                          </td>
+                          <td className="num px-3 py-1.5 text-right">{formatBRL(b.saldos[s])}</td>
+                        </tr>
+                      ))}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
 
       <Dialog open={!!detalhe} onOpenChange={(o) => !o && setDetalhe(null)}>
         <DialogContent className="max-w-5xl">
