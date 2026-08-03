@@ -665,7 +665,10 @@ export type Database = {
       }
       fn_safra_inicio: { Args: never; Returns: number }
       has_role: {
-        Args: { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
         Returns: boolean
       }
       pendencias_contas: {
