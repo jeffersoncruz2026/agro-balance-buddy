@@ -121,6 +121,13 @@ function BpDre() {
     },
   });
 
+  const secoesAtivo = useMemo(() => bp.secoes.filter((s) => s.lado === "ativo"), [bp.secoes]);
+  const secoesPassivo = useMemo(() => bp.secoes.filter((s) => s.lado === "passivo"), [bp.secoes]);
+  const contarLinhas = (secoes: typeof bp.secoes) =>
+    secoes.reduce((acc, s) => acc + s.linhas.length + 1, 0);
+  const linhasAtivo = contarLinhas(secoesAtivo);
+  const linhasPassivo = contarLinhas(secoesPassivo);
+
   const empresaSelecionada = (empresas.data ?? []).find((e) => e.id === empresaId);
   const mesLabel = mesSel ? MESES_LABEL[mesSel - 1] : "";
 
@@ -210,10 +217,10 @@ function BpDre() {
                 </span>
               </div>
             )}
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid items-start gap-4 lg:grid-cols-2">
               <BpColuna
                 titulo="Ativo"
-                secoes={bp.secoes.filter((s) => s.lado === "ativo")}
+                secoes={secoesAtivo}
                 total="Total do ativo"
                 totalValor={bp.totalAtivo}
                 totalValorAnoAnterior={bp.totalAtivoAnoAnterior}
@@ -221,10 +228,11 @@ function BpDre() {
                 anoSel={anoSel}
                 demonstrativo="BP"
                 onDetalhe={setDetalhe}
+                linhasVazias={Math.max(0, linhasPassivo - linhasAtivo)}
               />
               <BpColuna
                 titulo="Passivo"
-                secoes={bp.secoes.filter((s) => s.lado === "passivo")}
+                secoes={secoesPassivo}
                 total="Total do passivo + PL"
                 totalValor={bp.totalPassivo}
                 totalValorAnoAnterior={bp.totalPassivoAnoAnterior}
@@ -232,6 +240,7 @@ function BpDre() {
                 anoSel={anoSel}
                 demonstrativo="BP"
                 onDetalhe={setDetalhe}
+                linhasVazias={Math.max(0, linhasAtivo - linhasPassivo)}
               />
             </div>
           </TabsContent>
