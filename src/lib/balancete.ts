@@ -91,11 +91,12 @@ export const PRESERVA_SINAL: ColKey[] = [
   "despTrib",
 ];
 
-/** Centro de custo cujas despesas administrativas vão 100% para OUTROS. */
-export const CCUSTO_ADM_OUTROS = "01.14.0003";
-/** Conta + tipo de movimento que também vão 100% para OUTROS. */
+/** Centro de custo (NOMECUSTO) cujas despesas administrativas vão 100% para OUTROS. */
+export const CUSTO_ADM_OUTROS = "GOVERNANCIA CORPORATIVA";
+/** Conta que vai 100% para OUTROS, exceto quando o produto for o excluído abaixo. */
 export const CONTA_ADM_OUTROS = "3.4.01.10.0003";
-export const CODTMV_ADM_OUTROS = "1.2.13";
+/** Produto que fica de fora da regra direta da conta acima (segue o rateio). */
+export const PRODUTO_ADM_EXCECAO = "DOACOES CURSOS E FACULDADES FUNCIONARIO";
 /** Prefixo das contas de Despesas Administrativas com regra própria. */
 export const PREFIXO_ADM = "3.4.01.";
 
