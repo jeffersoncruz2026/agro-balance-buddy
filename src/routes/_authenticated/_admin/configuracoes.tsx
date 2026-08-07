@@ -18,9 +18,9 @@ import {
   LINHAS,
   MESES,
   PREFIXO_ADM,
-  CCUSTO_ADM_OUTROS,
+  CUSTO_ADM_OUTROS,
   CONTA_ADM_OUTROS,
-  CODTMV_ADM_OUTROS,
+  PRODUTO_ADM_EXCECAO,
   CUSTO_VENDAS_FIXO,
   LINHAS_VENDAS_FIXO,
   safraLabel,
@@ -307,10 +307,11 @@ function Configuracoes() {
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Lançamentos com centro de custo{" "}
-            <span className="font-medium text-foreground">{CCUSTO_ADM_OUTROS}</span> — ou com conta{" "}
-            <span className="font-medium text-foreground">{CONTA_ADM_OUTROS}</span> combinada com
-            CODTMV <span className="font-medium text-foreground">{CODTMV_ADM_OUTROS}</span> — vão
-            100% para a linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
+            <span className="font-medium text-foreground">{CUSTO_ADM_OUTROS}</span> — ou com conta{" "}
+            <span className="font-medium text-foreground">{CONTA_ADM_OUTROS}</span> e produto
+            diferente de{" "}
+            <span className="font-medium text-foreground">{PRODUTO_ADM_EXCECAO}</span> — vão 100%
+            para a linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
             rateados entre todas as linhas conforme os percentuais abaixo — OUTROS recebe a sua
             fatia do rateio somada aos valores diretos.
           </p>
@@ -658,8 +659,8 @@ function Configuracoes() {
           </p>
           <p>
             4. DESP. TRIBUT segue os percentuais vigentes configurados acima. As DESP. ADM das
-            contas {PREFIXO_ADM}* seguem a regra própria ({CCUSTO_ADM_OUTROS}, ou{" "}
-            {CONTA_ADM_OUTROS} com CODTMV {CODTMV_ADM_OUTROS} → 100% OUTROS; demais → rateio
+            contas {PREFIXO_ADM}* seguem a regra própria ({CUSTO_ADM_OUTROS}, ou{" "}
+            {CONTA_ADM_OUTROS} com produto diferente de {PRODUTO_ADM_EXCECAO} → 100% OUTROS; demais → rateio
             percentual vigente). As DESP. VENDAS não usam rateio percentual: {CUSTO_VENDAS_FIXO} é
             50%/50% entre {LINHAS_VENDAS_FIXO[0]} e {LINHAS_VENDAS_FIXO[1]}, e os demais NOMECUSTO
             seguem o De/Para manual.
