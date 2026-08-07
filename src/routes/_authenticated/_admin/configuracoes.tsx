@@ -307,10 +307,11 @@ function Configuracoes() {
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Lançamentos com centro de custo{" "}
-            <span className="font-medium text-foreground">{CCUSTO_ADM_OUTROS}</span> — ou com conta{" "}
-            <span className="font-medium text-foreground">{CONTA_ADM_OUTROS}</span> combinada com
-            CODTMV <span className="font-medium text-foreground">{CODTMV_ADM_OUTROS}</span> — vão
-            100% para a linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
+            <span className="font-medium text-foreground">{CUSTO_ADM_OUTROS}</span> — ou com conta{" "}
+            <span className="font-medium text-foreground">{CONTA_ADM_OUTROS}</span> e produto
+            diferente de{" "}
+            <span className="font-medium text-foreground">{PRODUTO_ADM_EXCECAO}</span> — vão 100%
+            para a linha <span className="font-medium text-foreground">OUTROS</span>. Os demais são
             rateados entre todas as linhas conforme os percentuais abaixo — OUTROS recebe a sua
             fatia do rateio somada aos valores diretos.
           </p>
