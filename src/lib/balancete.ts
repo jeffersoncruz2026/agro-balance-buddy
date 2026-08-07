@@ -216,8 +216,9 @@ export function montarRelatorio(
         let bruto: number;
 
         if (col.key === "despAdm") {
-          // Contas 3.4.01.* têm regra própria:
-          // CODCCUSTO 01.14.0003 → 100% OUTROS; demais → rateio percentual configurado.
+          // Contas 3.4.01.* têm regra própria: NOMECUSTO "GOVERNANCIA CORPORATIVA", ou conta
+          // 3.4.01.10.0003 com produto diferente de "DOACOES CURSOS E FACULDADES FUNCIONARIO",
+          // vão 100% para OUTROS; demais → rateio percentual configurado.
           const direto = linha === "OUTROS" ? soma(safra, col.cat, (r) => r.regra === "ADM_OUTROS") : 0;
           const pool = soma(safra, col.cat, (r) => r.regra === "ADM_RATEIO");
           const rateado = usarAdm ? pool * ((rateioAdm[linha] || 0) / totalAdm) : 0;
