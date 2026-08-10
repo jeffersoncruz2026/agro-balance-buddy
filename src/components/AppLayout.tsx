@@ -20,6 +20,7 @@ import {
   FileUp,
   FileBarChart2,
   Newspaper,
+  Gauge,
   ShieldCheck,
 } from "lucide-react";
 
@@ -30,6 +31,7 @@ const NAV_RELATORIOS = [
   { to: "/balancete-gerencial", label: "Balancete Gerencial", icon: FileStack },
   { to: "/resultado-financeiro", label: "Resultado Financeiro", icon: Landmark },
   { to: "/analise-despesas-adm", label: "Análise Despesas ADM", icon: Newspaper },
+  { to: "/performance-rentabilidade", label: "Performance e Rentabilidade", icon: Gauge },
   { to: "/bp-dre", label: "Balanço Patrimonial e DRE", icon: FileBarChart2 },
 ] as const;
 

@@ -722,6 +722,54 @@ export type Database = {
           valor: number
         }[]
       }
+      perf_lancamentos: {
+        Args: {
+          p_atividade?: string
+          p_divisao?: string
+          p_fim: string
+          p_ini: string
+          p_nomecusto?: string
+          p_nomedepto?: string
+          p_tipo: string
+        }
+        Returns: {
+          codfilial: string
+          codund: string
+          contacontabil: string
+          data: string
+          divisao: string
+          documento: string
+          histfaturamento: string
+          id: number
+          idpartida: string
+          nomecoligada: string
+          nomecusto: string
+          nomedepto: string
+          produto: string
+          quantidade: number
+          saldounitario: number
+          vcodconta: string
+          vlcusto: number
+        }[]
+      }
+      perf_rentabilidade: {
+        Args: { p_fim: string; p_ini: string }
+        Returns: {
+          ano: number
+          atividade: string
+          codfilial: string
+          codund: string
+          divisao: string
+          mes: number
+          nomecoligada: string
+          nomecusto: string
+          nomedepto: string
+          produto: string
+          quantidade: number
+          tipo: string
+          valor: number
+        }[]
+      }
       rateio_adm_vigente: {
         Args: { p_ano: number; p_mes: number }
         Returns: {
