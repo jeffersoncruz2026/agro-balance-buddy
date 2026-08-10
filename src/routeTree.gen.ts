@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatBalanceteRouteImport } from './routes/api/chat-balancete'
 import { Route as AuthenticatedResultadoFinanceiroRouteImport } from './routes/_authenticated/resultado-financeiro'
+import { Route as AuthenticatedPerformanceRentabilidadeRouteImport } from './routes/_authenticated/performance-rentabilidade'
 import { Route as AuthenticatedBpDreRouteImport } from './routes/_authenticated/bp-dre'
 import { Route as AuthenticatedBalanceteGerencialRouteImport } from './routes/_authenticated/balancete-gerencial'
 import { Route as AuthenticatedAnaliseDespesasAdmRouteImport } from './routes/_authenticated/analise-despesas-adm'
@@ -59,6 +60,12 @@ const AuthenticatedResultadoFinanceiroRoute =
   AuthenticatedResultadoFinanceiroRouteImport.update({
     id: '/resultado-financeiro',
     path: '/resultado-financeiro',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPerformanceRentabilidadeRoute =
+  AuthenticatedPerformanceRentabilidadeRouteImport.update({
+    id: '/performance-rentabilidade',
+    path: '/performance-rentabilidade',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedBpDreRoute = AuthenticatedBpDreRouteImport.update({
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/bp-dre': typeof AuthenticatedBpDreRoute
+  '/performance-rentabilidade': typeof AuthenticatedPerformanceRentabilidadeRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
   '/api/chat-balancete': typeof ApiChatBalanceteRoute
   '/ajustes': typeof AuthenticatedAdminAjustesRoute
@@ -177,6 +185,7 @@ export interface FileRoutesByTo {
   '/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
   '/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/bp-dre': typeof AuthenticatedBpDreRoute
+  '/performance-rentabilidade': typeof AuthenticatedPerformanceRentabilidadeRoute
   '/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
   '/api/chat-balancete': typeof ApiChatBalanceteRoute
   '/ajustes': typeof AuthenticatedAdminAjustesRoute
@@ -201,6 +210,7 @@ export interface FileRoutesById {
   '/_authenticated/analise-despesas-adm': typeof AuthenticatedAnaliseDespesasAdmRoute
   '/_authenticated/balancete-gerencial': typeof AuthenticatedBalanceteGerencialRoute
   '/_authenticated/bp-dre': typeof AuthenticatedBpDreRoute
+  '/_authenticated/performance-rentabilidade': typeof AuthenticatedPerformanceRentabilidadeRoute
   '/_authenticated/resultado-financeiro': typeof AuthenticatedResultadoFinanceiroRoute
   '/api/chat-balancete': typeof ApiChatBalanceteRoute
   '/_authenticated/_admin/ajustes': typeof AuthenticatedAdminAjustesRoute
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/analise-despesas-adm'
     | '/balancete-gerencial'
     | '/bp-dre'
+    | '/performance-rentabilidade'
     | '/resultado-financeiro'
     | '/api/chat-balancete'
     | '/ajustes'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/analise-despesas-adm'
     | '/balancete-gerencial'
     | '/bp-dre'
+    | '/performance-rentabilidade'
     | '/resultado-financeiro'
     | '/api/chat-balancete'
     | '/ajustes'
@@ -268,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analise-despesas-adm'
     | '/_authenticated/balancete-gerencial'
     | '/_authenticated/bp-dre'
+    | '/_authenticated/performance-rentabilidade'
     | '/_authenticated/resultado-financeiro'
     | '/api/chat-balancete'
     | '/_authenticated/_admin/ajustes'
@@ -333,6 +346,13 @@ declare module '@tanstack/react-router' {
       path: '/resultado-financeiro'
       fullPath: '/resultado-financeiro'
       preLoaderRoute: typeof AuthenticatedResultadoFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/performance-rentabilidade': {
+      id: '/_authenticated/performance-rentabilidade'
+      path: '/performance-rentabilidade'
+      fullPath: '/performance-rentabilidade'
+      preLoaderRoute: typeof AuthenticatedPerformanceRentabilidadeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/bp-dre': {
@@ -483,6 +503,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnaliseDespesasAdmRoute: typeof AuthenticatedAnaliseDespesasAdmRoute
   AuthenticatedBalanceteGerencialRoute: typeof AuthenticatedBalanceteGerencialRoute
   AuthenticatedBpDreRoute: typeof AuthenticatedBpDreRoute
+  AuthenticatedPerformanceRentabilidadeRoute: typeof AuthenticatedPerformanceRentabilidadeRoute
   AuthenticatedResultadoFinanceiroRoute: typeof AuthenticatedResultadoFinanceiroRoute
 }
 
@@ -491,6 +512,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnaliseDespesasAdmRoute: AuthenticatedAnaliseDespesasAdmRoute,
   AuthenticatedBalanceteGerencialRoute: AuthenticatedBalanceteGerencialRoute,
   AuthenticatedBpDreRoute: AuthenticatedBpDreRoute,
+  AuthenticatedPerformanceRentabilidadeRoute:
+    AuthenticatedPerformanceRentabilidadeRoute,
   AuthenticatedResultadoFinanceiroRoute: AuthenticatedResultadoFinanceiroRoute,
 }
 
