@@ -17,6 +17,17 @@ export interface LinhaBase {
   documento: string | null;
   nomeconta: string | null;
   data: string;
+  grupocontabil: string | null;
+  divisao: string | null;
+  codfilial: string | null;
+  grupocontabil_n9: string | null;
+  codund: string | null;
+  quantidade: number | null;
+  saldounitario: number | null;
+  histfaturamento: string | null;
+  produto_antigo: string | null;
+  nome_orcamento: string | null;
+  idpartida: string | null;
 }
 
 const norm = (s: unknown) =>
@@ -28,21 +39,35 @@ const norm = (s: unknown) =>
 
 const ALIASES: Record<string, string[]> = {
   codcoligada: ["CODCOLIGADA"],
-  nomecoligada: ["NOMECOLIGADA"],
+  nomecoligada: ["NOMECOLIGADA", "COLIGADA"],
   coddepartamento: ["CODDEPARTAMENTO"],
   codccusto: ["CODCCUSTO"],
   nomedepto: ["NOMEDEPTO", "NOMEDEPARTAMENTO"],
   nomecusto: ["NOMECUSTO"],
-  vlcusto: ["VLCUSTO", "VALOR"],
+  vlcusto: ["VLCUSTO", "VALOR", "SALDO"],
   complemento: ["COMPLEMENTO"],
-  vcodconta: ["VCODCONTA", "CODCONTA"],
+  vcodconta: ["VCODCONTA", "CODCONTA", "CONTACONTABIL"],
   codtmv: ["CODTMV"],
   contacontabil: ["CONTACONTABIL"],
-  produto: ["PRODUTO"],
+  produto: ["PRODUTO", "NOMEPRODUTO"],
   documento: ["DOCUMENTO"],
-  nomeconta: ["NOMECONTA"],
+  nomeconta: ["NOMECONTA", "DESCRICAOCONTABIL"],
   data: ["DATA", "DTLANCAMENTO", "DATACOMPETENCIA"],
+  grupocontabil: ["GRUPOCONTABIL"],
+  divisao: ["DIVISAO"],
+  codfilial: ["CODFILIAL"],
+  grupocontabil_n9: ["GRUPOCONTABILN9"],
+  codund: ["CODUND", "UNIDADE"],
+  quantidade: ["QUANTIDADE"],
+  saldounitario: ["SALDOUNITARIO"],
+  histfaturamento: ["HISTFATURAMENTO"],
+  produto_antigo: ["NOMEPRODUTOANTIGO"],
+  nome_orcamento: ["NOMEORCAMENTO"],
+  idpartida: ["IDPARTIDA"],
 };
+
+const ESSENCIAIS = ["nomecoligada", "vlcusto", "vcodconta", "produto", "data"];
+
 
 function toNumber(v: unknown): number {
   if (typeof v === "number") return v;
