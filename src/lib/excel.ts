@@ -105,9 +105,16 @@ export function parseBase(buffer: ArrayBuffer): {
   const header = raw.length ? Object.keys(raw[0]) : [];
   const mapa: Record<string, string> = {};
   for (const [campo, alias] of Object.entries(ALIASES)) {
-    const found = header.find((h) => alias.includes(norm(h)));
-    if (found) mapa[campo] = found;
+    // respeita a ordem de prioridade dos apelidos (layout antigo antes do novo)
+    for (const a of alias) {
+      const found = header.find((h) => norm(h) === a);
+      if (found) {
+        mapa[campo] = found;
+        break;
+      }
+    }
   }
+
   const faltando = ESSENCIAIS.filter((k) => !(k in mapa));
 
   const linhas: LinhaBase[] = [];
