@@ -339,18 +339,29 @@ export type Database = {
           codccusto: string | null
           codcoligada: string | null
           coddepartamento: string | null
+          codfilial: string | null
           codtmv: string | null
+          codund: string | null
           complemento: string | null
           contacontabil: string | null
           data: string
+          divisao: string | null
           documento: string | null
+          grupocontabil: string | null
+          grupocontabil_n9: string | null
+          histfaturamento: string | null
           id: number
+          idpartida: string | null
           importacao_id: string | null
+          nome_orcamento: string | null
           nomecoligada: string | null
           nomeconta: string | null
           nomecusto: string | null
           nomedepto: string | null
           produto: string | null
+          produto_antigo: string | null
+          quantidade: number | null
+          saldounitario: number | null
           vcodconta: string | null
           vlcusto: number
         }
@@ -358,18 +369,29 @@ export type Database = {
           codccusto?: string | null
           codcoligada?: string | null
           coddepartamento?: string | null
+          codfilial?: string | null
           codtmv?: string | null
+          codund?: string | null
           complemento?: string | null
           contacontabil?: string | null
           data: string
+          divisao?: string | null
           documento?: string | null
+          grupocontabil?: string | null
+          grupocontabil_n9?: string | null
+          histfaturamento?: string | null
           id?: number
+          idpartida?: string | null
           importacao_id?: string | null
+          nome_orcamento?: string | null
           nomecoligada?: string | null
           nomeconta?: string | null
           nomecusto?: string | null
           nomedepto?: string | null
           produto?: string | null
+          produto_antigo?: string | null
+          quantidade?: number | null
+          saldounitario?: number | null
           vcodconta?: string | null
           vlcusto?: number
         }
@@ -377,18 +399,29 @@ export type Database = {
           codccusto?: string | null
           codcoligada?: string | null
           coddepartamento?: string | null
+          codfilial?: string | null
           codtmv?: string | null
+          codund?: string | null
           complemento?: string | null
           contacontabil?: string | null
           data?: string
+          divisao?: string | null
           documento?: string | null
+          grupocontabil?: string | null
+          grupocontabil_n9?: string | null
+          histfaturamento?: string | null
           id?: number
+          idpartida?: string | null
           importacao_id?: string | null
+          nome_orcamento?: string | null
           nomecoligada?: string | null
           nomeconta?: string | null
           nomecusto?: string | null
           nomedepto?: string | null
           produto?: string | null
+          produto_antigo?: string | null
+          quantidade?: number | null
+          saldounitario?: number | null
           vcodconta?: string | null
           vlcusto?: number
         }
