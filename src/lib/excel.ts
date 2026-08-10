@@ -108,8 +108,7 @@ export function parseBase(buffer: ArrayBuffer): {
     const found = header.find((h) => alias.includes(norm(h)));
     if (found) mapa[campo] = found;
   }
-  const OPCIONAIS = ["codtmv"];
-  const faltando = Object.keys(ALIASES).filter((k) => !(k in mapa) && !OPCIONAIS.includes(k));
+  const faltando = ESSENCIAIS.filter((k) => !(k in mapa));
 
   const linhas: LinhaBase[] = [];
   let ignoradas = 0;
@@ -124,25 +123,59 @@ export function parseBase(buffer: ArrayBuffer): {
       const v = c ? r[c] : null;
       return v == null || v === "" ? null : String(v).trim();
     };
+    const num = (k: string) => (mapa[k] ? toNumber(r[mapa[k]]) : null);
+
+    // COLIGADA pode vir como "18-OL LATEX LTDA" (layout novo)
+    let codcoligada = get("codcoligada");
+    let nomecoligada = get("nomecoligada");
+    if (!codcoligada && nomecoligada) {
+      const m = nomecoligada.match(/^(\d+)\s*-\s*(.+)$/);
+      if (m) {
+        codcoligada = m[1];
+        nomecoligada = m[2].trim();
+      }
+    }
+
+    const vcodconta = get("vcodconta");
+    const nomeconta = get("nomeconta");
+    let contacontabil = get("contacontabil");
+    if (contacontabil && !contacontabil.includes(" - ") && nomeconta) {
+      contacontabil = `${contacontabil} - ${nomeconta}`;
+    } else if (!contacontabil && vcodconta) {
+      contacontabil = nomeconta ? `${vcodconta} - ${nomeconta}` : vcodconta;
+    }
+
     linhas.push({
-      codcoligada: get("codcoligada"),
-      nomecoligada: get("nomecoligada"),
+      codcoligada,
+      nomecoligada,
       coddepartamento: get("coddepartamento"),
       codccusto: get("codccusto"),
       nomedepto: get("nomedepto"),
       nomecusto: get("nomecusto"),
       vlcusto: toNumber(mapa.vlcusto ? r[mapa.vlcusto] : 0),
       complemento: get("complemento"),
-      vcodconta: get("vcodconta"),
+      vcodconta,
       codtmv: get("codtmv"),
-      contacontabil: get("contacontabil"),
+      contacontabil,
       produto: get("produto"),
       documento: get("documento"),
-      nomeconta: get("nomeconta"),
+      nomeconta,
       data,
+      grupocontabil: get("grupocontabil"),
+      divisao: get("divisao"),
+      codfilial: get("codfilial"),
+      grupocontabil_n9: get("grupocontabil_n9"),
+      codund: get("codund"),
+      quantidade: num("quantidade"),
+      saldounitario: num("saldounitario"),
+      histfaturamento: get("histfaturamento"),
+      produto_antigo: get("produto_antigo"),
+      nome_orcamento: get("nome_orcamento"),
+      idpartida: get("idpartida"),
     });
   }
   return { linhas, ignoradas, colunasNaoEncontradas: faltando };
+
 }
 
 const FMT = '#.##0,00;[Red](#.##0,00);"-"';
