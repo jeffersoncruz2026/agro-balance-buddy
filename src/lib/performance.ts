@@ -71,10 +71,10 @@ export async function fetchPerfLancamentos(params: {
     p_ini: params.ini,
     p_fim: params.fim,
     p_tipo: params.tipo,
-    p_atividade: params.atividade ?? null,
-    p_divisao: params.divisao ?? null,
-    p_nomedepto: params.nomedepto ?? null,
-    p_nomecusto: params.nomecusto ?? null,
+    p_atividade: params.atividade ?? undefined,
+    p_divisao: params.divisao ?? undefined,
+    p_nomedepto: params.nomedepto ?? undefined,
+    p_nomecusto: params.nomecusto ?? undefined,
   });
   if (error) throw error;
   return (data ?? []) as PerfLancamento[];
