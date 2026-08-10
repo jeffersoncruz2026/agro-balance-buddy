@@ -20,6 +20,7 @@ import {
   FileUp,
   FileBarChart2,
   Newspaper,
+  Gauge,
   ShieldCheck,
 } from "lucide-react";
 
