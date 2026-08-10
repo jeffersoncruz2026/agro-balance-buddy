@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -601,8 +601,8 @@ function PerformanceRentabilidade() {
                   const chave = l.atividade;
                   const aberto = expandidas.has(chave);
                   return (
-                    <>
-                      <tr key={chave} className="border-b border-border/60 hover:bg-muted/40">
+                    <Fragment key={chave}>
+                      <tr className="border-b border-border/60 hover:bg-muted/40">
                         <td className="py-2">
                           <button
                             className="flex items-center gap-1 font-medium"
@@ -655,7 +655,6 @@ function PerformanceRentabilidade() {
                       </tr>
                       {aberto && (
                         <DrillDown
-                          key={`${chave}-drill`}
                           rows={l.rows}
                           atividade={l.atividade}
                           expandidas={expandidas}
@@ -663,7 +662,7 @@ function PerformanceRentabilidade() {
                           abrirDetalhe={setDetalhe}
                         />
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
                 <tr className="border-t-2 border-border font-semibold">
@@ -1079,9 +1078,8 @@ function DrillDown({
         const abertoDiv = expandidas.has(chaveDiv);
         const deptos = [...agruparPor(linhasDiv, "nomedepto").entries()];
         return (
-          <>
+          <Fragment key={chaveDiv}>
             <LinhaNivel
-              key={chaveDiv}
               nivel={1}
               rotulo={divisao}
               metricas={agregar(linhasDiv)}
@@ -1096,9 +1094,8 @@ function DrillDown({
                 const abertoDep = expandidas.has(chaveDep);
                 const custos = [...agruparPor(linhasDep, "nomecusto").entries()];
                 return (
-                  <>
+                  <Fragment key={chaveDep}>
                     <LinhaNivel
-                      key={chaveDep}
                       nivel={2}
                       rotulo={depto}
                       metricas={agregar(linhasDep)}
@@ -1138,10 +1135,10 @@ function DrillDown({
                           }
                         />
                       ))}
-                  </>
+                  </Fragment>
                 );
               })}
-          </>
+          </Fragment>
         );
       })}
     </>
