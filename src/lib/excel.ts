@@ -17,6 +17,17 @@ export interface LinhaBase {
   documento: string | null;
   nomeconta: string | null;
   data: string;
+  grupocontabil: string | null;
+  divisao: string | null;
+  codfilial: string | null;
+  grupocontabil_n9: string | null;
+  codund: string | null;
+  quantidade: number | null;
+  saldounitario: number | null;
+  histfaturamento: string | null;
+  produto_antigo: string | null;
+  nome_orcamento: string | null;
+  idpartida: string | null;
 }
 
 const norm = (s: unknown) =>
@@ -28,21 +39,35 @@ const norm = (s: unknown) =>
 
 const ALIASES: Record<string, string[]> = {
   codcoligada: ["CODCOLIGADA"],
-  nomecoligada: ["NOMECOLIGADA"],
+  nomecoligada: ["NOMECOLIGADA", "COLIGADA"],
   coddepartamento: ["CODDEPARTAMENTO"],
   codccusto: ["CODCCUSTO"],
   nomedepto: ["NOMEDEPTO", "NOMEDEPARTAMENTO"],
   nomecusto: ["NOMECUSTO"],
-  vlcusto: ["VLCUSTO", "VALOR"],
+  vlcusto: ["VLCUSTO", "VALOR", "SALDO"],
   complemento: ["COMPLEMENTO"],
-  vcodconta: ["VCODCONTA", "CODCONTA"],
+  vcodconta: ["VCODCONTA", "CODCONTA", "CONTACONTABIL"],
   codtmv: ["CODTMV"],
   contacontabil: ["CONTACONTABIL"],
-  produto: ["PRODUTO"],
+  produto: ["PRODUTO", "NOMEPRODUTO"],
   documento: ["DOCUMENTO"],
-  nomeconta: ["NOMECONTA"],
+  nomeconta: ["NOMECONTA", "DESCRICAOCONTABIL"],
   data: ["DATA", "DTLANCAMENTO", "DATACOMPETENCIA"],
+  grupocontabil: ["GRUPOCONTABIL"],
+  divisao: ["DIVISAO"],
+  codfilial: ["CODFILIAL"],
+  grupocontabil_n9: ["GRUPOCONTABILN9"],
+  codund: ["CODUND", "UNIDADE"],
+  quantidade: ["QUANTIDADE"],
+  saldounitario: ["SALDOUNITARIO"],
+  histfaturamento: ["HISTFATURAMENTO"],
+  produto_antigo: ["NOMEPRODUTOANTIGO"],
+  nome_orcamento: ["NOMEORCAMENTO"],
+  idpartida: ["IDPARTIDA"],
 };
+
+const ESSENCIAIS = ["nomecoligada", "vlcusto", "vcodconta", "produto", "data"];
+
 
 function toNumber(v: unknown): number {
   if (typeof v === "number") return v;
@@ -80,11 +105,17 @@ export function parseBase(buffer: ArrayBuffer): {
   const header = raw.length ? Object.keys(raw[0]) : [];
   const mapa: Record<string, string> = {};
   for (const [campo, alias] of Object.entries(ALIASES)) {
-    const found = header.find((h) => alias.includes(norm(h)));
-    if (found) mapa[campo] = found;
+    // respeita a ordem de prioridade dos apelidos (layout antigo antes do novo)
+    for (const a of alias) {
+      const found = header.find((h) => norm(h) === a);
+      if (found) {
+        mapa[campo] = found;
+        break;
+      }
+    }
   }
-  const OPCIONAIS = ["codtmv"];
-  const faltando = Object.keys(ALIASES).filter((k) => !(k in mapa) && !OPCIONAIS.includes(k));
+
+  const faltando = ESSENCIAIS.filter((k) => !(k in mapa));
 
   const linhas: LinhaBase[] = [];
   let ignoradas = 0;
@@ -99,25 +130,59 @@ export function parseBase(buffer: ArrayBuffer): {
       const v = c ? r[c] : null;
       return v == null || v === "" ? null : String(v).trim();
     };
+    const num = (k: string) => (mapa[k] ? toNumber(r[mapa[k]]) : null);
+
+    // COLIGADA pode vir como "18-OL LATEX LTDA" (layout novo)
+    let codcoligada = get("codcoligada");
+    let nomecoligada = get("nomecoligada");
+    if (!codcoligada && nomecoligada) {
+      const m = nomecoligada.match(/^(\d+)\s*-\s*(.+)$/);
+      if (m) {
+        codcoligada = m[1];
+        nomecoligada = m[2].trim();
+      }
+    }
+
+    const vcodconta = get("vcodconta");
+    const nomeconta = get("nomeconta");
+    let contacontabil = get("contacontabil");
+    if (contacontabil && !contacontabil.includes(" - ") && nomeconta) {
+      contacontabil = `${contacontabil} - ${nomeconta}`;
+    } else if (!contacontabil && vcodconta) {
+      contacontabil = nomeconta ? `${vcodconta} - ${nomeconta}` : vcodconta;
+    }
+
     linhas.push({
-      codcoligada: get("codcoligada"),
-      nomecoligada: get("nomecoligada"),
+      codcoligada,
+      nomecoligada,
       coddepartamento: get("coddepartamento"),
       codccusto: get("codccusto"),
       nomedepto: get("nomedepto"),
       nomecusto: get("nomecusto"),
       vlcusto: toNumber(mapa.vlcusto ? r[mapa.vlcusto] : 0),
       complemento: get("complemento"),
-      vcodconta: get("vcodconta"),
+      vcodconta,
       codtmv: get("codtmv"),
-      contacontabil: get("contacontabil"),
+      contacontabil,
       produto: get("produto"),
       documento: get("documento"),
-      nomeconta: get("nomeconta"),
+      nomeconta,
       data,
+      grupocontabil: get("grupocontabil"),
+      divisao: get("divisao"),
+      codfilial: get("codfilial"),
+      grupocontabil_n9: get("grupocontabil_n9"),
+      codund: get("codund"),
+      quantidade: num("quantidade"),
+      saldounitario: num("saldounitario"),
+      histfaturamento: get("histfaturamento"),
+      produto_antigo: get("produto_antigo"),
+      nome_orcamento: get("nome_orcamento"),
+      idpartida: get("idpartida"),
     });
   }
   return { linhas, ignoradas, colunasNaoEncontradas: faltando };
+
 }
 
 const FMT = '#.##0,00;[Red](#.##0,00);"-"';
