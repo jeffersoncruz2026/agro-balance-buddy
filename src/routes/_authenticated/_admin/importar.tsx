@@ -172,10 +172,11 @@ function Importar() {
 
               {previa.colunasNaoEncontradas.length > 0 && (
                 <p className="rounded-md bg-accent px-3 py-2 text-xs text-accent-foreground">
-                  Colunas não encontradas na planilha:{" "}
+                  Colunas essenciais não encontradas na planilha:{" "}
                   {previa.colunasNaoEncontradas.join(", ").toUpperCase()}
                 </p>
               )}
+
 
               {previa.linhas.every((l) => !l.codtmv) && (
                 <p className="rounded-md bg-accent px-3 py-2 text-xs text-accent-foreground">
