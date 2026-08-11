@@ -529,18 +529,18 @@ function PerformanceRentabilidade() {
           />
           <CardIndicador titulo="Margem Bruta %" valor={formatPct(total.margemPct)} pp={variacoes.margemPP} />
           <CardIndicador
-            titulo="Preço Médio / Unidade"
+            titulo={`Preço Médio / Unidade${sufixoUn}`}
             valor={total.precoMedio !== null ? formatBRL(total.precoMedio) : "—"}
             variacao={variacoes.precoMedio}
           />
           <CardIndicador
-            titulo="CPV / Unidade"
+            titulo={`CPV / Unidade${sufixoUn}`}
             valor={total.cpvUnitario !== null ? formatBRL(total.cpvUnitario) : "—"}
             variacao={variacoes.cpvUnitario}
             inverso
           />
           <CardIndicador
-            titulo="Margem / Unidade"
+            titulo={`Margem / Unidade${sufixoUn}`}
             valor={total.margemUnitaria !== null ? formatBRL(total.margemUnitaria) : "—"}
             variacao={variacoes.margemUnitaria}
           />
