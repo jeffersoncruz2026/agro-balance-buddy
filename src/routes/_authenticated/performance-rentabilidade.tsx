@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,25 +79,10 @@ const hoje = new Date();
 const SAFRA_ATUAL = hoje.getMonth() + 1 >= 4 ? hoje.getFullYear() : hoje.getFullYear() - 1;
 const SAFRAS = [SAFRA_ATUAL + 1, SAFRA_ATUAL, SAFRA_ATUAL - 1, SAFRA_ATUAL - 2];
 
-type FiltroKey =
-  | "atividade"
-  | "divisao"
-  | "nomedepto"
-  | "nomecusto"
-  | "nomecoligada"
-  | "codfilial"
-  | "codund"
-  | "produto";
+type FiltroKey = "atividade";
 
 const FILTROS: { key: FiltroKey; label: string }[] = [
   { key: "atividade", label: "Atividade" },
-  { key: "divisao", label: "Divisão" },
-  { key: "nomedepto", label: "Departamento" },
-  { key: "nomecusto", label: "Rubrica" },
-  { key: "nomecoligada", label: "Coligada" },
-  { key: "codfilial", label: "Filial" },
-  { key: "codund", label: "Unidade" },
-  { key: "produto", label: "Produto" },
 ];
 
 type LinhaAtividade = {
@@ -124,13 +109,6 @@ function PerformanceRentabilidade() {
   const [mesFim, setMesFim] = useState(3);
   const [filtros, setFiltros] = useState<Record<FiltroKey, string>>({
     atividade: "",
-    divisao: "",
-    nomedepto: "",
-    nomecusto: "",
-    nomecoligada: "",
-    codfilial: "",
-    codund: "",
-    produto: "",
   });
   const [ordem, setOrdem] = useState<{ key: OrdemKey; dir: "asc" | "desc" }>({
     key: "receitaLiquida",
@@ -256,6 +234,16 @@ function PerformanceRentabilidade() {
     return mapa;
   }, [todas]);
 
+  const atividadesDisponiveis = useMemo(
+    () => [...(opcoes.atividade ?? [])].sort((a, b) => a.localeCompare(b, "pt-BR")),
+    [opcoes],
+  );
+
+  useEffect(() => {
+    if (filtros.atividade || !atividadesDisponiveis.length) return;
+    setFiltros({ atividade: atividadesDisponiveis[0] });
+  }, [filtros.atividade, atividadesDisponiveis]);
+
   const semQuantidade = total.quantidade === null || total.quantidade === 0;
   const sufixoUn = total.unidade ? ` (${total.unidade})` : "";
 
@@ -380,16 +368,7 @@ function PerformanceRentabilidade() {
   const margemMedia = total.margemPct;
 
   function limparFiltros() {
-    setFiltros({
-      atividade: "",
-      divisao: "",
-      nomedepto: "",
-      nomecusto: "",
-      nomecoligada: "",
-      codfilial: "",
-      codund: "",
-      produto: "",
-    });
+    setFiltros({ atividade: atividadesDisponiveis[0] ?? "" });
   }
 
   function alternarOrdem(key: OrdemKey) {
@@ -434,28 +413,23 @@ function PerformanceRentabilidade() {
             <Campo label="Mês final">
               <SelectMes valor={mesFim} onChange={setMesFim} />
             </Campo>
-            {FILTROS.map(({ key, label }) => (
-              <Campo key={key} label={label}>
-                <Select
-                  value={filtros[key] || "__todos"}
-                  onValueChange={(v) =>
-                    setFiltros((f) => ({ ...f, [key]: v === "__todos" ? "" : v }))
-                  }
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__todos">Todos</SelectItem>
-                    {[...(opcoes[key] ?? [])].sort((a, b) => a.localeCompare(b, "pt-BR")).map((o) => (
-                      <SelectItem key={o} value={o}>
-                        {o}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Campo>
-            ))}
+            <Campo label="Atividade">
+              <Select
+                value={filtros.atividade}
+                onValueChange={(v) => setFiltros({ atividade: v })}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {atividadesDisponiveis.map((o) => (
+                    <SelectItem key={o} value={o}>
+                      {o}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Campo>
             <Button variant="outline" onClick={limparFiltros}>
               <RotateCcw className="size-4" /> Limpar filtros
             </Button>
