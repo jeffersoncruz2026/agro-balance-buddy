@@ -612,6 +612,34 @@ export type Database = {
           vlcusto: number
         }[]
       }
+      balancete_detalhe_periodo: {
+        Args: {
+          p_categoria: string
+          p_linha: string
+          p_meses: number[]
+          p_safra: number
+          p_safra_linha: number
+        }
+        Returns: {
+          complemento: string
+          contacontabil: string
+          data: string
+          id: number
+          produto: string
+          vlcusto: number
+        }[]
+      }
+      balancete_periodo: {
+        Args: { p_meses: number[]; p_safra: number }
+        Returns: {
+          categoria: string
+          linha: string
+          qtd: number
+          regra: string
+          safra_ano: number
+          valor: number
+        }[]
+      }
       bp_dre_lancamentos_detalhe: {
         Args: {
           p_ano?: number
