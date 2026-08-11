@@ -28,6 +28,7 @@ import {
   formatVar,
   inicioMesSafra,
   MESES_SAFRA,
+  unidadeReferencia,
   variacao,
   type Metricas,
   type PerfRow,
