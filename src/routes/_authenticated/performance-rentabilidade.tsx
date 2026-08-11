@@ -231,7 +231,7 @@ function PerformanceRentabilidade() {
     );
     return ordemMeses.map((mes) => {
       const rows = visiveisAtual.filter((r) => r.mes === mes);
-      const m = agregar(rows);
+      const m = agregar(rows, unidadeRef);
       return {
         label: MESES[mes - 1].slice(0, 3),
         quantidade: m.quantidade ?? 0,
@@ -257,6 +257,7 @@ function PerformanceRentabilidade() {
   }, [todas]);
 
   const semQuantidade = total.quantidade === null || total.quantidade === 0;
+  const sufixoUn = total.unidade ? ` (${total.unidade})` : "";
 
   const variacoes = {
     quantidade: variacao(total.quantidade, totalAnt.quantidade),
