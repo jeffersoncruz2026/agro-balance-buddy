@@ -243,7 +243,7 @@ function PerformanceRentabilidade() {
         receita: m.receitaLiquida,
       };
     });
-  }, [visiveisAtual, mesIni, mesFim]);
+  }, [visiveisAtual, mesIni, mesFim, unidadeRef]);
 
   const [indicadorBarras, setIndicadorBarras] = useState<
     "margem" | "margemPct" | "margemUnitaria"
@@ -467,15 +467,27 @@ function PerformanceRentabilidade() {
         )}
         {isLoading && <p className="text-sm text-muted-foreground">Carregando indicadores…</p>}
 
-        {semQuantidade && (
+        {semQuantidade ? (
           <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <span>
-              Não há quantidade vendida com unidade única no recorte atual — os indicadores por
-              unidade (preço médio, CPV/un e margem/un) ficam indisponíveis. Verifique se a base
-              importada possui as colunas QUANTIDADE e CODUND ou refine o filtro de unidade.
+              Não há quantidade vendida no recorte atual — os indicadores por unidade (preço médio,
+              CPV/un e margem/un) ficam indisponíveis. Verifique se a base importada possui as
+              colunas QUANTIDADE e CODUND.
             </span>
           </div>
+        ) : (
+          Object.keys(total.quantidadePorUnidade).length > 1 && (
+            <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <span>
+                O recorte possui mais de uma unidade de medida. Os indicadores por unidade usam{" "}
+                <strong>{total.unidade}</strong> como referência (unidade de maior receita), com
+                receita e CPV proporcionais à sua participação. Use o filtro “Unidade” para analisar
+                outra.
+              </span>
+            </div>
+          )
         )}
 
         {/* ---------- Cards ---------- */}
