@@ -100,12 +100,39 @@ export type Metricas = {
   margemUnitaria: number | null;
 };
 
-export function agregar(rows: PerfRow[]): Metricas {
+/**
+ * Escolhe a unidade de referência do recorte: a unidade com maior receita líquida
+ * entre as linhas de receita que possuem quantidade.
+ */
+export function unidadeReferencia(rows: PerfRow[]): string | null {
+  const receitaPorUnidade: Record<string, number> = {};
+  for (const r of rows) {
+    if (r.tipo !== "RECEITA") continue;
+    if (!(Number(r.quantidade) || 0)) continue;
+    const u = r.codund;
+    if (!u || u === "SEM UN") continue;
+    receitaPorUnidade[u] = (receitaPorUnidade[u] ?? 0) + (Number(r.valor) || 0);
+  }
+  let melhor: string | null = null;
+  let maior = -Infinity;
+  for (const [u, v] of Object.entries(receitaPorUnidade)) {
+    if (v > maior) {
+      maior = v;
+      melhor = u;
+    }
+  }
+  return melhor;
+}
+
+export function agregar(rows: PerfRow[], unidadeRef?: string | null): Metricas {
   let receitaBruta = 0;
   let deducoes = 0;
   let cpv = 0;
   let hedge = 0;
   const qtd: Record<string, number> = {};
+  let receitaUnidade = 0;
+
+  const ref = unidadeRef ?? unidadeReferencia(rows);
 
   for (const r of rows) {
     const v = Number(r.valor) || 0;
@@ -113,6 +140,7 @@ export function agregar(rows: PerfRow[]): Metricas {
       receitaBruta += v;
       const q = Number(r.quantidade) || 0;
       if (q !== 0) qtd[r.codund] = (qtd[r.codund] ?? 0) + q;
+      if (ref && r.codund === ref) receitaUnidade += v;
     } else if (r.tipo === "CPV") cpv += v;
     else if (r.tipo === "DEDUCAO") deducoes += v;
     else if (r.tipo === "HEDGE") hedge += v;
@@ -121,9 +149,18 @@ export function agregar(rows: PerfRow[]): Metricas {
   const receitaLiquida = receitaBruta - deducoes;
   const margem = receitaLiquida - cpv;
   const unidades = Object.keys(qtd);
-  const quantidade = unidades.length === 1 ? qtd[unidades[0]] : null;
-  const unidade = unidades.length === 1 ? unidades[0] : null;
+  const unidade = ref && qtd[ref] ? ref : unidades.length === 1 ? unidades[0] : null;
+  const quantidade = unidade ? qtd[unidade] : null;
   const podeUnit = quantidade !== null && quantidade !== 0;
+
+  // Parcela do resultado atribuível à unidade de referência: quando o recorte tem
+  // mais de uma unidade, receita e CPV são proporcionais à participação daquela unidade.
+  const participacao =
+    unidade && receitaBruta !== 0 && unidades.length > 1
+      ? Math.min(Math.max(receitaUnidade / receitaBruta, 0), 1)
+      : 1;
+  const receitaLiqUn = receitaLiquida * participacao;
+  const cpvUn = cpv * participacao;
 
   return {
     receitaBruta,
@@ -137,9 +174,9 @@ export function agregar(rows: PerfRow[]): Metricas {
     quantidadePorUnidade: qtd,
     quantidade,
     unidade,
-    precoMedio: podeUnit ? receitaLiquida / (quantidade as number) : null,
-    cpvUnitario: podeUnit ? cpv / (quantidade as number) : null,
-    margemUnitaria: podeUnit ? margem / (quantidade as number) : null,
+    precoMedio: podeUnit ? receitaLiqUn / (quantidade as number) : null,
+    cpvUnitario: podeUnit ? cpvUn / (quantidade as number) : null,
+    margemUnitaria: podeUnit ? (receitaLiqUn - cpvUn) / (quantidade as number) : null,
   };
 }
 

@@ -28,6 +28,7 @@ import {
   formatVar,
   inicioMesSafra,
   MESES_SAFRA,
+  unidadeReferencia,
   variacao,
   type Metricas,
   type PerfRow,
@@ -192,8 +193,10 @@ function PerformanceRentabilidade() {
     [anterior],
   );
 
-  const total = useMemo(() => agregar(visiveisAtual), [visiveisAtual]);
-  const totalAnt = useMemo(() => agregar(visiveisAnterior), [visiveisAnterior]);
+  const unidadeRef = useMemo(() => unidadeReferencia(visiveisAtual), [visiveisAtual]);
+
+  const total = useMemo(() => agregar(visiveisAtual, unidadeRef), [visiveisAtual, unidadeRef]);
+  const totalAnt = useMemo(() => agregar(visiveisAnterior, unidadeRef), [visiveisAnterior, unidadeRef]);
 
   const linhas: LinhaAtividade[] = useMemo(() => {
     const chaves = new Set([
@@ -228,7 +231,7 @@ function PerformanceRentabilidade() {
     );
     return ordemMeses.map((mes) => {
       const rows = visiveisAtual.filter((r) => r.mes === mes);
-      const m = agregar(rows);
+      const m = agregar(rows, unidadeRef);
       return {
         label: MESES[mes - 1].slice(0, 3),
         quantidade: m.quantidade ?? 0,
@@ -240,7 +243,7 @@ function PerformanceRentabilidade() {
         receita: m.receitaLiquida,
       };
     });
-  }, [visiveisAtual, mesIni, mesFim]);
+  }, [visiveisAtual, mesIni, mesFim, unidadeRef]);
 
   const [indicadorBarras, setIndicadorBarras] = useState<
     "margem" | "margemPct" | "margemUnitaria"
@@ -254,6 +257,7 @@ function PerformanceRentabilidade() {
   }, [todas]);
 
   const semQuantidade = total.quantidade === null || total.quantidade === 0;
+  const sufixoUn = total.unidade ? ` (${total.unidade})` : "";
 
   const variacoes = {
     quantidade: variacao(total.quantidade, totalAnt.quantidade),
@@ -463,15 +467,27 @@ function PerformanceRentabilidade() {
         )}
         {isLoading && <p className="text-sm text-muted-foreground">Carregando indicadores…</p>}
 
-        {semQuantidade && (
+        {semQuantidade ? (
           <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <span>
-              Não há quantidade vendida com unidade única no recorte atual — os indicadores por
-              unidade (preço médio, CPV/un e margem/un) ficam indisponíveis. Verifique se a base
-              importada possui as colunas QUANTIDADE e CODUND ou refine o filtro de unidade.
+              Não há quantidade vendida no recorte atual — os indicadores por unidade (preço médio,
+              CPV/un e margem/un) ficam indisponíveis. Verifique se a base importada possui as
+              colunas QUANTIDADE e CODUND.
             </span>
           </div>
+        ) : (
+          Object.keys(total.quantidadePorUnidade).length > 1 && (
+            <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <span>
+                O recorte possui mais de uma unidade de medida. Os indicadores por unidade usam{" "}
+                <strong>{total.unidade}</strong> como referência (unidade de maior receita), com
+                receita e CPV proporcionais à sua participação. Use o filtro “Unidade” para analisar
+                outra.
+              </span>
+            </div>
+          )
         )}
 
         {/* ---------- Cards ---------- */}
@@ -513,18 +529,18 @@ function PerformanceRentabilidade() {
           />
           <CardIndicador titulo="Margem Bruta %" valor={formatPct(total.margemPct)} pp={variacoes.margemPP} />
           <CardIndicador
-            titulo="Preço Médio / Unidade"
+            titulo={`Preço Médio / Unidade${sufixoUn}`}
             valor={total.precoMedio !== null ? formatBRL(total.precoMedio) : "—"}
             variacao={variacoes.precoMedio}
           />
           <CardIndicador
-            titulo="CPV / Unidade"
+            titulo={`CPV / Unidade${sufixoUn}`}
             valor={total.cpvUnitario !== null ? formatBRL(total.cpvUnitario) : "—"}
             variacao={variacoes.cpvUnitario}
             inverso
           />
           <CardIndicador
-            titulo="Margem / Unidade"
+            titulo={`Margem / Unidade${sufixoUn}`}
             valor={total.margemUnitaria !== null ? formatBRL(total.margemUnitaria) : "—"}
             variacao={variacoes.margemUnitaria}
           />
