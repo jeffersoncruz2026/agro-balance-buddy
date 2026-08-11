@@ -109,27 +109,18 @@ function BalanceteGerencial() {
   const agg = useQuery({
     queryKey: ["balancete", safraAtual, mesesSel.join(",")],
     enabled: mesesSel.length > 0,
+    placeholderData: (prev) => prev,
     queryFn: async () => {
-      const partes = await Promise.all(
-        mesesSel.map(async (m) => {
-          const { data, error } = await supabase.rpc("balancete", {
-            p_mes: m,
-            p_ano: anoCivil(m, safraAtual),
-          });
-          if (error) throw error;
-          return (data ?? []) as unknown as AggRow[];
-        }),
-      );
-      const acc = new Map<string, AggRow>();
-      for (const r of partes.flat()) {
-        const k = `${r.safra_ano}|${r.linha}|${r.categoria}|${r.regra ?? ""}`;
-        const at = acc.get(k);
-        if (at) {
-          at.valor = Number(at.valor) + Number(r.valor);
-          at.qtd = Number(at.qtd) + Number(r.qtd);
-        } else acc.set(k, { ...r, valor: Number(r.valor), qtd: Number(r.qtd) });
-      }
-      return [...acc.values()];
+      const { data, error } = await supabase.rpc("balancete_periodo", {
+        p_meses: mesesSel,
+        p_safra: safraAtual,
+      });
+      if (error) throw error;
+      return ((data ?? []) as unknown as AggRow[]).map((r) => ({
+        ...r,
+        valor: Number(r.valor),
+        qtd: Number(r.qtd),
+      }));
     },
   });
 
@@ -199,20 +190,15 @@ function BalanceteGerencial() {
     queryKey: ["detalhe", safraAtual, mesesSel.join(","), detalhe],
     enabled: !!detalhe,
     queryFn: async () => {
-      const partes = await Promise.all(
-        mesesSel.map(async (m) => {
-          const { data, error } = await supabase.rpc("balancete_detalhe", {
-            p_mes: m,
-            p_ano: anoCivil(m, safraAtual),
-            p_safra: detalhe!.safra,
-            p_linha: detalhe!.linha,
-            p_categoria: detalhe!.categoria,
-          });
-          if (error) throw error;
-          return data ?? [];
-        }),
-      );
-      return partes.flat().sort((a, b) => String(a.data).localeCompare(String(b.data)));
+      const { data, error } = await supabase.rpc("balancete_detalhe_periodo", {
+        p_meses: mesesSel,
+        p_safra: safraAtual,
+        p_safra_linha: detalhe!.safra,
+        p_linha: detalhe!.linha,
+        p_categoria: detalhe!.categoria,
+      });
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
@@ -366,8 +352,18 @@ function BalanceteGerencial() {
         }
       `}</style>
 
+      {agg.isError && (
+        <div className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive print:hidden">
+          Não foi possível carregar o balancete deste período. Tente novamente.
+        </div>
+      )}
+      {agg.isFetching && !agg.isError && (
+        <div className="mb-3 text-xs text-muted-foreground print:hidden">Atualizando valores…</div>
+      )}
+
       <div className="bg-print-area">
         <div className="bg-print-table-wrap overflow-auto rounded-md border border-border bg-card">
+
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="bg-primary text-primary-foreground">
