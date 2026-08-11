@@ -192,8 +192,10 @@ function PerformanceRentabilidade() {
     [anterior],
   );
 
-  const total = useMemo(() => agregar(visiveisAtual), [visiveisAtual]);
-  const totalAnt = useMemo(() => agregar(visiveisAnterior), [visiveisAnterior]);
+  const unidadeRef = useMemo(() => unidadeReferencia(visiveisAtual), [visiveisAtual]);
+
+  const total = useMemo(() => agregar(visiveisAtual, unidadeRef), [visiveisAtual, unidadeRef]);
+  const totalAnt = useMemo(() => agregar(visiveisAnterior, unidadeRef), [visiveisAnterior, unidadeRef]);
 
   const linhas: LinhaAtividade[] = useMemo(() => {
     const chaves = new Set([
