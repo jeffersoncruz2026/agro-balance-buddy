@@ -190,20 +190,15 @@ function BalanceteGerencial() {
     queryKey: ["detalhe", safraAtual, mesesSel.join(","), detalhe],
     enabled: !!detalhe,
     queryFn: async () => {
-      const partes = await Promise.all(
-        mesesSel.map(async (m) => {
-          const { data, error } = await supabase.rpc("balancete_detalhe", {
-            p_mes: m,
-            p_ano: anoCivil(m, safraAtual),
-            p_safra: detalhe!.safra,
-            p_linha: detalhe!.linha,
-            p_categoria: detalhe!.categoria,
-          });
-          if (error) throw error;
-          return data ?? [];
-        }),
-      );
-      return partes.flat().sort((a, b) => String(a.data).localeCompare(String(b.data)));
+      const { data, error } = await supabase.rpc("balancete_detalhe_periodo", {
+        p_meses: mesesSel,
+        p_safra: safraAtual,
+        p_safra_linha: detalhe!.safra,
+        p_linha: detalhe!.linha,
+        p_categoria: detalhe!.categoria,
+      });
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
