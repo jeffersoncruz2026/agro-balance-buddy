@@ -109,27 +109,18 @@ function BalanceteGerencial() {
   const agg = useQuery({
     queryKey: ["balancete", safraAtual, mesesSel.join(",")],
     enabled: mesesSel.length > 0,
+    placeholderData: (prev) => prev,
     queryFn: async () => {
-      const partes = await Promise.all(
-        mesesSel.map(async (m) => {
-          const { data, error } = await supabase.rpc("balancete", {
-            p_mes: m,
-            p_ano: anoCivil(m, safraAtual),
-          });
-          if (error) throw error;
-          return (data ?? []) as unknown as AggRow[];
-        }),
-      );
-      const acc = new Map<string, AggRow>();
-      for (const r of partes.flat()) {
-        const k = `${r.safra_ano}|${r.linha}|${r.categoria}|${r.regra ?? ""}`;
-        const at = acc.get(k);
-        if (at) {
-          at.valor = Number(at.valor) + Number(r.valor);
-          at.qtd = Number(at.qtd) + Number(r.qtd);
-        } else acc.set(k, { ...r, valor: Number(r.valor), qtd: Number(r.qtd) });
-      }
-      return [...acc.values()];
+      const { data, error } = await supabase.rpc("balancete_periodo", {
+        p_meses: mesesSel,
+        p_safra: safraAtual,
+      });
+      if (error) throw error;
+      return ((data ?? []) as unknown as AggRow[]).map((r) => ({
+        ...r,
+        valor: Number(r.valor),
+        qtd: Number(r.qtd),
+      }));
     },
   });
 
