@@ -352,8 +352,18 @@ function BalanceteGerencial() {
         }
       `}</style>
 
+      {agg.isError && (
+        <div className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive print:hidden">
+          Não foi possível carregar o balancete deste período. Tente novamente.
+        </div>
+      )}
+      {agg.isFetching && !agg.isError && (
+        <div className="mb-3 text-xs text-muted-foreground print:hidden">Atualizando valores…</div>
+      )}
+
       <div className="bg-print-area">
         <div className="bg-print-table-wrap overflow-auto rounded-md border border-border bg-card">
+
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="bg-primary text-primary-foreground">
