@@ -72,78 +72,90 @@ function AuthPage() {
   }
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
-      <section className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground lg:flex">
-        <img
-          src={logoGrupo.url}
-          alt="Grupo Otávio Lage"
-          className="h-14 w-auto max-w-[16rem] object-contain"
-        />
-        <div>
-          <h1 className="max-w-md font-display text-4xl leading-tight font-semibold">
-            Resultados Gerenciais Grupo Otávio Lage
-          </h1>
-        </div>
-        <p className="text-xs text-sidebar-foreground/50">
-          Vera Cruz · Planagri · OL Látex Tocantins · OL Látex
-        </p>
-      </section>
-
-      <section className="flex items-center justify-center p-6">
-        <div className="w-full max-w-sm">
-          <h2 className="font-display text-2xl font-semibold">
-            {modo === "login" ? "Entrar" : "Criar conta"}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Dados financeiros do grupo — acesso restrito.
-          </p>
-
-          <form onSubmit={enviar} className="mt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="senha">Senha</Label>
-              <Input
-                id="senha"
-                type="password"
-                required
-                minLength={6}
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                autoComplete={modo === "login" ? "current-password" : "new-password"}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={carregando}>
-              {carregando ? "Aguarde..." : modo === "login" ? "Entrar" : "Criar conta"}
-            </Button>
-          </form>
-
-          <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
+    <ClientOnly fallback={
+      <main className="grid min-h-screen lg:grid-cols-2">
+        <section className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground lg:flex" />
+        <section className="flex items-center justify-center p-6">
+          <div className="w-full max-w-sm">
+            <h2 className="font-display text-2xl font-semibold">Entrar</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Carregando...</p>
           </div>
+        </section>
+      </main>
+    }>
+      <main className="grid min-h-screen lg:grid-cols-2">
+        <section className="hidden flex-col justify-between bg-sidebar p-12 text-sidebar-foreground lg:flex">
+          <img
+            src={logoGrupo.url}
+            alt="Grupo Otávio Lage"
+            className="h-14 w-auto max-w-[16rem] object-contain"
+          />
+          <div>
+            <h1 className="max-w-md font-display text-4xl leading-tight font-semibold">
+              Resultados Gerenciais Grupo Otávio Lage
+            </h1>
+          </div>
+          <p className="text-xs text-sidebar-foreground/50">
+            Vera Cruz · Planagri · OL Látex Tocantins · OL Látex
+          </p>
+        </section>
 
-          <Button variant="outline" className="w-full" onClick={google}>
-            Continuar com Google
-          </Button>
+        <section className="flex items-center justify-center p-6">
+          <div className="w-full max-w-sm">
+            <h2 className="font-display text-2xl font-semibold">
+              {modo === "login" ? "Entrar" : "Criar conta"}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Dados financeiros do grupo — acesso restrito.
+            </p>
 
-          <button
-            type="button"
-            className="mt-6 w-full text-sm text-muted-foreground underline-offset-4 hover:underline"
-            onClick={() => setModo(modo === "login" ? "cadastro" : "login")}
-          >
-            {modo === "login" ? "Não tem conta? Cadastre-se" : "Já tenho conta"}
-          </button>
-        </div>
-      </section>
-    </main>
+            <form onSubmit={enviar} className="mt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="senha">Senha</Label>
+                <Input
+                  id="senha"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  autoComplete={modo === "login" ? "current-password" : "new-password"}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={carregando}>
+                {carregando ? "Aguarde..." : modo === "login" ? "Entrar" : "Criar conta"}
+              </Button>
+            </form>
+
+            <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
+            </div>
+
+            <Button variant="outline" className="w-full" onClick={google}>
+              Continuar com Google
+            </Button>
+
+            <button
+              type="button"
+              className="mt-6 w-full text-sm text-muted-foreground underline-offset-4 hover:underline"
+              onClick={() => setModo(modo === "login" ? "cadastro" : "login")}
+            >
+              {modo === "login" ? "Não tem conta? Cadastre-se" : "Já tenho conta"}
+            </button>
+          </div>
+        </section>
+      </main>
+    </ClientOnly>
   );
 }
