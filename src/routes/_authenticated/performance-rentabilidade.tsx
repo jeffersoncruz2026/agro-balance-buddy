@@ -456,9 +456,11 @@ function PerformanceRentabilidade() {
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               <span>
                 O recorte possui mais de uma unidade de medida. Os indicadores por unidade usam{" "}
-                <strong>{total.unidade}</strong> como referência (unidade de maior receita), com
-                receita e CPV proporcionais à sua participação. Use o filtro “Unidade” para analisar
-                outra.
+                <strong>{total.unidade}</strong> como referência (unidade de maior receita): receita
+                e deduções são as reais dessa unidade e o CPV é atribuído proporcionalmente à sua
+                participação na receita, pois a base não traz unidade no custo. Use o filtro
+                “Unidade” para analisar outra.
+
               </span>
             </div>
           )
