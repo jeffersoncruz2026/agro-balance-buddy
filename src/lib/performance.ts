@@ -131,6 +131,7 @@ export function agregar(rows: PerfRow[], unidadeRef?: string | null): Metricas {
   let hedge = 0;
   const qtd: Record<string, number> = {};
   let receitaUnidade = 0;
+  let deducoesUnidade = 0;
 
   const ref = unidadeRef ?? unidadeReferencia(rows);
 
@@ -142,8 +143,10 @@ export function agregar(rows: PerfRow[], unidadeRef?: string | null): Metricas {
       if (q !== 0) qtd[r.codund] = (qtd[r.codund] ?? 0) + q;
       if (ref && r.codund === ref) receitaUnidade += v;
     } else if (r.tipo === "CPV") cpv += v;
-    else if (r.tipo === "DEDUCAO") deducoes += v;
-    else if (r.tipo === "HEDGE") hedge += v;
+    else if (r.tipo === "DEDUCAO") {
+      deducoes += v;
+      if (ref && r.codund === ref) deducoesUnidade += v;
+    } else if (r.tipo === "HEDGE") hedge += v;
   }
 
   const receitaLiquida = receitaBruta - deducoes;
@@ -153,13 +156,15 @@ export function agregar(rows: PerfRow[], unidadeRef?: string | null): Metricas {
   const quantidade = unidade ? qtd[unidade] : null;
   const podeUnit = quantidade !== null && quantidade !== 0;
 
-  // Parcela do resultado atribuível à unidade de referência: quando o recorte tem
-  // mais de uma unidade, receita e CPV são proporcionais à participação daquela unidade.
+  // Receita e deduções da unidade são exatas (vêm das próprias linhas daquela unidade).
+  // O CPV da base não traz unidade de medida confiável, então é atribuído
+  // proporcionalmente à participação da unidade na receita bruta.
+  const multiUnidade = unidades.length > 1;
+  const receitaLiqUn = multiUnidade ? receitaUnidade - deducoesUnidade : receitaLiquida;
   const participacao =
-    unidade && receitaBruta !== 0 && unidades.length > 1
+    multiUnidade && receitaBruta !== 0
       ? Math.min(Math.max(receitaUnidade / receitaBruta, 0), 1)
       : 1;
-  const receitaLiqUn = receitaLiquida * participacao;
   const cpvUn = cpv * participacao;
 
   return {
@@ -179,6 +184,7 @@ export function agregar(rows: PerfRow[], unidadeRef?: string | null): Metricas {
     margemUnitaria: podeUnit ? (receitaLiqUn - cpvUn) / (quantidade as number) : null,
   };
 }
+
 
 export function agruparPor<K extends keyof PerfRow>(rows: PerfRow[], campo: K): Map<string, PerfRow[]> {
   const mapa = new Map<string, PerfRow[]>();
