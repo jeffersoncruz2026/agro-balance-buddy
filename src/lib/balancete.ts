@@ -93,9 +93,9 @@ export const PRESERVA_SINAL: ColKey[] = [
 
 /** Centro de custo (NOMECUSTO) cujas despesas administrativas vão 100% para OUTROS. */
 export const CUSTO_ADM_OUTROS = "GOVERNANCIA CORPORATIVA";
-/** Conta que vai 100% para OUTROS, exceto quando o produto for o excluído abaixo. */
+/** Conta que vai 100% para OUTROS, exceto quando o produto começar com o prefixo abaixo. */
 export const CONTA_ADM_OUTROS = "3.4.01.10.0003";
-/** Produto que fica de fora da regra direta da conta acima (segue o rateio). */
+/** Prefixo de produto que fica de fora da regra direta da conta acima (segue o rateio). */
 export const PRODUTO_ADM_EXCECAO = "DOACOES CURSOS E FACULDADES FUNCIONARIO";
 /** Prefixo das contas de Despesas Administrativas com regra própria. */
 export const PREFIXO_ADM = "3.4.01.";
@@ -217,7 +217,7 @@ export function montarRelatorio(
 
         if (col.key === "despAdm") {
           // Contas 3.4.01.* têm regra própria: NOMECUSTO "GOVERNANCIA CORPORATIVA", ou conta
-          // 3.4.01.10.0003 com produto diferente de "DOACOES CURSOS E FACULDADES FUNCIONARIO",
+          // 3.4.01.10.0003 com produto que NÃO comece com "DOACOES CURSOS E FACULDADES FUNCIONARIO",
           // vão 100% para OUTROS; demais → rateio percentual configurado.
           const direto = linha === "OUTROS" ? soma(safra, col.cat, (r) => r.regra === "ADM_OUTROS") : 0;
           const pool = soma(safra, col.cat, (r) => r.regra === "ADM_RATEIO");
