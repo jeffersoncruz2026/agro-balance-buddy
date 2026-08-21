@@ -193,7 +193,6 @@ function AnaliseDespesasAdm() {
       const k = r.ano * 12 + r.mes;
       porMes.set(k, (porMes.get(k) ?? 0) + Number(r.valor));
     }
-    console.log('DBG', JSON.stringify([...porMes.entries()].sort((a,b)=>a[0]-b[0])));
     const comValor = [...porMes.entries()].filter(([, v]) => Math.abs(v) >= 0.005);
     if (!comValor.length) return;
     const ultimo = Math.max(...comValor.map(([k]) => k));
