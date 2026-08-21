@@ -232,6 +232,20 @@ export function exportarPlanilha(rows: Record<string, unknown>[], nome: string) 
   XLSX.writeFile(wb, nome);
 }
 
+/** Exporta várias abas em um único arquivo. */
+export function exportarAbas(
+  abas: { nome: string; rows: Record<string, unknown>[] }[],
+  arquivo: string,
+) {
+  const wb = XLSX.utils.book_new();
+  for (const aba of abas) {
+    const ws = XLSX.utils.json_to_sheet(aba.rows);
+    XLSX.utils.book_append_sheet(wb, ws, aba.nome.slice(0, 31));
+  }
+  XLSX.writeFile(wb, arquivo);
+}
+
+
 export function lerPlanilhaSimples(buffer: ArrayBuffer): Record<string, unknown>[] {
   const wb = XLSX.read(buffer, { cellDates: true });
   return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: null });
