@@ -581,7 +581,7 @@ function AnaliseDespesasAdm() {
         {/* CABEÇALHO DE IMPRESSÃO */}
         <div className="mb-6 hidden items-start justify-between gap-6 border-b border-border pb-4 print:flex">
           <div>
-            <h2 className="font-serif text-lg">Análise de Despesas Administrativas</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">Análise de Despesas Administrativas</h2>
             <p className="text-sm">Consolidado — DESP. ADM (contas 3.4.01.*)</p>
             <p className="mt-1 text-sm font-semibold">Referência: {mesReferencia}</p>
             {!!deptos.length && (
@@ -606,7 +606,7 @@ function AnaliseDespesasAdm() {
             {/* NÚMERO-ÂNCORA + LEITURA EXECUTIVA */}
             <div className="mb-10">
               <div className="flex flex-wrap items-end gap-4">
-                <span className="font-serif text-[44px] leading-none">
+                <span className="font-display text-[42px] leading-none font-semibold tracking-tight tabular-nums">
                   {formatBRL(analise.totalMesAtual)}
                 </span>
                 <div className="flex items-center gap-3 pb-1.5 text-sm">
@@ -633,7 +633,7 @@ function AnaliseDespesasAdm() {
                 <p className="mb-1.5 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
                   Leitura executiva
                 </p>
-                <p className="font-serif text-[15px] leading-relaxed">{leituraExecutiva}</p>
+                <p className="text-[15px] leading-[1.7] text-foreground/90">{leituraExecutiva}</p>
               </div>
             </div>
 
@@ -658,7 +658,7 @@ function AnaliseDespesasAdm() {
                   <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
                     {item.label}
                   </p>
-                  <p className="font-serif text-lg">{item.value}</p>
+                  <p className="font-display text-lg font-semibold tabular-nums">{item.value}</p>
                 </div>
               ))}
             </div>
@@ -669,19 +669,19 @@ function AnaliseDespesasAdm() {
                 <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
                   Acumulado safra {safraLabel(analise.safraAtual)} (abr–{MESES[refMes - 1].slice(0, 3).toLowerCase()})
                 </p>
-                <p className="font-serif text-lg">{formatBRL(analise.acumSafra)}</p>
+                <p className="font-display text-lg font-semibold tabular-nums">{formatBRL(analise.acumSafra)}</p>
               </div>
               <div className="border-t border-border px-4 py-4 sm:border-t-0 sm:border-l">
                 <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
                   Mesma janela — safra {safraLabel(analise.safraAtual - 1)}
                 </p>
-                <p className="font-serif text-lg">{formatBRL(analise.acumSafraAnterior)}</p>
+                <p className="font-display text-lg font-semibold tabular-nums">{formatBRL(analise.acumSafraAnterior)}</p>
               </div>
               <div className="border-t border-border px-4 py-4 sm:border-t-0 sm:border-l">
                 <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
                   Variação safra vs. safra
                 </p>
-                <p className="font-serif text-lg">
+                <p className="font-display text-lg font-semibold tabular-nums">
                   <Variacao
                     percentual={analise.variacaoSafra}
                     disponivel={analise.acumSafraAnterior >= 0.005}
@@ -1013,13 +1013,13 @@ function TabelaTop({
                 className="cursor-pointer border-t border-border"
               >
                 <td className="py-2.5 pr-3">{item.nome}</td>
-                <td className="py-2.5 text-right font-serif whitespace-nowrap">
+                <td className="py-2.5 text-right font-medium tabular-nums whitespace-nowrap">
                   {formatBRL(item.valor)}
                 </td>
                 <td className="py-2.5 text-right whitespace-nowrap text-muted-foreground">
                   {pctTexto(item.pct)}
                 </td>
-                <td className="py-2.5 text-right font-serif whitespace-nowrap text-muted-foreground">
+                <td className="py-2.5 text-right tabular-nums whitespace-nowrap text-muted-foreground">
                   {formatBRL(item.anterior)}
                 </td>
                 <td
@@ -1091,7 +1091,7 @@ function DrilldownModal({
             <p className="text-[11px] tracking-wider text-muted-foreground uppercase">
               Detalhe de lançamentos
             </p>
-            <h3 className="mt-0.5 font-serif text-lg">{titulo}</h3>
+            <h3 className="mt-0.5 font-display text-lg font-semibold tracking-tight">{titulo}</h3>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="size-4.5" />
