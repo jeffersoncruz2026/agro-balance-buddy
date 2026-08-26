@@ -604,41 +604,40 @@ function AnaliseDespesasAdm() {
         ) : (
           <>
             {/* NÚMERO-ÂNCORA + LEITURA EXECUTIVA */}
-            <div className="mb-10">
-              <div className="flex flex-wrap items-end gap-4">
+            <section className="mb-8 rounded-lg border border-border bg-card p-6 shadow-xs print:border-0 print:p-0 print:shadow-none">
+              <p className="mb-2 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                Total de despesas administrativas — {mesReferencia}
+              </p>
+              <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
                 <span className="font-display text-[42px] leading-none font-semibold tracking-tight tabular-nums">
                   {formatBRL(analise.totalMesAtual)}
                 </span>
-                <div className="flex items-center gap-3 pb-1.5 text-sm">
+                <div className="flex items-center gap-3 pb-1 text-sm">
                   <span className="text-muted-foreground">vs. mês anterior</span>
                   <Variacao percentual={analise.variacaoMoM} disponivel={analise.temMesAnterior} />
-                  <span className="text-border">|</span>
+                  <span className="h-4 w-px bg-border" />
                   <span className="text-muted-foreground">
                     vs. {mesReferencia.split("/")[0]}/ano anterior
                   </span>
                   <Variacao percentual={analise.variacaoYoY} disponivel={analise.temAnoAnterior} />
                 </div>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Total de despesas administrativas — {mesReferencia}
-                {alertaAtivo && (
-                  <span className="text-destructive">
-                    {" "}
-                    · variação acima do limite de referência ({LIMITE_ALERTA_PERCENTUAL}%)
-                  </span>
-                )}
-              </p>
+              {alertaAtivo && (
+                <p className="mt-3 inline-flex rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
+                  Variação acima do limite de referência ({LIMITE_ALERTA_PERCENTUAL}%)
+                </p>
+              )}
 
-              <div className="mt-6 border-l-2 border-primary py-1 pl-5">
-                <p className="mb-1.5 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+              <div className="mt-6 rounded-md border-l-2 border-primary bg-muted/40 px-5 py-4">
+                <p className="mb-2 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                   Leitura executiva
                 </p>
-                <p className="text-[15px] leading-[1.7] text-foreground/90">{leituraExecutiva}</p>
+                <p className="text-[15px] leading-[1.75] text-foreground/90">{leituraExecutiva}</p>
               </div>
-            </div>
+            </section>
 
             {/* INDICADORES */}
-            <div className="mb-6 grid grid-cols-2 border-t border-b border-border sm:grid-cols-4">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: "Mês atual", value: formatBRL(analise.totalMesAtual) },
                 { label: "Mês anterior", value: formatBRL(analise.totalMesAnterior) },
@@ -650,12 +649,12 @@ function AnaliseDespesasAdm() {
                   label: "% sobre a receita bruta",
                   value: pctTexto(analise.pctSobreReceita),
                 },
-              ].map((item, i) => (
+              ].map((item) => (
                 <div
                   key={item.label}
-                  className={`px-4 py-4 ${i === 0 ? "" : "border-l border-border"}`}
+                  className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none"
                 >
-                  <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
+                  <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                     {item.label}
                   </p>
                   <p className="font-display text-lg font-semibold tabular-nums">{item.value}</p>
@@ -664,21 +663,29 @@ function AnaliseDespesasAdm() {
             </div>
 
             {/* ACUMULADO DA SAFRA */}
-            <div className="mb-10 grid grid-cols-1 border-b border-border sm:grid-cols-3">
-              <div className="px-4 py-4">
-                <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Acumulado safra {safraLabel(analise.safraAtual)} (abr–{MESES[refMes - 1].slice(0, 3).toLowerCase()})
-                </p>
-                <p className="font-display text-lg font-semibold tabular-nums">{formatBRL(analise.acumSafra)}</p>
-              </div>
-              <div className="border-t border-border px-4 py-4 sm:border-t-0 sm:border-l">
-                <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Mesma janela — safra {safraLabel(analise.safraAtual - 1)}
-                </p>
-                <p className="font-display text-lg font-semibold tabular-nums">{formatBRL(analise.acumSafraAnterior)}</p>
-              </div>
-              <div className="border-t border-border px-4 py-4 sm:border-t-0 sm:border-l">
-                <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
+            <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                {
+                  label: `Acumulado safra ${safraLabel(analise.safraAtual)} (abr–${MESES[refMes - 1].slice(0, 3).toLowerCase()})`,
+                  node: formatBRL(analise.acumSafra),
+                },
+                {
+                  label: `Mesma janela — safra ${safraLabel(analise.safraAtual - 1)}`,
+                  node: formatBRL(analise.acumSafraAnterior),
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none"
+                >
+                  <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                    {item.label}
+                  </p>
+                  <p className="font-display text-lg font-semibold tabular-nums">{item.node}</p>
+                </div>
+              ))}
+              <div className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none">
+                <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                   Variação safra vs. safra
                 </p>
                 <p className="font-display text-lg font-semibold tabular-nums">
@@ -689,6 +696,7 @@ function AnaliseDespesasAdm() {
                 </p>
               </div>
             </div>
+
 
             {/* EVOLUÇÃO */}
             <div className="mb-10">
