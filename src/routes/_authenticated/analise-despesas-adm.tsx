@@ -581,7 +581,7 @@ function AnaliseDespesasAdm() {
         {/* CABEÇALHO DE IMPRESSÃO */}
         <div className="mb-6 hidden items-start justify-between gap-6 border-b border-border pb-4 print:flex">
           <div>
-            <h2 className="font-serif text-lg">Análise de Despesas Administrativas</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">Análise de Despesas Administrativas</h2>
             <p className="text-sm">Consolidado — DESP. ADM (contas 3.4.01.*)</p>
             <p className="mt-1 text-sm font-semibold">Referência: {mesReferencia}</p>
             {!!deptos.length && (
@@ -604,41 +604,40 @@ function AnaliseDespesasAdm() {
         ) : (
           <>
             {/* NÚMERO-ÂNCORA + LEITURA EXECUTIVA */}
-            <div className="mb-10">
-              <div className="flex flex-wrap items-end gap-4">
-                <span className="font-serif text-[44px] leading-none">
+            <section className="mb-8 rounded-lg border border-border bg-card p-6 shadow-xs print:border-0 print:p-0 print:shadow-none">
+              <p className="mb-2 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                Total de despesas administrativas — {mesReferencia}
+              </p>
+              <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+                <span className="font-display text-[42px] leading-none font-semibold tracking-tight tabular-nums">
                   {formatBRL(analise.totalMesAtual)}
                 </span>
-                <div className="flex items-center gap-3 pb-1.5 text-sm">
+                <div className="flex items-center gap-3 pb-1 text-sm">
                   <span className="text-muted-foreground">vs. mês anterior</span>
                   <Variacao percentual={analise.variacaoMoM} disponivel={analise.temMesAnterior} />
-                  <span className="text-border">|</span>
+                  <span className="h-4 w-px bg-border" />
                   <span className="text-muted-foreground">
                     vs. {mesReferencia.split("/")[0]}/ano anterior
                   </span>
                   <Variacao percentual={analise.variacaoYoY} disponivel={analise.temAnoAnterior} />
                 </div>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Total de despesas administrativas — {mesReferencia}
-                {alertaAtivo && (
-                  <span className="text-destructive">
-                    {" "}
-                    · variação acima do limite de referência ({LIMITE_ALERTA_PERCENTUAL}%)
-                  </span>
-                )}
-              </p>
+              {alertaAtivo && (
+                <p className="mt-3 inline-flex rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
+                  Variação acima do limite de referência ({LIMITE_ALERTA_PERCENTUAL}%)
+                </p>
+              )}
 
-              <div className="mt-6 border-l-2 border-primary py-1 pl-5">
-                <p className="mb-1.5 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+              <div className="mt-6 rounded-md border-l-2 border-primary bg-muted/40 px-5 py-4">
+                <p className="mb-2 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                   Leitura executiva
                 </p>
-                <p className="font-serif text-[15px] leading-relaxed">{leituraExecutiva}</p>
+                <p className="text-[15px] leading-[1.75] text-foreground/90">{leituraExecutiva}</p>
               </div>
-            </div>
+            </section>
 
             {/* INDICADORES */}
-            <div className="mb-6 grid grid-cols-2 border-t border-b border-border sm:grid-cols-4">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: "Mês atual", value: formatBRL(analise.totalMesAtual) },
                 { label: "Mês anterior", value: formatBRL(analise.totalMesAnterior) },
@@ -650,38 +649,46 @@ function AnaliseDespesasAdm() {
                   label: "% sobre a receita bruta",
                   value: pctTexto(analise.pctSobreReceita),
                 },
-              ].map((item, i) => (
+              ].map((item) => (
                 <div
                   key={item.label}
-                  className={`px-4 py-4 ${i === 0 ? "" : "border-l border-border"}`}
+                  className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none"
                 >
-                  <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
+                  <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                     {item.label}
                   </p>
-                  <p className="font-serif text-lg">{item.value}</p>
+                  <p className="font-display text-lg font-semibold tabular-nums">{item.value}</p>
                 </div>
               ))}
             </div>
 
             {/* ACUMULADO DA SAFRA */}
-            <div className="mb-10 grid grid-cols-1 border-b border-border sm:grid-cols-3">
-              <div className="px-4 py-4">
-                <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Acumulado safra {safraLabel(analise.safraAtual)} (abr–{MESES[refMes - 1].slice(0, 3).toLowerCase()})
-                </p>
-                <p className="font-serif text-lg">{formatBRL(analise.acumSafra)}</p>
-              </div>
-              <div className="border-t border-border px-4 py-4 sm:border-t-0 sm:border-l">
-                <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
-                  Mesma janela — safra {safraLabel(analise.safraAtual - 1)}
-                </p>
-                <p className="font-serif text-lg">{formatBRL(analise.acumSafraAnterior)}</p>
-              </div>
-              <div className="border-t border-border px-4 py-4 sm:border-t-0 sm:border-l">
-                <p className="mb-1 text-[11px] tracking-wider text-muted-foreground uppercase">
+            <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                {
+                  label: `Acumulado safra ${safraLabel(analise.safraAtual)} (abr–${MESES[refMes - 1].slice(0, 3).toLowerCase()})`,
+                  node: formatBRL(analise.acumSafra),
+                },
+                {
+                  label: `Mesma janela — safra ${safraLabel(analise.safraAtual - 1)}`,
+                  node: formatBRL(analise.acumSafraAnterior),
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none"
+                >
+                  <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                    {item.label}
+                  </p>
+                  <p className="font-display text-lg font-semibold tabular-nums">{item.node}</p>
+                </div>
+              ))}
+              <div className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none">
+                <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                   Variação safra vs. safra
                 </p>
-                <p className="font-serif text-lg">
+                <p className="font-display text-lg font-semibold tabular-nums">
                   <Variacao
                     percentual={analise.variacaoSafra}
                     disponivel={analise.acumSafraAnterior >= 0.005}
@@ -690,9 +697,10 @@ function AnaliseDespesasAdm() {
               </div>
             </div>
 
+
             {/* EVOLUÇÃO */}
-            <div className="mb-10">
-              <p className="mb-1 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+            <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+              <p className="mb-1 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 Evolução — últimos {MESES_HISTORICO} meses
               </p>
               <p className="mb-3 text-sm text-muted-foreground">
@@ -767,12 +775,12 @@ function AnaliseDespesasAdm() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
+            </section>
 
             {/* PONTOS DE ATENÇÃO */}
             {(analise.pontosAtencao.length > 0 || analise.naoRecorrentes.length > 0) && (
-              <div className="mb-10">
-                <p className="mb-3 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+              <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+                <p className="mb-3 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                   Pontos de atenção
                 </p>
                 <ul className="space-y-1.5 text-sm">
@@ -810,12 +818,12 @@ function AnaliseDespesasAdm() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </section>
             )}
 
             {/* PONTE DE VARIAÇÃO */}
-            <div className="mb-10">
-              <p className="mb-1 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+            <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+              <p className="mb-1 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 Composição da variação — {mesReferencia} vs. mês anterior
               </p>
               <p className="mb-3 text-sm text-muted-foreground">
@@ -893,10 +901,10 @@ function AnaliseDespesasAdm() {
                   </Bar>
                 </ComposedChart>
               </ResponsiveContainer>
-            </div>
+            </section>
 
             {/* TABELAS */}
-            <div className="grid grid-cols-1 gap-x-10 gap-y-8">
+            <div className="grid grid-cols-1 gap-5">
               <TabelaTop
                 titulo="Principais despesas — Conta Contábil"
                 itens={analise.topContas}
@@ -980,9 +988,9 @@ function TabelaTop({
   const limite = expandido ? TOP_EXPANDIDO : TOP_PADRAO;
   const visiveis = itens.slice(0, limite);
   return (
-    <div>
-      <div className="mb-3 flex items-baseline justify-between">
-        <p className="text-[11px] tracking-[0.14em] text-muted-foreground uppercase">{titulo}</p>
+    <div className="rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+      <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
+        <p className="text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{titulo}</p>
         {itens.length > TOP_PADRAO && (
           <button
             onClick={onExpandir}
@@ -994,7 +1002,7 @@ function TabelaTop({
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+          <tr className="text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
             <th className="pb-1 text-left font-normal">Descrição</th>
             <th className="pb-1 text-right font-normal">Mês</th>
             <th className="pb-1 text-right font-normal">% do total</th>
@@ -1010,16 +1018,16 @@ function TabelaTop({
               <tr
                 key={item.nome}
                 onClick={() => onSelecionar(item)}
-                className="cursor-pointer border-t border-border"
+                className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50"
               >
                 <td className="py-2.5 pr-3">{item.nome}</td>
-                <td className="py-2.5 text-right font-serif whitespace-nowrap">
+                <td className="py-2.5 text-right font-medium tabular-nums whitespace-nowrap">
                   {formatBRL(item.valor)}
                 </td>
                 <td className="py-2.5 text-right whitespace-nowrap text-muted-foreground">
                   {pctTexto(item.pct)}
                 </td>
-                <td className="py-2.5 text-right font-serif whitespace-nowrap text-muted-foreground">
+                <td className="py-2.5 text-right tabular-nums whitespace-nowrap text-muted-foreground">
                   {formatBRL(item.anterior)}
                 </td>
                 <td
@@ -1091,7 +1099,7 @@ function DrilldownModal({
             <p className="text-[11px] tracking-wider text-muted-foreground uppercase">
               Detalhe de lançamentos
             </p>
-            <h3 className="mt-0.5 font-serif text-lg">{titulo}</h3>
+            <h3 className="mt-0.5 font-display text-lg font-semibold tracking-tight">{titulo}</h3>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="size-4.5" />
