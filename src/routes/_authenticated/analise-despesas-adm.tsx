@@ -699,8 +699,8 @@ function AnaliseDespesasAdm() {
 
 
             {/* EVOLUÇÃO */}
-            <div className="mb-10">
-              <p className="mb-1 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+            <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+              <p className="mb-1 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 Evolução — últimos {MESES_HISTORICO} meses
               </p>
               <p className="mb-3 text-sm text-muted-foreground">
@@ -775,12 +775,12 @@ function AnaliseDespesasAdm() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
+            </section>
 
             {/* PONTOS DE ATENÇÃO */}
             {(analise.pontosAtencao.length > 0 || analise.naoRecorrentes.length > 0) && (
-              <div className="mb-10">
-                <p className="mb-3 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+              <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+                <p className="mb-3 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                   Pontos de atenção
                 </p>
                 <ul className="space-y-1.5 text-sm">
@@ -818,12 +818,12 @@ function AnaliseDespesasAdm() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </section>
             )}
 
             {/* PONTE DE VARIAÇÃO */}
-            <div className="mb-10">
-              <p className="mb-1 text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+            <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+              <p className="mb-1 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
                 Composição da variação — {mesReferencia} vs. mês anterior
               </p>
               <p className="mb-3 text-sm text-muted-foreground">
@@ -901,10 +901,10 @@ function AnaliseDespesasAdm() {
                   </Bar>
                 </ComposedChart>
               </ResponsiveContainer>
-            </div>
+            </section>
 
             {/* TABELAS */}
-            <div className="grid grid-cols-1 gap-x-10 gap-y-8">
+            <div className="grid grid-cols-1 gap-5">
               <TabelaTop
                 titulo="Principais despesas — Conta Contábil"
                 itens={analise.topContas}
@@ -990,7 +990,7 @@ function TabelaTop({
   return (
     <div>
       <div className="mb-3 flex items-baseline justify-between">
-        <p className="text-[11px] tracking-[0.14em] text-muted-foreground uppercase">{titulo}</p>
+        <p className="text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{titulo}</p>
         {itens.length > TOP_PADRAO && (
           <button
             onClick={onExpandir}
