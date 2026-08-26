@@ -988,8 +988,8 @@ function TabelaTop({
   const limite = expandido ? TOP_EXPANDIDO : TOP_PADRAO;
   const visiveis = itens.slice(0, limite);
   return (
-    <div>
-      <div className="mb-3 flex items-baseline justify-between">
+    <div className="rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
+      <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
         <p className="text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{titulo}</p>
         {itens.length > TOP_PADRAO && (
           <button
@@ -1002,7 +1002,7 @@ function TabelaTop({
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-[11px] tracking-wider text-muted-foreground uppercase">
+          <tr className="text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
             <th className="pb-1 text-left font-normal">Descrição</th>
             <th className="pb-1 text-right font-normal">Mês</th>
             <th className="pb-1 text-right font-normal">% do total</th>
@@ -1018,7 +1018,7 @@ function TabelaTop({
               <tr
                 key={item.nome}
                 onClick={() => onSelecionar(item)}
-                className="cursor-pointer border-t border-border"
+                className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50"
               >
                 <td className="py-2.5 pr-3">{item.nome}</td>
                 <td className="py-2.5 text-right font-medium tabular-nums whitespace-nowrap">
