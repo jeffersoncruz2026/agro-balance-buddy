@@ -125,6 +125,16 @@ function BpDre() {
     },
   });
 
+  const detalheOrdenado = useMemo(
+    () =>
+      (detalheQuery.data ?? [])
+        .slice()
+        .sort(
+          (a, b) => Math.abs(Number(b.saldo_atual)) - Math.abs(Number(a.saldo_atual)),
+        ),
+    [detalheQuery.data],
+  );
+
   const secoesAtivo = useMemo(() => bp.secoes.filter((s) => s.lado === "ativo"), [bp.secoes]);
   const secoesPassivo = useMemo(() => bp.secoes.filter((s) => s.lado === "passivo"), [bp.secoes]);
   const contarLinhas = (secoes: typeof bp.secoes) =>
@@ -380,7 +390,7 @@ function BpDre() {
                 </tr>
               </thead>
               <tbody>
-                {(detalheQuery.data ?? []).map((d) => (
+                {detalheOrdenado.map((d) => (
                   <tr key={d.id} className="border-t border-border">
                     <td className="px-3 py-1.5 text-xs">{d.conta}</td>
                     <td className="px-3 py-1.5 text-xs text-muted-foreground">{d.descricao}</td>
@@ -389,7 +399,7 @@ function BpDre() {
                     </td>
                   </tr>
                 ))}
-                {!detalheQuery.data?.length && (
+                {!detalheOrdenado.length && (
                   <tr>
                     <td colSpan={3} className="px-3 py-6 text-center text-sm text-muted-foreground">
                       Nenhum lançamento.

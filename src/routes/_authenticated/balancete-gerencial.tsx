@@ -202,7 +202,14 @@ function BalanceteGerencial() {
     },
   });
 
-  const totalBaseDetalhe = (detalheQ.data ?? []).reduce((a, r) => a + Number(r.vlcusto), 0);
+  const detalheOrdenado = useMemo(
+    () =>
+      (detalheQ.data ?? [])
+        .slice()
+        .sort((a, b) => Math.abs(Number(b.vlcusto)) - Math.abs(Number(a.vlcusto))),
+    [detalheQ.data],
+  );
+  const totalBaseDetalhe = detalheOrdenado.reduce((a, r) => a + Number(r.vlcusto), 0);
   const ajustesDetalhe = ajustes.filter(
     (a) =>
       !!detalhe &&
@@ -538,7 +545,7 @@ function BalanceteGerencial() {
                 </tr>
               </thead>
               <tbody>
-                {(detalheQ.data ?? []).map((r) => (
+                {detalheOrdenado.map((r) => (
                   <tr key={r.id} className="border-t border-border">
                     <td className="num px-2 py-1">
                       {new Date(r.data as string).toLocaleDateString("pt-BR")}

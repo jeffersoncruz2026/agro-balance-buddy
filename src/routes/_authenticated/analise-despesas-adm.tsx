@@ -1091,6 +1091,13 @@ function DrilldownModal({
   onClose: () => void;
 }) {
   if (!titulo) return null;
+  const ordenadas = useMemo(
+    () =>
+      linhas
+        .slice()
+        .sort((a, b) => Math.abs(Number(b.vlcusto)) - Math.abs(Number(a.vlcusto))),
+    [linhas],
+  );
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-2xl border border-border bg-card p-7 shadow-xl">
@@ -1117,7 +1124,7 @@ function DrilldownModal({
               </tr>
             </thead>
             <tbody>
-              {linhas.map((r) => (
+              {ordenadas.map((r) => (
                 <tr key={r.id} className="border-t border-border">
                   <td className="px-2 py-1">{new Date(r.data).toLocaleDateString("pt-BR")}</td>
                   <td className="max-w-40 truncate px-2 py-1">{r.produto}</td>
@@ -1126,7 +1133,7 @@ function DrilldownModal({
                   <td className="px-2 py-1 text-right">{formatBRL(Number(r.vlcusto))}</td>
                 </tr>
               ))}
-              {!linhas.length && (
+              {!ordenadas.length && (
                 <tr>
                   <td colSpan={5} className="px-2 py-3 text-center text-muted-foreground">
                     {carregando ? "Carregando lançamentos…" : "Nenhum lançamento encontrado."}
