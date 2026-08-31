@@ -202,7 +202,14 @@ function BalanceteGerencial() {
     },
   });
 
-  const totalBaseDetalhe = (detalheQ.data ?? []).reduce((a, r) => a + Number(r.vlcusto), 0);
+  const detalheOrdenado = useMemo(
+    () =>
+      (detalheQ.data ?? [])
+        .slice()
+        .sort((a, b) => Math.abs(Number(b.vlcusto)) - Math.abs(Number(a.vlcusto))),
+    [detalheQ.data],
+  );
+  const totalBaseDetalhe = detalheOrdenado.reduce((a, r) => a + Number(r.vlcusto), 0);
   const ajustesDetalhe = ajustes.filter(
     (a) =>
       !!detalhe &&

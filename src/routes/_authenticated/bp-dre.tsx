@@ -125,6 +125,16 @@ function BpDre() {
     },
   });
 
+  const detalheOrdenado = useMemo(
+    () =>
+      (detalheQuery.data ?? [])
+        .slice()
+        .sort(
+          (a, b) => Math.abs(Number(b.saldo_atual)) - Math.abs(Number(a.saldo_atual)),
+        ),
+    [detalheQuery.data],
+  );
+
   const secoesAtivo = useMemo(() => bp.secoes.filter((s) => s.lado === "ativo"), [bp.secoes]);
   const secoesPassivo = useMemo(() => bp.secoes.filter((s) => s.lado === "passivo"), [bp.secoes]);
   const contarLinhas = (secoes: typeof bp.secoes) =>
