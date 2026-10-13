@@ -76,9 +76,9 @@ export const RATEADAS: Categoria[] = ["DESP. ADM", "DESP. TRIBUT", "DESP. VENDAS
 
 /**
  * Colunas cujo valor apurado preserva o sinal real (não é convertido para
- * módulo/absoluto). Contas 3.2.* (deduções da receita) e 3.4.02.* (despesas
- * tributárias) devem aparecer negativas quando o lançamento for negativo
- * (ex.: estorno/crédito).
+ * módulo/absoluto). Contas 3.2.* (deduções da receita), 3.4.02.* (despesas
+ * tributárias) e despesas de vendas devem aparecer negativas quando o
+ * lançamento for negativo (ex.: estorno/crédito).
  */
 export const PRESERVA_SINAL: ColKey[] = [
   "hedge",
@@ -89,6 +89,7 @@ export const PRESERVA_SINAL: ColKey[] = [
   "inssRural",
   "outrosAbat",
   "despTrib",
+  "despVendas",
 ];
 
 /** Centro de custo (NOMECUSTO) cujas despesas administrativas vão 100% para OUTROS. */
