@@ -621,11 +621,13 @@ export type Database = {
           p_safra_linha: number
         }
         Returns: {
+          codund: string
           complemento: string
           contacontabil: string
           data: string
           id: number
           produto: string
+          quantidade: number
           vlcusto: number
         }[]
       }
