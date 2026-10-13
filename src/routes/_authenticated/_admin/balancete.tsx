@@ -205,7 +205,10 @@ function Balancete() {
     },
   });
 
-  const totalBaseDetalhe = (detalheQ.data ?? []).reduce((a, r) => a + Number(r.vlcusto), 0);
+  // Receita bruta vem a crédito (negativa) na base; no detalhe exibimos com o
+  // sentido econômico (positiva), igual à grade do balancete.
+  const sinalDetalhe = detalhe?.categoria === "RECEITA BRUTA" ? -1 : 1;
+  const totalBaseDetalhe = (detalheQ.data ?? []).reduce((a, r) => a + sinalDetalhe * Number(r.vlcusto), 0);
   const ajustesDetalhe = ajustes.filter(
     (a) =>
       !!detalhe &&
@@ -471,7 +474,7 @@ function Balancete() {
                     <td className="max-w-56 truncate px-2 py-1">{r.produto}</td>
                     <td className="max-w-56 truncate px-2 py-1">{r.complemento}</td>
                     <td className="px-2 py-1">{r.contacontabil}</td>
-                    <td className="num px-2 py-1 text-right">{formatBRL(Number(r.vlcusto))}</td>
+                    <td className="num px-2 py-1 text-right">{formatBRL(sinalDetalhe * Number(r.vlcusto))}</td>
                   </tr>
                 ))}
               </tbody>
