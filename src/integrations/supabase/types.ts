@@ -622,12 +622,10 @@ export type Database = {
         }
         Returns: {
           complemento: string
-          codund: string
           contacontabil: string
           data: string
           id: number
           produto: string
-          quantidade: number
           vlcusto: number
         }[]
       }
