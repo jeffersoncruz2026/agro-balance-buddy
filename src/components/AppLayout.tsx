@@ -22,6 +22,7 @@ import {
   Newspaper,
   Gauge,
   ShieldCheck,
+  CalendarRange,
 } from "lucide-react";
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ className?: string }> };
@@ -29,6 +30,7 @@ type NavItem = { to: string; label: string; icon: ComponentType<{ className?: st
 /** Relatórios — visíveis para todo mundo. */
 const NAV_RELATORIOS = [
   { to: "/balancete-gerencial", label: "Balancete Gerencial", icon: FileStack },
+  { to: "/comparativo", label: "Comparativo", icon: CalendarRange },
   { to: "/resultado-financeiro", label: "Resultado Financeiro", icon: Landmark },
   { to: "/analise-despesas-adm", label: "Análise Despesas ADM", icon: Newspaper },
   { to: "/performance-rentabilidade", label: "Performance e Rentabilidade", icon: Gauge },
