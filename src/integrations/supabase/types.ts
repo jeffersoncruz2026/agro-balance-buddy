@@ -626,6 +626,7 @@ export type Database = {
           contacontabil: string
           data: string
           id: number
+          nomedepto: string
           produto: string
           quantidade: number
           vlcusto: number
