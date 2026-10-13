@@ -67,6 +67,8 @@ const hoje = new Date();
 const COLUNAS_OCULTAS: ColKey[] = ["devolucao", "icms", "pis", "cofins", "inssRural", "outrosAbat"];
 const COLUNAS_VISIVEIS = COLUNAS.filter((c) => !COLUNAS_OCULTAS.includes(c.key));
 
+const formatQtd = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 3 });
+
 function BalanceteGerencial() {
   const [detalhe, setDetalhe] = useState<{
     safra: number;
@@ -211,8 +213,10 @@ function BalanceteGerencial() {
   );
   // Receita bruta vem a crédito (negativa) na base; no detalhe exibimos com o
   // sentido econômico (positiva), igual à grade do balancete.
-  const sinalDetalhe = detalhe?.categoria === "RECEITA BRUTA" ? -1 : 1;
+  const ehReceitaBruta = detalhe?.categoria === "RECEITA BRUTA";
+  const sinalDetalhe = ehReceitaBruta ? -1 : 1;
   const totalBaseDetalhe = detalheOrdenado.reduce((a, r) => a + sinalDetalhe * Number(r.vlcusto), 0);
+  const totalQtdDetalhe = detalheOrdenado.reduce((a, r) => a + Number(r.quantidade ?? 0), 0);
   const ajustesDetalhe = ajustes.filter(
     (a) =>
       !!detalhe &&
@@ -544,6 +548,9 @@ function BalanceteGerencial() {
                   <th className="px-2 py-2 text-left font-medium">Produto</th>
                   <th className="px-2 py-2 text-left font-medium">Complemento</th>
                   <th className="px-2 py-2 text-left font-medium">Conta</th>
+                  {ehReceitaBruta && (
+                    <th className="px-2 py-2 text-right font-medium">Quantidade</th>
+                  )}
                   <th className="px-2 py-2 text-right font-medium">Valor</th>
                 </tr>
               </thead>
@@ -556,6 +563,12 @@ function BalanceteGerencial() {
                     <td className="max-w-56 truncate px-2 py-1">{r.produto}</td>
                     <td className="max-w-56 truncate px-2 py-1">{r.complemento}</td>
                     <td className="px-2 py-1">{r.contacontabil}</td>
+                    {ehReceitaBruta && (
+                      <td className="num px-2 py-1 text-right whitespace-nowrap">
+                        {r.quantidade == null ? "—" : formatQtd(Number(r.quantidade))}
+                        {r.quantidade != null && r.codund ? ` ${r.codund}` : ""}
+                      </td>
+                    )}
                     <td className="num px-2 py-1 text-right">{formatBRL(sinalDetalhe * Number(r.vlcusto))}</td>
                   </tr>
                 ))}
@@ -564,7 +577,10 @@ function BalanceteGerencial() {
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Exibindo até 500 lançamentos.</span>
-            <span className="num">Subtotal da base: {formatBRL(totalBaseDetalhe)}</span>
+            <span className="num">
+              {ehReceitaBruta && <>Quantidade total: {formatQtd(totalQtdDetalhe)} · </>}
+              Subtotal da base: {formatBRL(totalBaseDetalhe)}
+            </span>
           </div>
 
           <p className="mt-2 text-xs font-medium">Ajustes gerenciais manuais</p>
