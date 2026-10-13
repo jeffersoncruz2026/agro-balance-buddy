@@ -269,11 +269,11 @@ function Comparativo() {
             </h2>
             <div className="mt-1 grid w-fit grid-cols-[auto_auto] gap-x-4 text-xs">
               <span className="font-medium">Mês base (anterior):</span>
-              <span className="rounded bg-yellow-200 px-2 text-center font-medium text-blue-800">
+              <span className="rounded bg-sidebar-primary px-2 text-center font-semibold text-sidebar-primary-foreground">
                 {mesBase ? rotuloMes(mesBase) : "-"}
               </span>
               <span className="font-medium">Mês comparado (atual):</span>
-              <span className="mt-0.5 rounded bg-yellow-200 px-2 text-center font-medium text-blue-800">
+              <span className="mt-0.5 rounded bg-sidebar-primary px-2 text-center font-semibold text-sidebar-primary-foreground">
                 {mesComparado ? rotuloMes(mesComparado) : "-"}
               </span>
             </div>
@@ -296,8 +296,8 @@ function Comparativo() {
                     ))}
                     <th />
                   </tr>
-                  <tr className="bg-[#1f3864] text-white">
-                    <th className="sticky left-0 z-10 min-w-64 bg-[#1f3864] px-2 py-1.5 text-center font-semibold">
+                  <tr className="bg-primary text-primary-foreground">
+                    <th className="sticky left-0 z-10 min-w-64 bg-primary px-2 py-1.5 text-center font-semibold">
                       Atividade / Indicador
                     </th>
                     {porMes.map((m) => (
@@ -317,10 +317,10 @@ function Comparativo() {
                       <tr>
                         <td colSpan={porMes.length + 2} className="pt-4" />
                       </tr>
-                      <tr className="bg-[#d9e1f2]">
+                      <tr className={at === "TOTAL" ? "bg-primary/15" : "bg-accent"}>
                         <td
                           colSpan={porMes.length + 2}
-                          className="sticky left-0 px-2 py-1 font-semibold text-[#1f3864]"
+                          className={`sticky left-0 border-l-4 px-2 py-1 font-semibold ${at === "TOTAL" ? "border-primary text-primary" : "border-sidebar-primary text-accent-foreground"}`}
                         >
                           {at}
                         </td>
@@ -328,7 +328,7 @@ function Comparativo() {
                       {INDICADORES.map((ind) => (
                         <tr
                           key={ind.key}
-                          className={`hover:bg-muted/50 ${ind.saldo ? "border-t border-foreground" : ""} ${ind.destaque ? "font-semibold" : ""}`}
+                          className={`hover:bg-muted/50 ${ind.saldo ? "border-t border-primary" : ""} ${ind.destaque ? "font-semibold" : ""}`}
                         >
                           <td className="sticky left-0 bg-card px-2 py-0.5 whitespace-nowrap">
                             {ind.label}
