@@ -67,6 +67,15 @@ const hoje = new Date();
 const COLUNAS_OCULTAS: ColKey[] = ["devolucao", "icms", "pis", "cofins", "inssRural", "outrosAbat"];
 const COLUNAS_VISIVEIS = COLUNAS.filter((c) => !COLUNAS_OCULTAS.includes(c.key));
 
+/** Divisão do CPV/CMV de bovinos: NOMEDEPTO "CONFINAMENTO" → confinamento; demais → pasto. */
+function divisaoDe(nomedepto: string | null | undefined): string {
+  // undefined = RPC ainda sem o campo (migração não aplicada).
+  if (nomedepto === undefined) return "—";
+  return nomedepto?.trim().toUpperCase() === "CONFINAMENTO"
+    ? "Regime Confinamento"
+    : "Regime Pasto";
+}
+
 const formatQtd = (v: number) => v.toLocaleString("pt-BR", { maximumFractionDigits: 3 });
 
 function BalanceteGerencial() {
@@ -215,6 +224,7 @@ function BalanceteGerencial() {
   // sentido econômico (positiva), igual à grade do balancete.
   const ehReceitaBruta = detalhe?.categoria === "RECEITA BRUTA";
   const sinalDetalhe = ehReceitaBruta ? -1 : 1;
+  const mostraDivisao = detalhe?.categoria === "CPV/CMV" && detalhe?.linha === "BOVINOS / COMPOSTO";
   const totalBaseDetalhe = detalheOrdenado.reduce((a, r) => a + sinalDetalhe * Number(r.vlcusto), 0);
   const totalQtdDetalhe = detalheOrdenado.reduce((a, r) => a + Number(r.quantidade ?? 0), 0);
   const ajustesDetalhe = ajustes.filter(
@@ -551,6 +561,7 @@ function BalanceteGerencial() {
                   {ehReceitaBruta && (
                     <th className="px-2 py-2 text-right font-medium">Quantidade</th>
                   )}
+                  {mostraDivisao && <th className="px-2 py-2 text-left font-medium">Divisão</th>}
                   <th className="px-2 py-2 text-right font-medium">Valor</th>
                 </tr>
               </thead>
@@ -568,6 +579,9 @@ function BalanceteGerencial() {
                         {r.quantidade == null ? "—" : formatQtd(Number(r.quantidade))}
                         {r.quantidade != null && r.codund ? ` ${r.codund}` : ""}
                       </td>
+                    )}
+                    {mostraDivisao && (
+                      <td className="px-2 py-1 whitespace-nowrap">{divisaoDe(r.nomedepto)}</td>
                     )}
                     <td className="num px-2 py-1 text-right">{formatBRL(sinalDetalhe * Number(r.vlcusto))}</td>
                   </tr>
