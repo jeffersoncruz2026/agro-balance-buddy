@@ -339,11 +339,11 @@ function BpDre() {
           <TabsContent value="dre" className="mt-4">
             <Card className="print:border-0 print:bg-transparent print:shadow-none">
               <CardContent className="pt-6 print:p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[680px] text-sm">
+                <div className="overflow-x-auto print:overflow-visible">
+                  <table className="w-full min-w-[680px] print:min-w-0 text-sm">
                     <thead className="text-xs text-muted-foreground">
                       <tr>
-                        <th className="sticky left-0 bg-card pb-2 text-left font-medium print:static" />
+                        <th className="sticky left-0 bg-card pb-2 text-left font-medium print:static print:bg-transparent" />
                         <th className="pb-2 text-right font-medium">
                           {mesLabel}/{anoSel}
                         </th>
@@ -391,21 +391,21 @@ function BpDre() {
                                   formatBRL(l.valor)
                                 )}
                               </td>
-                              <td className="num whitespace-nowrap pl-3 py-1.5 text-right text-muted-foreground print:hidden">
+                              <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right text-muted-foreground print:hidden">
                                 {receitaLiquida.atual
                                   ? formatPct((l.valor / receitaLiquida.atual) * 100, 1)
                                   : "—"}
                               </td>
-                              <td className="num hidden whitespace-nowrap pl-3 py-1.5 text-right print:table-cell">
+                              <td className="num hidden whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right print:table-cell">
                                 <VariacaoPct atual={l.valor} anterior={l.valorAnoAnterior} />
                               </td>
-                              <td className="num whitespace-nowrap pl-3 py-1.5 text-right text-muted-foreground">
+                              <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right text-muted-foreground">
                                 {formatBRL(l.valorAnoAnterior)}
                               </td>
-                              <td className="num whitespace-nowrap pl-3 py-1.5 text-right print:hidden">
+                              <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right print:hidden">
                                 {formatBRL(l.valor - l.valorAnoAnterior)}
                               </td>
-                              <td className="num whitespace-nowrap pl-3 py-1.5 pr-2 text-right print:hidden">
+                              <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 pr-2 text-right print:hidden">
                                 <VariacaoPct atual={l.valor} anterior={l.valorAnoAnterior} />
                               </td>
                             </tr>
@@ -891,7 +891,7 @@ function BpColuna({
   return (
     <Card className="print:border-0 print:bg-transparent print:shadow-none">
       <CardContent className="overflow-x-auto pt-4 sm:pt-6 print:overflow-visible print:p-0">
-        <table className="w-full min-w-[600px] text-sm">
+        <table className="w-full min-w-[600px] print:min-w-0 text-sm">
           <thead className="text-xs text-muted-foreground">
             <tr>
               <th className="pb-2 text-left font-display text-sm font-semibold text-foreground">
@@ -922,7 +922,7 @@ function BpColuna({
                 {s.linhas.map((l) => (
                   <tr key={`${s.chave}-${l.linha}`} className="border-t border-border">
                     <td className="py-1.5 pl-4">{l.linha}</td>
-                    <td className="num whitespace-nowrap pl-3 py-1.5 text-right">
+                    <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right">
                       <button
                         className="hover:underline"
                         onClick={() => onDetalhe({ demonstrativo, secao: s.chave, linha: l.linha })}
@@ -930,16 +930,16 @@ function BpColuna({
                         {formatBRL(l.valor)}
                       </button>
                     </td>
-                    <td className="num whitespace-nowrap pl-3 py-1.5 text-right text-muted-foreground print:hidden">
+                    <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right text-muted-foreground print:hidden">
                       {av(l.valor)}
                     </td>
-                    <td className="num hidden whitespace-nowrap pl-3 py-1.5 text-right print:table-cell">
+                    <td className="num hidden whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right print:table-cell">
                       <VariacaoPct atual={l.valor} anterior={l.valorAnoAnterior} colorir={false} />
                     </td>
-                    <td className="num whitespace-nowrap pl-3 py-1.5 text-right text-muted-foreground">
+                    <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right text-muted-foreground">
                       {formatBRL(l.valorAnoAnterior)}
                     </td>
-                    <td className="num whitespace-nowrap pl-3 py-1.5 text-right print:hidden">
+                    <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right print:hidden">
                       <VariacaoPct atual={l.valor} anterior={l.valorAnoAnterior} colorir={false} />
                     </td>
                   </tr>
@@ -949,23 +949,23 @@ function BpColuna({
                   className="border-t border-border bg-muted/30 font-semibold"
                 >
                   <td className="py-1.5 pl-2">{s.subtotalRotulo}</td>
-                  <td className="num whitespace-nowrap pl-3 py-1.5 text-right">
+                  <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right">
                     {formatBRL(s.subtotal)}
                   </td>
-                  <td className="num whitespace-nowrap pl-3 py-1.5 text-right text-muted-foreground print:hidden">
+                  <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right text-muted-foreground print:hidden">
                     {av(s.subtotal)}
                   </td>
-                  <td className="num hidden whitespace-nowrap pl-3 py-1.5 text-right print:table-cell">
+                  <td className="num hidden whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right print:table-cell">
                     <VariacaoPct
                       atual={s.subtotal}
                       anterior={s.subtotalAnoAnterior}
                       colorir={false}
                     />
                   </td>
-                  <td className="num whitespace-nowrap pl-3 py-1.5 text-right text-muted-foreground">
+                  <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right text-muted-foreground">
                     {formatBRL(s.subtotalAnoAnterior)}
                   </td>
-                  <td className="num whitespace-nowrap pl-3 py-1.5 text-right print:hidden">
+                  <td className="num whitespace-nowrap pl-3 print:pl-1 py-1.5 text-right print:hidden">
                     <VariacaoPct
                       atual={s.subtotal}
                       anterior={s.subtotalAnoAnterior}
@@ -991,19 +991,19 @@ function BpColuna({
             ))}
             <tr className="border-t-2 border-foreground/40 bg-muted/60 font-semibold">
               <td className="py-2 pl-2">{total}</td>
-              <td className="num whitespace-nowrap pl-3 py-2 text-right">
+              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right">
                 {formatBRL(totalValor)}
               </td>
-              <td className="num whitespace-nowrap pl-3 py-2 text-right text-muted-foreground print:hidden">
+              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right text-muted-foreground print:hidden">
                 {av(totalValor)}
               </td>
-              <td className="num hidden whitespace-nowrap pl-3 py-2 text-right print:table-cell">
+              <td className="num hidden whitespace-nowrap pl-3 print:pl-1 py-2 text-right print:table-cell">
                 <VariacaoPct atual={totalValor} anterior={totalValorAnoAnterior} colorir={false} />
               </td>
-              <td className="num whitespace-nowrap pl-3 py-2 text-right text-muted-foreground">
+              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right text-muted-foreground">
                 {formatBRL(totalValorAnoAnterior)}
               </td>
-              <td className="num whitespace-nowrap pl-3 py-2 text-right print:hidden">
+              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right print:hidden">
                 <VariacaoPct atual={totalValor} anterior={totalValorAnoAnterior} colorir={false} />
               </td>
             </tr>
