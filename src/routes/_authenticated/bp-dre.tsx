@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { formatBRL } from "@/lib/balancete";
 import {
   cascataDRE,
@@ -21,6 +23,7 @@ import {
   indicadoresDRE,
   montarBP,
   montarDRE,
+  somarRelatorios,
   variacaoPercentual,
   type BpCalc,
   type LinhaValor,
@@ -28,7 +31,14 @@ import {
   type PassoCascata,
 } from "@/lib/bpdre";
 import { formatCompacto, formatNum, formatPct, formatPP } from "@/lib/performance";
-import { AlertTriangle, CheckCircle2, Download, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Download,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -83,7 +93,8 @@ const MESES_LABEL = [
 ];
 
 function BpDre() {
-  const [empresaId, setEmpresaId] = useState<string>("");
+  /** Empresas marcadas no filtro; vazio = consolidado (todas). */
+  const [empresaIds, setEmpresaIds] = useState<string[]>([]);
   const [aba, setAba] = useState<Aba>("geral");
   const [periodo, setPeriodo] = useState<string>("");
 
@@ -102,14 +113,32 @@ function BpDre() {
     },
   });
 
+  const listaEmpresas = useMemo(() => empresas.data ?? [], [empresas.data]);
+  const selecionadas = listaEmpresas.filter((e) => empresaIds.includes(e.id));
+  /** Empresas a consultar: [undefined] = consolidado (todas), numa única chamada. */
+  const consulta: (string | undefined)[] =
+    !selecionadas.length || selecionadas.length === listaEmpresas.length
+      ? [undefined]
+      : selecionadas.map((e) => e.id);
+  const chaveConsulta = consulta.join(",");
+  const nomeEmpresa = (id: string) => listaEmpresas.find((e) => e.id === id)?.nome ?? "";
+  const rotuloEmpresas =
+    consulta[0] === undefined
+      ? "Consolidado (todas as empresas)"
+      : selecionadas.map((e) => e.nome).join(" + ");
+
   const periodos = useQuery({
-    queryKey: ["bp_dre_periodos", empresaId],
+    queryKey: ["bp_dre_periodos", chaveConsulta],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("bp_dre_periodos", {
-        p_empresa_id: empresaId || undefined,
-      });
-      if (error) throw error;
-      return data;
+      const respostas = await Promise.all(
+        consulta.map((id) => supabase.rpc("bp_dre_periodos", { p_empresa_id: id })),
+      );
+      const vistos = new Map<string, { ano: number; mes: number }>();
+      for (const { data, error } of respostas) {
+        if (error) throw error;
+        for (const p of data ?? []) vistos.set(`${p.ano}-${p.mes}`, p);
+      }
+      return [...vistos.values()].sort((a, b) => b.ano - a.ano || b.mes - a.mes);
     },
   });
 
@@ -122,16 +151,19 @@ function BpDre() {
   const [anoSel, mesSel] = periodoAtual ? periodoAtual.split("-").map(Number) : [null, null];
 
   const relatorio = useQuery({
-    queryKey: ["bp_dre_relatorio", empresaId, anoSel, mesSel],
+    queryKey: ["bp_dre_relatorio", chaveConsulta, anoSel, mesSel],
     enabled: !!anoSel && !!mesSel,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("bp_dre_relatorio", {
-        p_empresa_id: empresaId || undefined,
-        p_ano: anoSel!,
-        p_mes: mesSel!,
+      const respostas = await Promise.all(
+        consulta.map((id) =>
+          supabase.rpc("bp_dre_relatorio", { p_empresa_id: id, p_ano: anoSel!, p_mes: mesSel! }),
+        ),
+      );
+      const listas = respostas.map(({ data, error }) => {
+        if (error) throw error;
+        return (data ?? []) as LinhaValor[];
       });
-      if (error) throw error;
-      return (data ?? []) as LinhaValor[];
+      return listas.length === 1 ? listas[0] : somarRelatorios(listas);
     },
   });
 
@@ -144,19 +176,24 @@ function BpDre() {
   const receitaLiquida = indDRE.receitaLiquida;
 
   const detalheQuery = useQuery({
-    queryKey: ["bp_dre_lancamentos_detalhe", empresaId, anoSel, mesSel, detalhe],
+    queryKey: ["bp_dre_lancamentos_detalhe", chaveConsulta, anoSel, mesSel, detalhe],
     enabled: !!detalhe && !!anoSel && !!mesSel,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("bp_dre_lancamentos_detalhe", {
-        p_empresa_id: empresaId || undefined,
-        p_ano: anoSel!,
-        p_mes: mesSel!,
-        p_demonstrativo: detalhe!.demonstrativo,
-        p_secao: detalhe!.secao ?? undefined,
-        p_linha: detalhe!.linha,
-      });
-      if (error) throw error;
-      return data;
+      const respostas = await Promise.all(
+        consulta.map(async (id) => {
+          const { data, error } = await supabase.rpc("bp_dre_lancamentos_detalhe", {
+            p_empresa_id: id,
+            p_ano: anoSel!,
+            p_mes: mesSel!,
+            p_demonstrativo: detalhe!.demonstrativo,
+            p_secao: detalhe!.secao ?? undefined,
+            p_linha: detalhe!.linha,
+          });
+          if (error) throw error;
+          return (data ?? []).map((d) => ({ ...d, empresa: id ? nomeEmpresa(id) : "" }));
+        }),
+      );
+      return respostas.flat();
     },
   });
 
@@ -175,7 +212,9 @@ function BpDre() {
   const linhasAtivo = contarLinhas(secoesAtivo);
   const linhasPassivo = contarLinhas(secoesPassivo);
 
-  const empresaSelecionada = (empresas.data ?? []).find((e) => e.id === empresaId);
+  /** Rodapé/assinaturas da empresa só quando exatamente uma está selecionada. */
+  const empresaSelecionada = consulta.length === 1 && consulta[0] ? selecionadas[0] : undefined;
+  const variasEmpresas = consulta.length > 1;
   const mesLabel = mesSel ? MESES_LABEL[mesSel - 1] : "";
 
   return (
@@ -190,27 +229,76 @@ function BpDre() {
       }
     >
       <div className="flex flex-wrap items-end gap-2 rounded-md border border-border bg-muted/40 p-3 print:hidden">
-        <div className="min-w-56">
-          <label className="text-xs text-muted-foreground">Empresa</label>
-          <Select
-            value={empresaId || "consolidado"}
-            onValueChange={(v) => {
-              setEmpresaId(v === "consolidado" ? "" : v);
-              setPeriodo("");
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="consolidado">Consolidado (todas as empresas)</SelectItem>
-              {(empresas.data ?? []).map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {e.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="w-full sm:w-auto">
+          <label className="block text-xs text-muted-foreground">Empresa</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-between font-normal sm:w-72">
+                <span className="truncate">
+                  {consulta[0] === undefined
+                    ? "Consolidado (todas as empresas)"
+                    : selecionadas.length === 1
+                      ? selecionadas[0].nome
+                      : `${selecionadas.length} empresas selecionadas`}
+                </span>
+                <ChevronDown className="size-4 shrink-0 opacity-60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[min(22rem,calc(100vw-2rem))] p-2">
+              <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm font-medium hover:bg-muted">
+                <Checkbox
+                  checked={consulta[0] === undefined}
+                  onCheckedChange={() => {
+                    setEmpresaIds([]);
+                    setPeriodo("");
+                  }}
+                />
+                Todas as empresas (consolidado)
+              </label>
+              <div className="my-1 border-t border-border" />
+              <div className="max-h-64 overflow-y-auto">
+                {listaEmpresas.map((e) => (
+                  <label
+                    key={e.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted"
+                  >
+                    <Checkbox
+                      checked={empresaIds.includes(e.id)}
+                      onCheckedChange={(marcado) => {
+                        setEmpresaIds((atual) =>
+                          marcado ? [...atual, e.id] : atual.filter((id) => id !== e.id),
+                        );
+                        setPeriodo("");
+                      }}
+                    />
+                    {e.nome}
+                  </label>
+                ))}
+              </div>
+              <div className="mt-1 flex justify-between border-t border-border pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setEmpresaIds(listaEmpresas.map((e) => e.id));
+                    setPeriodo("");
+                  }}
+                >
+                  Marcar todas
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setEmpresaIds([]);
+                    setPeriodo("");
+                  }}
+                >
+                  Limpar
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="min-w-44">
           <label className="text-xs text-muted-foreground">Período</label>
@@ -242,9 +330,7 @@ function BpDre() {
         <div className="mt-6 hidden print:block">
           <div className="flex items-start justify-between gap-6">
             <div>
-              <h2 className="font-display text-lg font-semibold">
-                {empresaSelecionada?.nome ?? "Consolidado (todas as empresas)"}
-              </h2>
+              <h2 className="font-display text-lg font-semibold">{rotuloEmpresas}</h2>
               <p className="text-sm">{TITULO_ABA[aba]}</p>
               <p className="mt-1 text-sm font-semibold">
                 {mesLabel}-{anoSel}
@@ -270,7 +356,7 @@ function BpDre() {
             </TabsList>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="rounded-full bg-muted px-3 py-1 font-medium">
-                {empresaSelecionada?.nome ?? "Consolidado"}
+                {consulta[0] === undefined ? "Consolidado" : rotuloEmpresas}
               </span>
               <span className="rounded-full bg-muted px-3 py-1">
                 {mesLabel}/{anoSel} <span className="text-muted-foreground">vs</span> {mesLabel}/
@@ -470,6 +556,7 @@ function BpDre() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-muted text-xs">
                 <tr>
+                  {variasEmpresas && <th className="px-3 py-2 text-left font-medium">Empresa</th>}
                   <th className="px-3 py-2 text-left font-medium">Conta</th>
                   <th className="px-3 py-2 text-left font-medium">Descrição</th>
                   <th className="px-3 py-2 text-right font-medium">Saldo Atual</th>
@@ -477,7 +564,10 @@ function BpDre() {
               </thead>
               <tbody>
                 {detalheOrdenado.map((d) => (
-                  <tr key={d.id} className="border-t border-border">
+                  <tr key={`${d.empresa}-${d.id}`} className="border-t border-border">
+                    {variasEmpresas && (
+                      <td className="px-3 py-1.5 text-xs whitespace-nowrap">{d.empresa}</td>
+                    )}
                     <td className="px-3 py-1.5 text-xs">{d.conta}</td>
                     <td className="px-3 py-1.5 text-xs text-muted-foreground">{d.descricao}</td>
                     <td className="num px-3 py-1.5 text-right">
@@ -487,7 +577,10 @@ function BpDre() {
                 ))}
                 {!detalheOrdenado.length && (
                   <tr>
-                    <td colSpan={3} className="px-3 py-6 text-center text-sm text-muted-foreground">
+                    <td
+                      colSpan={variasEmpresas ? 4 : 3}
+                      className="px-3 py-6 text-center text-sm text-muted-foreground"
+                    >
                       Nenhum lançamento.
                     </td>
                   </tr>

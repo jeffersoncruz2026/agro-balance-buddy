@@ -424,6 +424,33 @@ export function variacaoPercentual(atual: number, anterior: number): number | nu
   return (atual - anterior) / Math.abs(anterior);
 }
 
+/**
+ * Soma o relatório de várias empresas (cada uma vinda de bp_dre_relatorio) por
+ * Demonstrativo + Seção + Linha. A RPC só soma lançamentos, então a soma das
+ * empresas equivale ao relatório das empresas juntas.
+ */
+export function somarRelatorios(listas: LinhaValor[][]): LinhaValor[] {
+  const mapa = new Map<string, LinhaValor>();
+  for (const lista of listas) {
+    for (const l of lista) {
+      const chave = `${l.demonstrativo}|${l.secao ?? ""}|${l.linha}`;
+      const atual = mapa.get(chave);
+      if (!atual) {
+        mapa.set(chave, {
+          ...l,
+          valor: Number(l.valor),
+          valor_ano_anterior: Number(l.valor_ano_anterior),
+        });
+      } else {
+        atual.valor += Number(l.valor);
+        atual.valor_ano_anterior += Number(l.valor_ano_anterior);
+        atual.ordem_exibicao = Math.min(atual.ordem_exibicao, l.ordem_exibicao);
+      }
+    }
+  }
+  return [...mapa.values()];
+}
+
 /* ---------------- Visão executiva (indicadores derivados) ---------------- */
 
 /** Par de valores (período atual x mesmo mês do ano anterior). */
