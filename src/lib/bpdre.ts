@@ -424,6 +424,131 @@ export function variacaoPercentual(atual: number, anterior: number): number | nu
   return (atual - anterior) / Math.abs(anterior);
 }
 
+/* ---------------- Visão executiva (indicadores derivados) ---------------- */
+
+/** Par de valores (período atual x mesmo mês do ano anterior). */
+export interface ParValor {
+  atual: number | null;
+  anterior: number | null;
+}
+
+const razao = (n: number, d: number) => (d ? n / d : null);
+
+/** Valor de uma chave da DRE já calculada (atual e ano anterior). */
+function valorDRE(dre: DreLinhaCalc[], chave: string): { atual: number; anterior: number } {
+  const l = dre.find((d) => d.chave === chave);
+  return { atual: l?.valor ?? 0, anterior: l?.valorAnoAnterior ?? 0 };
+}
+
+export interface IndicadoresDRE {
+  receitaLiquida: ParValor;
+  lucroBruto: ParValor;
+  margemBruta: ParValor;
+  resultadoOperacional: ParValor;
+  margemOperacional: ParValor;
+  lucroLiquido: ParValor;
+  margemLiquida: ParValor;
+}
+
+/** Margens em % da Receita Líquida. */
+export function indicadoresDRE(dre: DreLinhaCalc[]): IndicadoresDRE {
+  const rl = valorDRE(dre, "receita_liquida");
+  const lb = valorDRE(dre, "lucro_bruto");
+  const ro = valorDRE(dre, "resultado_antes_financeiras");
+  const ll = valorDRE(dre, "lucro_liquido");
+  const margem = (v: { atual: number; anterior: number }): ParValor => ({
+    atual: razao(v.atual * 100, rl.atual),
+    anterior: razao(v.anterior * 100, rl.anterior),
+  });
+  return {
+    receitaLiquida: rl,
+    lucroBruto: lb,
+    margemBruta: margem(lb),
+    resultadoOperacional: ro,
+    margemOperacional: margem(ro),
+    lucroLiquido: ll,
+    margemLiquida: margem(ll),
+  };
+}
+
+export interface IndicadoresBP {
+  liquidezCorrente: ParValor;
+  capitalCirculanteLiquido: ParValor;
+  /** (PC + PNC) ÷ Ativo total, em %. */
+  endividamentoGeral: ParValor;
+  patrimonioLiquido: ParValor;
+  /** Lucro líquido do período ÷ PL, em %. */
+  roe: ParValor;
+}
+
+export function indicadoresBP(bp: BpCalc, dre: DreLinhaCalc[]): IndicadoresBP {
+  const sec = (chave: string) => bp.secoes.find((s) => s.chave === chave);
+  const v = (chave: string) => ({
+    atual: sec(chave)?.subtotal ?? 0,
+    anterior: sec(chave)?.subtotalAnoAnterior ?? 0,
+  });
+  const ac = v("ATIVO_CIRCULANTE");
+  const pc = v("PASSIVO_CIRCULANTE");
+  const pnc = v("PASSIVO_NAO_CIRCULANTE");
+  const pl = v("PATRIMONIO_LIQUIDO");
+  const ll = valorDRE(dre, "lucro_liquido");
+  return {
+    liquidezCorrente: {
+      atual: razao(ac.atual, pc.atual),
+      anterior: razao(ac.anterior, pc.anterior),
+    },
+    capitalCirculanteLiquido: { atual: ac.atual - pc.atual, anterior: ac.anterior - pc.anterior },
+    endividamentoGeral: {
+      atual: razao((pc.atual + pnc.atual) * 100, bp.totalAtivo),
+      anterior: razao((pc.anterior + pnc.anterior) * 100, bp.totalAtivoAnoAnterior),
+    },
+    patrimonioLiquido: pl,
+    roe: {
+      atual: razao(ll.atual * 100, pl.atual),
+      anterior: razao(ll.anterior * 100, pl.anterior),
+    },
+  };
+}
+
+export interface PassoCascata {
+  rotulo: string;
+  /** Variação do passo (positiva soma, negativa reduz) ou valor do subtotal. */
+  valor: number;
+  subtotal: boolean;
+}
+
+/** Passos "da receita ao lucro" agrupados para leitura executiva. Fecha no Lucro Líquido. */
+export function cascataDRE(dre: DreLinhaCalc[]): PassoCascata[] {
+  const a = (chave: string) => valorDRE(dre, chave).atual;
+  const passos: PassoCascata[] = [
+    { rotulo: "Receita líquida", valor: a("receita_liquida"), subtotal: true },
+    { rotulo: "Var. ativo biológico", valor: a("variacao_ativo_biologico"), subtotal: false },
+    { rotulo: "Custo das vendas", valor: a("custo_vendas"), subtotal: false },
+    { rotulo: "Lucro bruto", valor: a("lucro_bruto"), subtotal: true },
+    {
+      rotulo: "Despesas operacionais",
+      valor:
+        a("despesas_vendas") +
+        a("despesas_adm") +
+        a("outras_receitas_operacionais") +
+        a("equivalencia_patrimonial_1"),
+      subtotal: false,
+    },
+    { rotulo: "Resultado operacional", valor: a("resultado_antes_financeiras"), subtotal: true },
+    { rotulo: "Financeiras líquidas", valor: a("financeiras_liquidas"), subtotal: false },
+    {
+      rotulo: "Outros",
+      valor: a("equivalencia_patrimonial_2") + a("reversao_perdas_investimentos"),
+      subtotal: false,
+    },
+    { rotulo: "Resultado antes IR", valor: a("resultado_antes_impostos"), subtotal: true },
+    { rotulo: "IR / CSLL", valor: a("ir_csll_corrente") + a("ir_csll_diferido"), subtotal: false },
+    { rotulo: "Lucro líquido", valor: a("lucro_liquido"), subtotal: true },
+  ];
+  // Passos intermediários zerados não agregam leitura.
+  return passos.filter((p) => p.subtotal || Math.abs(p.valor) >= 0.5);
+}
+
 export interface DeParaBPDRERow {
   conta: string;
   is_prefixo: boolean;
