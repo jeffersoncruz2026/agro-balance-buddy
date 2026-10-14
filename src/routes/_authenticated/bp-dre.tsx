@@ -207,10 +207,6 @@ function BpDre() {
 
   const secoesAtivo = useMemo(() => bp.secoes.filter((s) => s.lado === "ativo"), [bp.secoes]);
   const secoesPassivo = useMemo(() => bp.secoes.filter((s) => s.lado === "passivo"), [bp.secoes]);
-  const contarLinhas = (secoes: typeof bp.secoes) =>
-    secoes.reduce((acc, s) => acc + s.linhas.length + 1, 0);
-  const linhasAtivo = contarLinhas(secoesAtivo);
-  const linhasPassivo = contarLinhas(secoesPassivo);
 
   /** Rodapé/assinaturas da empresa só quando exatamente uma está selecionada. */
   const empresaSelecionada = consulta.length === 1 && consulta[0] ? selecionadas[0] : undefined;
@@ -393,7 +389,7 @@ function BpDre() {
                 </span>
               </div>
             )}
-            <div className="grid items-start gap-4 2xl:grid-cols-2 print:grid-cols-2 print:gap-6">
+            <div className="grid gap-4 2xl:grid-cols-2 print:grid-cols-2 print:gap-6">
               <BpColuna
                 titulo="Ativo"
                 secoes={secoesAtivo}
@@ -405,7 +401,6 @@ function BpDre() {
                 anoSel={anoSel}
                 demonstrativo="BP"
                 onDetalhe={setDetalhe}
-                linhasVazias={Math.max(0, linhasPassivo - linhasAtivo)}
               />
               <BpColuna
                 titulo="Passivo"
@@ -418,7 +413,6 @@ function BpDre() {
                 anoSel={anoSel}
                 demonstrativo="BP"
                 onDetalhe={setDetalhe}
-                linhasVazias={Math.max(0, linhasAtivo - linhasPassivo)}
               />
             </div>
           </TabsContent>
@@ -953,6 +947,16 @@ function IndicadorPatrimonial({
   );
 }
 
+/** Tabelas de contas e de total do BP com as mesmas colunas, para os números ficarem alinhados. */
+const TABELA_BP = "w-full min-w-[600px] table-fixed text-sm print:min-w-0";
+const COL_BP = {
+  atual: "w-36 print:w-28",
+  av: "w-16",
+  deltaPrint: "print:w-12",
+  anterior: "w-36 print:w-28",
+  delta: "w-16",
+};
+
 function BpColuna({
   titulo,
   secoes,
@@ -964,7 +968,6 @@ function BpColuna({
   anoSel,
   demonstrativo,
   onDetalhe,
-  linhasVazias = 0,
 }: {
   titulo: string;
   secoes: BpCalc["secoes"];
@@ -977,28 +980,31 @@ function BpColuna({
   anoSel: number | null;
   demonstrativo: string;
   onDetalhe: (v: { demonstrativo: string; secao: string | null; linha: string }) => void;
-  /** Linhas em branco para alinhar o total desta coluna com o da coluna oposta. */
-  linhasVazias?: number;
 }) {
   const av = (v: number) => (baseAV ? formatPct((v / baseAV) * 100, 1) : "—");
   return (
-    <Card className="print:border-0 print:bg-transparent print:shadow-none">
-      <CardContent className="overflow-x-auto pt-4 sm:pt-6 print:overflow-visible print:p-0">
-        <table className="w-full min-w-[600px] print:min-w-0 text-sm">
+    <Card className="h-full print:border-0 print:bg-transparent print:shadow-none">
+      {/* Coluna flexível: o total fica sempre no rodapé do cartão, alinhado com o da coluna vizinha. */}
+      <CardContent className="flex h-full flex-col overflow-x-auto pt-4 sm:pt-6 print:overflow-visible print:p-0">
+        <table className={TABELA_BP}>
           <thead className="text-xs text-muted-foreground">
             <tr>
               <th className="pb-2 text-left font-display text-sm font-semibold text-foreground">
                 {titulo}
               </th>
-              <th className="pb-2 text-right font-medium">
+              <th className={`pb-2 text-right font-medium ${COL_BP.atual}`}>
                 {mesLabel}/{anoSel}
               </th>
-              <th className="pb-2 text-right font-medium print:hidden">AV%</th>
-              <th className="hidden pb-2 text-right font-medium print:table-cell">Δ</th>
-              <th className="pb-2 text-right font-medium">
+              <th className={`pb-2 text-right font-medium print:hidden ${COL_BP.av}`}>AV%</th>
+              <th
+                className={`hidden pb-2 text-right font-medium print:table-cell ${COL_BP.deltaPrint}`}
+              >
+                Δ
+              </th>
+              <th className={`pb-2 text-right font-medium ${COL_BP.anterior}`}>
                 {mesLabel}/{anoSel != null ? anoSel - 1 : ""}
               </th>
-              <th className="pb-2 text-right font-medium print:hidden">Δ%</th>
+              <th className={`pb-2 text-right font-medium print:hidden ${COL_BP.delta}`}>Δ%</th>
             </tr>
           </thead>
           <tbody>
@@ -1068,35 +1074,35 @@ function BpColuna({
                 </tr>
               </Fragment>
             ))}
-            {Array.from({ length: linhasVazias }).map((_, i) => (
-              <tr
-                key={`vazia-${i}`}
-                className="hidden border-t border-transparent 2xl:table-row print:table-row"
-                aria-hidden
-              >
-                <td className="py-1.5 pl-4">&nbsp;</td>
-                <td />
-                <td className="print:hidden" />
-                <td className="hidden print:table-cell" />
-                <td />
-                <td className="print:hidden" />
-              </tr>
-            ))}
+          </tbody>
+        </table>
+        <table className={`mt-auto ${TABELA_BP}`}>
+          <tbody>
             <tr className="border-t-2 border-foreground/40 bg-muted/60 font-semibold">
               <td className="py-2 pl-2">{total}</td>
-              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right">
+              <td
+                className={`num whitespace-nowrap pl-3 print:pl-1 py-2 text-right ${COL_BP.atual}`}
+              >
                 {formatBRL(totalValor)}
               </td>
-              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right text-muted-foreground print:hidden">
+              <td
+                className={`num whitespace-nowrap pl-3 print:pl-1 py-2 text-right text-muted-foreground print:hidden ${COL_BP.av}`}
+              >
                 {av(totalValor)}
               </td>
-              <td className="num hidden whitespace-nowrap pl-3 print:pl-1 py-2 text-right print:table-cell">
+              <td
+                className={`num hidden whitespace-nowrap pl-3 print:pl-1 py-2 text-right print:table-cell ${COL_BP.deltaPrint}`}
+              >
                 <VariacaoPct atual={totalValor} anterior={totalValorAnoAnterior} colorir={false} />
               </td>
-              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right text-muted-foreground">
+              <td
+                className={`num whitespace-nowrap pl-3 print:pl-1 py-2 text-right text-muted-foreground ${COL_BP.anterior}`}
+              >
                 {formatBRL(totalValorAnoAnterior)}
               </td>
-              <td className="num whitespace-nowrap pl-3 print:pl-1 py-2 text-right print:hidden">
+              <td
+                className={`num whitespace-nowrap pl-3 print:pl-1 py-2 text-right print:hidden ${COL_BP.delta}`}
+              >
                 <VariacaoPct atual={totalValor} anterior={totalValorAnoAnterior} colorir={false} />
               </td>
             </tr>
