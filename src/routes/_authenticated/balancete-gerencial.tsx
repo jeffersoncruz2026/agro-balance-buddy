@@ -391,10 +391,10 @@ function BalanceteGerencial() {
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="bg-primary text-primary-foreground">
-                <th className="sticky left-0 z-10 w-40 min-w-40 bg-primary px-3 py-2 text-left font-semibold">
+                <th className="sticky left-0 z-10 w-28 min-w-28 sm:w-40 sm:min-w-40 bg-primary px-3 py-2 text-left font-semibold">
                   DESCRIÇÃO
                 </th>
-                <th className="sticky left-40 z-10 w-20 min-w-20 bg-primary px-2 py-2 text-left font-semibold">
+                <th className="sticky left-28 sm:left-40 z-10 w-16 min-w-16 sm:w-20 sm:min-w-20 bg-primary px-2 py-2 text-left font-semibold">
                   ANO
                 </th>
                 {COLUNAS_VISIVEIS.map((c) => (
@@ -428,13 +428,13 @@ function BalanceteGerencial() {
                         {idx === 0 && (
                           <td
                             rowSpan={safras.length}
-                            className={`sticky left-0 z-10 w-40 min-w-40 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
+                            className={`sticky left-0 z-10 w-28 min-w-28 sm:w-40 sm:min-w-40 px-3 py-1.5 align-middle font-medium ${grupo.total ? "bg-muted" : "bg-card"}`}
                           >
                             {grupo.rotulo}
                           </td>
                         )}
                         <td
-                          className={`sticky left-40 z-10 w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"} ${grupo.total ? "bg-muted" : "bg-card"}`}
+                          className={`sticky left-28 sm:left-40 z-10 w-16 min-w-16 sm:w-20 sm:min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"} ${grupo.total ? "bg-muted" : "bg-card"}`}
                         >
                           {safraLabel(safra)}
                         </td>
@@ -501,8 +501,12 @@ function BalanceteGerencial() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
-                  <th className="w-40 min-w-40 px-3 py-2 text-left font-medium">DESCRIÇÃO</th>
-                  <th className="w-20 min-w-20 px-2 py-2 text-left font-medium">ANO</th>
+                  <th className="w-28 min-w-28 sm:w-40 sm:min-w-40 px-3 py-2 text-left font-medium">
+                    DESCRIÇÃO
+                  </th>
+                  <th className="w-16 min-w-16 sm:w-20 sm:min-w-20 px-2 py-2 text-left font-medium">
+                    ANO
+                  </th>
                   <th className="px-3 py-2 text-right font-medium">SALDO</th>
                 </tr>
               </thead>
@@ -520,13 +524,13 @@ function BalanceteGerencial() {
                           {idx === 0 && (
                             <td
                               rowSpan={safras.length}
-                              className="w-40 min-w-40 px-3 py-1.5 align-middle"
+                              className="w-28 min-w-28 sm:w-40 sm:min-w-40 px-3 py-1.5 align-middle"
                             >
                               {b.rotulo}
                             </td>
                           )}
                           <td
-                            className={`w-20 min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
+                            className={`w-16 min-w-16 sm:w-20 sm:min-w-20 px-2 py-1.5 whitespace-nowrap ${idx !== 0 ? "text-destructive" : "text-muted-foreground"}`}
                           >
                             {safraLabel(s)}
                           </td>
@@ -550,7 +554,7 @@ function BalanceteGerencial() {
             </DialogTitle>
           </DialogHeader>
           <p className="text-xs font-medium">Lançamentos da base</p>
-          <div className="max-h-[20rem] overflow-auto rounded-md border border-border">
+          <div className="max-h-[20rem] overflow-auto rounded-md border border-border max-sm:max-h-[55dvh]">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-muted">
                 <tr>
@@ -573,7 +577,7 @@ function BalanceteGerencial() {
                     </td>
                     <td className="max-w-56 truncate px-2 py-1">{r.produto}</td>
                     <td className="max-w-56 truncate px-2 py-1">{r.complemento}</td>
-                    <td className="px-2 py-1">{r.contacontabil}</td>
+                    <td className="px-2 py-1 whitespace-nowrap">{r.contacontabil}</td>
                     {ehReceitaBruta && (
                       <td className="num px-2 py-1 text-right whitespace-nowrap">
                         {r.quantidade == null ? "—" : formatQtd(Number(r.quantidade))}
@@ -589,7 +593,7 @@ function BalanceteGerencial() {
               </tbody>
             </table>
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span>Exibindo até 500 lançamentos.</span>
             <span className="num">
               {ehReceitaBruta && <>Quantidade total: {formatQtd(totalQtdDetalhe)} · </>}

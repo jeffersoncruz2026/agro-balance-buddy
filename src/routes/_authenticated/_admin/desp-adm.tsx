@@ -593,7 +593,7 @@ function DespesasAdministrativas() {
                     </td>
                     <td className="max-w-56 truncate px-2 py-1">{r.produto}</td>
                     <td className="max-w-56 truncate px-2 py-1">{r.complemento}</td>
-                    <td className="px-2 py-1">{r.contacontabil}</td>
+                    <td className="px-2 py-1 whitespace-nowrap">{r.contacontabil}</td>
                     <td className="num px-2 py-1 text-right">{formatBRL(Number(r.vlcusto))}</td>
                   </tr>
                 ))}
