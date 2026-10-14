@@ -15,6 +15,13 @@
       "when": 1791975865806,
       "tag": "0001_detalhe_periodo_nomedepto",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791987692617,
+      "tag": "0002_publico_somente_leitura",
+      "breakpoints": true
     }
   ]
 }
