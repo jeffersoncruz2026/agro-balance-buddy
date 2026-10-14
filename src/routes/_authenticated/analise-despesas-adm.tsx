@@ -6,6 +6,7 @@ import { fetchDespAdmSerie } from "@/lib/desp-adm";
 
 import { AppLayout } from "@/components/AppLayout";
 import { ChatBalancete } from "@/components/ChatBalancete";
+import { useLogado } from "@/hooks/useSessao";
 import { formatBRL, MESES, safraDe, safraLabel } from "@/lib/balancete";
 import { exportarAbas } from "@/lib/excel";
 import logoGrupo from "@/assets/logo-grupo.png.asset.json";
@@ -144,6 +145,7 @@ function agruparComparado(atual: Linha[], anterior: Linha[], chave: Chave): Item
 }
 
 function AnaliseDespesasAdm() {
+  const { data: logado } = useLogado();
   const [refAno, setRefAno] = useState(hoje.getFullYear());
   const [refMes, setRefMes] = useState(hoje.getMonth() + 1);
   const [deptos, setDeptos] = useState<string[]>([]);
@@ -945,17 +947,20 @@ function AnaliseDespesasAdm() {
         onClose={() => setDetalhe(null)}
       />
 
-      <div className="print:hidden">
-      <ChatBalancete
-        contexto={`Mês/ano de referência selecionado na tela: ${refMes}/${refAno}.`}
-        sugestoes={[
-          `Total de DESP. ADM em ${mesReferencia}`,
-          "Comparar com o mês anterior",
-          "Maiores contas contábeis do mês",
-          "Maiores centros de custo do mês",
-        ]}
-      />
-      </div>
+      {/* Chat de IA exige login (consome créditos); oculto para visitantes do site publicado. */}
+      {logado && (
+        <div className="print:hidden">
+          <ChatBalancete
+            contexto={`Mês/ano de referência selecionado na tela: ${refMes}/${refAno}.`}
+            sugestoes={[
+              `Total de DESP. ADM em ${mesReferencia}`,
+              "Comparar com o mês anterior",
+              "Maiores contas contábeis do mês",
+              "Maiores centros de custo do mês",
+            ]}
+          />
+        </div>
+      )}
     </AppLayout>
   );
 }

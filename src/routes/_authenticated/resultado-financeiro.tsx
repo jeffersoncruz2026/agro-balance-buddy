@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { colunasAjustes } from "@/lib/ajustes";
 import { Sparkline } from "@/components/Sparkline";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -242,7 +243,7 @@ function ResultadoFinanceiro() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ajustes")
-        .select("*")
+        .select(await colunasAjustes())
         .in("safra_ano", [safraAtual - 1, safraAtual])
         .in("categoria", [CAT_DESP, CAT_REC]);
       if (error) throw error;

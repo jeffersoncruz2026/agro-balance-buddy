@@ -3,6 +3,7 @@ import { useState, type ComponentType, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useLogado } from "@/hooks/useSessao";
 import { isAmbienteEdicao } from "@/lib/ambiente";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -72,6 +73,7 @@ export function AppLayout({
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdminUsuario } = useIsAdmin();
+  const { data: logado } = useLogado();
   // Administrador só aparece no ambiente de edição (Lovable), nunca no site publicado.
   const isAdmin = !!isAdminUsuario && isAmbienteEdicao();
 
@@ -104,13 +106,15 @@ export function AppLayout({
           </>
         )}
       </nav>
-      <Button
-        variant="ghost"
-        onClick={sair}
-        className="justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-      >
-        <LogOut className="size-4" /> Sair
-      </Button>
+      {logado && (
+        <Button
+          variant="ghost"
+          onClick={sair}
+          className="justify-start text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+        >
+          <LogOut className="size-4" /> Sair
+        </Button>
+      )}
     </>
   );
 

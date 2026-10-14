@@ -8,7 +8,7 @@ import { isAmbienteEdicao } from "@/lib/ambiente";
  */
 export const Route = createFileRoute("/_authenticated/_admin")({
   beforeLoad: async ({ context }) => {
-    if (!isAmbienteEdicao()) throw redirect({ to: "/balancete-gerencial" });
+    if (!isAmbienteEdicao() || !context.user) throw redirect({ to: "/balancete-gerencial" });
     const { data, error } = await supabase.rpc("has_role", {
       _user_id: context.user.id,
       _role: "admin",
