@@ -3,6 +3,7 @@ import { useState, type ComponentType, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { isAmbienteEdicao } from "@/lib/ambiente";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   Sprout,
@@ -70,7 +71,9 @@ export function AppLayout({
 }) {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { data: isAdmin } = useIsAdmin();
+  const { data: isAdminUsuario } = useIsAdmin();
+  // Administrador só aparece no ambiente de edição (Lovable), nunca no site publicado.
+  const isAdmin = !!isAdminUsuario && isAmbienteEdicao();
 
   async function sair() {
     await supabase.auth.signOut();
