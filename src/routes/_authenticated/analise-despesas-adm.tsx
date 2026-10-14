@@ -11,19 +11,28 @@ import { formatBRL, MESES, safraDe, safraLabel } from "@/lib/balancete";
 import { exportarAbas } from "@/lib/excel";
 import logoGrupo from "@/assets/logo-grupo.png.asset.json";
 import {
+  AlertTriangle,
   ArrowUpRight,
   ArrowDownRight,
+  CalendarClock,
   Download,
   FileSpreadsheet,
+  History,
+  Layers,
+  Percent,
   SlidersHorizontal,
-  X,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import {
   ResponsiveContainer,
   ComposedChart,
+  Area,
   Bar,
-  LineChart,
+  BarChart,
   Line,
+  LabelList,
   ReferenceLine,
   XAxis,
   YAxis,
@@ -31,6 +40,20 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
+import { Sparkline } from "@/components/Sparkline";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/analise-despesas-adm")({
   head: () => ({
@@ -149,7 +172,6 @@ function AnaliseDespesasAdm() {
   const [refAno, setRefAno] = useState(hoje.getFullYear());
   const [refMes, setRefMes] = useState(hoje.getMonth() + 1);
   const [deptos, setDeptos] = useState<string[]>([]);
-  const [filtroAberto, setFiltroAberto] = useState(false);
   const [expandido, setExpandido] = useState<Record<string, boolean>>({});
   const [detalhe, setDetalhe] = useState<{
     titulo: string;
@@ -312,9 +334,7 @@ function AnaliseDespesasAdm() {
       valor: number;
       tipo: "total" | "alta" | "queda";
       deltaOriginal?: number;
-    }[] = [
-      { nome: "Mês anterior", conta: "", base: 0, valor: totalMesAnterior, tipo: "total" },
-    ];
+    }[] = [{ nome: "Mês anterior", conta: "", base: 0, valor: totalMesAnterior, tipo: "total" }];
     for (const d of passosDelta) {
       const inicio = d.delta >= 0 ? acumulado : acumulado + d.delta;
       ponteData.push({
@@ -500,6 +520,11 @@ function AnaliseDespesasAdm() {
     );
   }
 
+  const totalMes = analise.totalMesAtual;
+  const deltaMesAnterior = totalMes - analise.totalMesAnterior;
+  const deltaAnoAnterior = totalMes - analise.totalMesmoMesAnoAnterior;
+  const maxAcum = Math.max(analise.acumSafra, analise.acumSafraAnterior, 1);
+
   return (
     <AppLayout
       ocultarCabecalhoImpressao
@@ -507,95 +532,99 @@ function AnaliseDespesasAdm() {
       descricao={`Relatório executivo de DESP. ADM — referência ${mesReferencia}`}
       acoes={
         <>
-          <select
+          <Select
             value={`${refAno}-${refMes}`}
-            onChange={(e) => {
-              const [a, m] = e.target.value.split("-").map(Number);
+            onValueChange={(v) => {
+              const [a, m] = v.split("-").map(Number);
               setRefAno(a);
               setRefMes(m);
             }}
-            className="border border-border bg-transparent px-2 py-1.5 text-sm"
           >
-            {mesesOpcoes
-              .slice()
-              .reverse()
-              .map((p) => (
-                <option key={`${p.ano}-${p.mes}`} value={`${p.ano}-${p.mes}`}>
-                  {mesLabelCurto(p.ano, p.mes)}
-                </option>
-              ))}
-          </select>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {mesesOpcoes
+                .slice()
+                .reverse()
+                .map((p) => (
+                  <SelectItem key={`${p.ano}-${p.mes}`} value={`${p.ano}-${p.mes}`}>
+                    {mesLabelCurto(p.ano, p.mes)}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
-          <div className="relative">
-            <button
-              onClick={() => setFiltroAberto((v) => !v)}
-              className="flex items-center gap-1.5 border border-border px-2 py-1.5 text-sm"
-            >
-              <SlidersHorizontal className="size-3.5" />
-              Departamento
-              {deptos.length > 0 && (
-                <span className="text-[11px] text-primary">({deptos.length})</span>
-              )}
-            </button>
-            {filtroAberto && (
-              <div className="absolute right-0 z-10 mt-2 max-h-80 w-64 overflow-auto border border-border bg-card p-3 shadow-sm">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                <SlidersHorizontal className="size-4" />
+                Departamento
+                {deptos.length > 0 && (
+                  <span className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">
+                    {deptos.length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-[min(18rem,calc(100vw-2rem))] p-2">
+              <div className="max-h-72 overflow-y-auto">
                 {opcoesDeptos.map((opcao) => (
                   <label
                     key={opcao}
-                    className="flex cursor-pointer items-center gap-2 py-1 text-sm"
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={deptos.includes(opcao)}
-                      onChange={() => toggleDepto(opcao)}
+                      onCheckedChange={() => toggleDepto(opcao)}
                     />
                     {opcao}
                   </label>
                 ))}
                 {!opcoesDeptos.length && (
-                  <span className="text-xs text-muted-foreground">Nenhum departamento carregado.</span>
+                  <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                    Nenhum departamento carregado.
+                  </p>
                 )}
               </div>
-            )}
-          </div>
+              {deptos.length > 0 && (
+                <div className="mt-1 border-t border-border pt-2 text-right">
+                  <Button variant="ghost" size="sm" onClick={() => setDeptos([])}>
+                    Limpar
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
 
-          <button
-            onClick={exportarExcel}
-            className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-sm"
-          >
-            <FileSpreadsheet className="size-3.5" />
-            Excel
-          </button>
-
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 border border-foreground px-3 py-1.5 text-sm"
-          >
-            <Download className="size-3.5" />
-            Exportar PDF
-          </button>
+          <Button variant="outline" onClick={exportarExcel}>
+            <FileSpreadsheet className="size-4" /> Excel
+          </Button>
+          <Button onClick={() => window.print()}>
+            <Download className="size-4" /> Exportar PDF
+          </Button>
         </>
       }
     >
       <style>{`@media print { @page { size: A4 portrait; margin: 12mm; } }`}</style>
 
-      <div className="mx-auto max-w-5xl px-2 py-2 print:max-w-none">
+      <div className="space-y-6 print:space-y-5">
         {/* CABEÇALHO DE IMPRESSÃO */}
-        <div className="mb-6 hidden items-start justify-between gap-6 border-b border-border pb-4 print:flex">
+        <div className="hidden items-start justify-between gap-6 border-b border-border pb-4 print:flex">
           <div>
-            <h2 className="font-display text-lg font-semibold tracking-tight">Análise de Despesas Administrativas</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">
+              Análise de Despesas Administrativas
+            </h2>
             <p className="text-sm">Consolidado — DESP. ADM (contas 3.4.01.*)</p>
             <p className="mt-1 text-sm font-semibold">Referência: {mesReferencia}</p>
-            {!!deptos.length && (
-              <p className="mt-1 text-xs">Departamentos: {deptos.join(", ")}</p>
-            )}
-            <p className="mt-1 text-xs italic text-muted-foreground">(Em Reais)</p>
+            {!!deptos.length && <p className="mt-1 text-xs">Departamentos: {deptos.join(", ")}</p>}
+            <p className="mt-1 text-xs text-muted-foreground italic">(Em Reais)</p>
           </div>
           <img src={logoGrupo.url} alt="Grupo Otávio Lage" className="h-12 object-contain" />
         </div>
 
         {serieQ.error && (
-          <p className="mb-6 text-sm text-destructive">
+          <p className="text-sm text-destructive">
             Não foi possível carregar os dados —{" "}
             {(serieQ.error as { message?: string }).message ?? String(serieQ.error)}
           </p>
@@ -605,336 +634,453 @@ function AnaliseDespesasAdm() {
           <Skeleton />
         ) : (
           <>
-            {/* NÚMERO-ÂNCORA + LEITURA EXECUTIVA */}
-            <section className="mb-8 rounded-lg border border-border bg-card p-6 shadow-xs print:border-0 print:p-0 print:shadow-none">
-              <p className="mb-2 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                Total de despesas administrativas — {mesReferencia}
-              </p>
-              <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
-                <span className="font-display text-[42px] leading-none font-semibold tracking-tight tabular-nums">
-                  {formatBRL(analise.totalMesAtual)}
-                </span>
-                <div className="flex items-center gap-3 pb-1 text-sm">
-                  <span className="text-muted-foreground">vs. mês anterior</span>
-                  <Variacao percentual={analise.variacaoMoM} disponivel={analise.temMesAnterior} />
-                  <span className="h-4 w-px bg-border" />
-                  <span className="text-muted-foreground">
-                    vs. {mesReferencia.split("/")[0]}/ano anterior
-                  </span>
-                  <Variacao percentual={analise.variacaoYoY} disponivel={analise.temAnoAnterior} />
+            {/* HERO: número-âncora + leitura executiva */}
+            <Card className="overflow-hidden print:border-0 print:shadow-none">
+              <div className="grid lg:grid-cols-5">
+                <div className="p-5 sm:p-6 lg:col-span-2 lg:border-r lg:border-border print:p-0">
+                  <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                    Total de despesas administrativas — {mesReferencia}
+                  </p>
+                  <p className="mt-2 font-display text-4xl leading-none font-semibold tracking-tight tabular-nums sm:text-[44px]">
+                    {formatBRL(totalMes)}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                    <ChipVariacao
+                      rotulo="vs. mês anterior"
+                      percentual={analise.variacaoMoM}
+                      disponivel={analise.temMesAnterior}
+                    />
+                    <ChipVariacao
+                      rotulo={`vs. ${mesReferencia.split("/")[0]}/ano anterior`}
+                      percentual={analise.variacaoYoY}
+                      disponivel={analise.temAnoAnterior}
+                    />
+                  </div>
+                  {alertaAtivo && (
+                    <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
+                      <AlertTriangle className="size-3.5" />
+                      Variação acima do limite de referência ({LIMITE_ALERTA_PERCENTUAL}%)
+                    </p>
+                  )}
+                  <div className="mt-5">
+                    <p className="mb-1 text-[11px] text-muted-foreground">
+                      Últimos {MESES_HISTORICO} meses
+                    </p>
+                    <Sparkline
+                      data={analise.evolucao.map((e) => e.valor)}
+                      color={analise.variacaoMoM > 0 ? "var(--destructive)" : "var(--primary)"}
+                    />
+                  </div>
+                </div>
+                <div className="bg-primary/[0.04] p-5 sm:p-6 lg:col-span-3 print:bg-transparent print:p-0 print:pt-4">
+                  <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-primary uppercase">
+                    <Sparkles className="size-3.5" /> Leitura executiva
+                  </p>
+                  <p className="border-l-2 border-primary pl-4 text-[15px] leading-[1.75] text-foreground/90">
+                    {leituraExecutiva}
+                  </p>
                 </div>
               </div>
-              {alertaAtivo && (
-                <p className="mt-3 inline-flex rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
-                  Variação acima do limite de referência ({LIMITE_ALERTA_PERCENTUAL}%)
-                </p>
-              )}
-
-              <div className="mt-6 rounded-md border-l-2 border-primary bg-muted/40 px-5 py-4">
-                <p className="mb-2 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                  Leitura executiva
-                </p>
-                <p className="text-[15px] leading-[1.75] text-foreground/90">{leituraExecutiva}</p>
-              </div>
-            </section>
+            </Card>
 
             {/* INDICADORES */}
-            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { label: "Mês atual", value: formatBRL(analise.totalMesAtual) },
-                { label: "Mês anterior", value: formatBRL(analise.totalMesAnterior) },
-                {
-                  label: "Mesmo mês, ano anterior",
-                  value: formatBRL(analise.totalMesmoMesAnoAnterior),
-                },
-                {
-                  label: "% sobre a receita bruta",
-                  value: pctTexto(analise.pctSobreReceita),
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none"
-                >
-                  <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
-                    {item.label}
-                  </p>
-                  <p className="font-display text-lg font-semibold tabular-nums">{item.value}</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <CardIndicador
+                icone={CalendarClock}
+                rotulo="Mês anterior"
+                valor={formatBRL(analise.totalMesAnterior)}
+              >
+                {analise.temMesAnterior ? (
+                  <LinhaDelta delta={deltaMesAnterior} percentual={analise.variacaoMoM} />
+                ) : (
+                  <span className="text-muted-foreground">sem base comparável</span>
+                )}
+              </CardIndicador>
+              <CardIndicador
+                icone={History}
+                rotulo="Mesmo mês, ano anterior"
+                valor={formatBRL(analise.totalMesmoMesAnoAnterior)}
+              >
+                {analise.temAnoAnterior ? (
+                  <LinhaDelta delta={deltaAnoAnterior} percentual={analise.variacaoYoY} />
+                ) : (
+                  <span className="text-muted-foreground">sem base comparável</span>
+                )}
+              </CardIndicador>
+              <CardIndicador
+                icone={Layers}
+                rotulo={`Acumulado safra ${safraLabel(analise.safraAtual)} (abr–${MESES[refMes - 1].slice(0, 3).toLowerCase()})`}
+                valor={formatBRL(analise.acumSafra)}
+              >
+                <div className="space-y-1">
+                  <BarraComparativa
+                    rotulo="Atual"
+                    valor={analise.acumSafra}
+                    max={maxAcum}
+                    cor="bg-primary"
+                  />
+                  <BarraComparativa
+                    rotulo={`Safra ${safraLabel(analise.safraAtual - 1)}`}
+                    valor={analise.acumSafraAnterior}
+                    max={maxAcum}
+                    cor="bg-muted-foreground/40"
+                  />
+                  <div className="pt-0.5">
+                    <Variacao
+                      percentual={analise.variacaoSafra}
+                      disponivel={analise.acumSafraAnterior >= 0.005}
+                    />{" "}
+                    <span className="text-muted-foreground">vs. mesma janela</span>
+                  </div>
                 </div>
-              ))}
+              </CardIndicador>
+              <CardIndicador
+                icone={Percent}
+                rotulo="% sobre a receita bruta"
+                valor={pctTexto(analise.pctSobreReceita)}
+              >
+                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-sidebar-primary"
+                    style={{ width: `${Math.min(100, analise.pctSobreReceita * 5)}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-muted-foreground">
+                  Despesas ADM do mês ÷ receita bruta do mês
+                </p>
+              </CardIndicador>
             </div>
 
-            {/* ACUMULADO DA SAFRA */}
-            <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {[
-                {
-                  label: `Acumulado safra ${safraLabel(analise.safraAtual)} (abr–${MESES[refMes - 1].slice(0, 3).toLowerCase()})`,
-                  node: formatBRL(analise.acumSafra),
-                },
-                {
-                  label: `Mesma janela — safra ${safraLabel(analise.safraAtual - 1)}`,
-                  node: formatBRL(analise.acumSafraAnterior),
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none"
-                >
-                  <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
-                    {item.label}
-                  </p>
-                  <p className="font-display text-lg font-semibold tabular-nums">{item.node}</p>
-                </div>
-              ))}
-              <div className="rounded-lg border border-border bg-card px-4 py-3.5 shadow-xs print:shadow-none">
-                <p className="mb-1.5 text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
-                  Variação safra vs. safra
-                </p>
-                <p className="font-display text-lg font-semibold tabular-nums">
-                  <Variacao
-                    percentual={analise.variacaoSafra}
-                    disponivel={analise.acumSafraAnterior >= 0.005}
-                  />
-                </p>
-              </div>
-            </div>
+            {/* GRÁFICOS */}
+            <div className="grid gap-6 xl:grid-cols-2 print:grid-cols-1">
+              <Secao
+                titulo={`Evolução — últimos ${MESES_HISTORICO} meses`}
+                subtitulo={`Área: valor do mês · tracejado laranja: média móvel 3M · pontos vermelhos: variação acima de ${LIMITE_ALERTA_PERCENTUAL}%`}
+              >
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart
+                    data={analise.evolucao}
+                    margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="gradEvolucao" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.28} />
+                        <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} stroke="var(--border)" />
+                    <XAxis
+                      dataKey="mes"
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      axisLine={{ stroke: "var(--border)" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
+                    />
+                    <Tooltip
+                      formatter={(v: number, nome: string) => [
+                        formatBRL(Number(v)),
+                        nome === "media3" ? "Média 3M" : "Valor",
+                      ]}
+                      contentStyle={{ fontSize: 13, border: "1px solid var(--border)" }}
+                    />
+                    <ReferenceLine
+                      y={analise.mediaPeriodo}
+                      stroke="var(--muted-foreground)"
+                      strokeDasharray="2 4"
+                      label={{
+                        value: "média do período",
+                        position: "insideTopRight",
+                        fontSize: 10,
+                        fill: "var(--muted-foreground)",
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="valor"
+                      stroke="var(--primary)"
+                      strokeWidth={2}
+                      fill="url(#gradEvolucao)"
+                      isAnimationActive={false}
+                      dot={(props: {
+                        cx?: number;
+                        cy?: number;
+                        key?: string;
+                        payload?: { foraDaFaixa?: boolean };
+                      }) => (
+                        <circle
+                          key={props.key}
+                          cx={props.cx}
+                          cy={props.cy}
+                          r={props.payload?.foraDaFaixa ? 4.5 : 2.5}
+                          fill={
+                            props.payload?.foraDaFaixa ? "var(--destructive)" : "var(--primary)"
+                          }
+                          stroke="var(--card)"
+                          strokeWidth={1}
+                        />
+                      )}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="media3"
+                      stroke="var(--sidebar-primary)"
+                      strokeWidth={1.75}
+                      strokeDasharray="5 4"
+                      dot={false}
+                      isAnimationActive={false}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </Secao>
 
-
-            {/* EVOLUÇÃO */}
-            <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
-              <p className="mb-1 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                Evolução — últimos {MESES_HISTORICO} meses
-              </p>
-              <p className="mb-3 text-sm text-muted-foreground">
-                Linha cheia: valor do mês · linha tracejada: média móvel de 3 meses · pontos em
-                vermelho: variação acima de {LIMITE_ALERTA_PERCENTUAL}%
-              </p>
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart
-                  data={analise.evolucao}
-                  margin={{ top: 4, right: 8, left: -18, bottom: 0 }}
-                >
-                  <CartesianGrid vertical={false} stroke="var(--border)" />
-                  <XAxis
-                    dataKey="mes"
-                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                    axisLine={{ stroke: "var(--border)" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
-                  />
-                  <Tooltip
-                    formatter={(v: number, nome: string) => [
-                      formatBRL(Number(v)),
-                      nome === "media3" ? "Média 3M" : "Valor",
-                    ]}
-                    contentStyle={{ fontSize: 13, border: "1px solid var(--border)" }}
-                  />
-                  <ReferenceLine
-                    y={analise.mediaPeriodo}
-                    stroke="var(--muted-foreground)"
-                    strokeDasharray="2 4"
-                    label={{
-                      value: "média do período",
-                      position: "insideTopRight",
-                      fontSize: 10,
-                      fill: "var(--muted-foreground)",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="valor"
-                    stroke="var(--foreground)"
-                    strokeWidth={1.75}
-                    dot={(props: {
-                      cx?: number;
-                      cy?: number;
-                      key?: string;
-                      payload?: { foraDaFaixa?: boolean };
-                    }) => (
-                      <circle
-                        key={props.key}
-                        cx={props.cx}
-                        cy={props.cy}
-                        r={props.payload?.foraDaFaixa ? 4 : 2.5}
-                        fill={
-                          props.payload?.foraDaFaixa ? "var(--destructive)" : "var(--foreground)"
+              <Secao
+                titulo={`Composição da variação — ${mesReferencia} vs. mês anterior`}
+                subtitulo="Contribuição de cada conta contábil · vermelho: alta · verde: queda · clique para ver os lançamentos"
+              >
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart
+                    data={analise.ponteData}
+                    margin={{ top: 18, right: 8, left: -8, bottom: 0 }}
+                  >
+                    <CartesianGrid vertical={false} stroke="var(--border)" />
+                    <XAxis
+                      dataKey="nome"
+                      tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                      axisLine={{ stroke: "var(--border)" }}
+                      tickLine={false}
+                      interval={0}
+                      angle={-15}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "var(--muted)" }}
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const p = payload[0].payload as (typeof analise.ponteData)[number];
+                        const valor =
+                          p.tipo === "total"
+                            ? p.valor
+                            : (p.deltaOriginal ?? 0) >= 0
+                              ? p.valor
+                              : -p.valor;
+                        return (
+                          <div className="rounded-md border border-border bg-card px-3 py-2 text-xs shadow-md">
+                            <p className="font-medium">{p.nome}</p>
+                            <p className="num mt-1">{formatBRL(valor)}</p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar dataKey="base" stackId="a" fill="transparent" isAnimationActive={false} />
+                    <Bar
+                      dataKey="valor"
+                      stackId="a"
+                      isAnimationActive={false}
+                      cursor="pointer"
+                      radius={[3, 3, 0, 0]}
+                      onClick={(d: unknown) => {
+                        const payload = (d as { payload: (typeof analise.ponteData)[number] })
+                          .payload;
+                        if (payload.tipo === "total" || !payload.conta) return;
+                        setDetalhe({ titulo: payload.nome, contacontabil: payload.conta });
+                      }}
+                    >
+                      {analise.ponteData.map((entry, index) => (
+                        <Cell
+                          key={index}
+                          fill={
+                            entry.tipo === "total"
+                              ? "var(--chart-1)"
+                              : entry.tipo === "alta"
+                                ? "var(--destructive)"
+                                : "var(--chart-3)"
+                          }
+                        />
+                      ))}
+                      <LabelList
+                        dataKey="valor"
+                        position="top"
+                        fontSize={10}
+                        fill="var(--muted-foreground)"
+                        formatter={(v: number) =>
+                          (v / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 0 }) + "k"
                         }
                       />
-                    )}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="media3"
-                    stroke="var(--primary)"
-                    strokeWidth={1.25}
-                    strokeDasharray="4 3"
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </section>
+                    </Bar>
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </Secao>
+            </div>
 
             {/* PONTOS DE ATENÇÃO */}
             {(analise.pontosAtencao.length > 0 || analise.naoRecorrentes.length > 0) && (
-              <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
-                <p className="mb-3 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                  Pontos de atenção
-                </p>
-                <ul className="space-y-1.5 text-sm">
+              <Secao titulo="Pontos de atenção" subtitulo="Clique para ver os lançamentos">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {analise.pontosAtencao.map((p) => (
-                    <li key={`atencao-${p.conta}`} className="flex items-start gap-2">
-                      <span
-                        className={p.delta > 0 ? "text-destructive" : "text-primary"}
-                        aria-hidden
-                      >
-                        •
-                      </span>
-                      <button
-                        onClick={() =>
-                          setDetalhe({ titulo: p.nome, contacontabil: p.conta || undefined })
-                        }
-                        className="text-left hover:underline"
-                      >
-                        {p.nome} — {formatBRL(p.delta)} ({formatPct(p.pesoPct)} do total do mês
-                        anterior)
-                      </button>
-                    </li>
+                    <CartaoAtencao
+                      key={`atencao-${p.conta}`}
+                      tipo={p.delta > 0 ? "alta" : "queda"}
+                      nome={p.nome}
+                      valor={formatBRL(p.delta)}
+                      detalhe={`${formatPct(p.pesoPct)} do total do mês anterior`}
+                      onClick={() =>
+                        setDetalhe({ titulo: p.nome, contacontabil: p.conta || undefined })
+                      }
+                    />
                   ))}
                   {analise.naoRecorrentes.map((n) => (
-                    <li key={`novo-${n.conta}`} className="flex items-start gap-2">
-                      <span className="text-destructive" aria-hidden>
-                        •
-                      </span>
-                      <button
-                        onClick={() => setDetalhe({ titulo: n.nome, contacontabil: n.conta })}
-                        className="text-left hover:underline"
-                      >
-                        {n.nome} — {formatBRL(n.valor)} · item não recorrente (sem lançamentos nos 3
-                        meses anteriores)
-                      </button>
-                    </li>
+                    <CartaoAtencao
+                      key={`novo-${n.conta}`}
+                      tipo="novo"
+                      nome={n.nome}
+                      valor={formatBRL(n.valor)}
+                      detalhe="Sem lançamentos nos 3 meses anteriores"
+                      onClick={() => setDetalhe({ titulo: n.nome, contacontabil: n.conta })}
+                    />
                   ))}
-                </ul>
-              </section>
+                </div>
+              </Secao>
             )}
 
-            {/* PONTE DE VARIAÇÃO */}
-            <section className="mb-8 rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
-              <p className="mb-1 text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                Composição da variação — {mesReferencia} vs. mês anterior
-              </p>
-              <p className="mb-3 text-sm text-muted-foreground">
-                Contribuição de cada conta contábil para a mudança do total
-              </p>
-              <ResponsiveContainer width="100%" height={240}>
-                <ComposedChart
-                  data={analise.ponteData}
-                  margin={{ top: 4, right: 8, left: -18, bottom: 0 }}
-                >
-                  <CartesianGrid vertical={false} stroke="var(--border)" />
-                  <XAxis
-                    dataKey="nome"
-                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                    axisLine={{ stroke: "var(--border)" }}
-                    tickLine={false}
-                    interval={0}
-                    angle={-12}
-                    textAnchor="end"
-                    height={55}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v: number) => (v / 1000).toFixed(0) + "k"}
-                  />
-                  <Tooltip
-                    cursor={{ fill: "var(--muted)" }}
-                    content={({ active, payload }) => {
-                      if (!active || !payload?.length) return null;
-                      const p = payload[0].payload as (typeof analise.ponteData)[number];
-                      const valor =
-                        p.tipo === "total"
-                          ? p.valor
-                          : (p.deltaOriginal ?? 0) >= 0
-                            ? p.valor
-                            : -p.valor;
-                      return (
-                        <div
-                          className="border border-border bg-card px-3 py-2 text-xs shadow-md"
-                          style={{ fontSize: 13 }}
-                        >
-                          <p className="font-medium">{p.nome}</p>
-                          <p className="num mt-1">{formatBRL(valor)}</p>
-                        </div>
-                      );
-                    }}
-                  />
-                  <Bar dataKey="base" stackId="a" fill="transparent" isAnimationActive={false} />
-                  <Bar
-                    dataKey="valor"
-                    stackId="a"
-                    isAnimationActive={false}
-                    cursor="pointer"
-                    onClick={(d: unknown) => {
-                      const payload = (d as { payload: (typeof analise.ponteData)[number] })
-                        .payload;
-                      if (payload.tipo === "total" || !payload.conta) return;
-                      setDetalhe({ titulo: payload.nome, contacontabil: payload.conta });
-                    }}
+            {/* PRINCIPAIS DESPESAS */}
+            <div className="grid gap-6 xl:grid-cols-3 print:grid-cols-1">
+              <Card className="min-w-0 xl:col-span-2 print:border-0 print:shadow-none">
+                <Tabs defaultValue="contas" className="p-5 sm:p-6 print:p-0">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                        Principais despesas — {mesReferencia}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Clique numa linha para ver os lançamentos
+                      </p>
+                    </div>
+                    <TabsList className="print:hidden">
+                      <TabsTrigger value="contas">Conta contábil</TabsTrigger>
+                      <TabsTrigger value="rubricas">Rubrica</TabsTrigger>
+                      <TabsTrigger value="empresas">Empresa</TabsTrigger>
+                    </TabsList>
+                  </div>
+                  <TabsContent
+                    value="contas"
+                    className="data-[state=inactive]:hidden print:data-[state=inactive]:block"
+                    forceMount
                   >
-                    {analise.ponteData.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={
-                          entry.tipo === "total"
-                            ? "var(--foreground)"
-                            : entry.tipo === "alta"
-                              ? "var(--destructive)"
-                              : "var(--primary)"
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </ComposedChart>
-              </ResponsiveContainer>
-            </section>
+                    <TabelaTop
+                      titulo="Conta contábil"
+                      itens={analise.topContas}
+                      expandido={!!expandido.contas}
+                      onExpandir={() => setExpandido((p) => ({ ...p, contas: !p.contas }))}
+                      onSelecionar={(item) =>
+                        setDetalhe({ titulo: nomeConta(item.nome), contacontabil: item.nome })
+                      }
+                    />
+                  </TabsContent>
+                  <TabsContent
+                    value="rubricas"
+                    className="data-[state=inactive]:hidden print:data-[state=inactive]:block"
+                    forceMount
+                  >
+                    <TabelaTop
+                      titulo="Rubrica (centro de custo)"
+                      itens={analise.topRubricas}
+                      expandido={!!expandido.rubricas}
+                      onExpandir={() => setExpandido((p) => ({ ...p, rubricas: !p.rubricas }))}
+                      onSelecionar={(item) =>
+                        setDetalhe({ titulo: item.nome, nomecusto: item.nome })
+                      }
+                    />
+                  </TabsContent>
+                  <TabsContent
+                    value="empresas"
+                    className="data-[state=inactive]:hidden print:data-[state=inactive]:block"
+                    forceMount
+                  >
+                    <TabelaTop
+                      titulo="Empresa"
+                      itens={analise.topColigadas}
+                      expandido={!!expandido.empresas}
+                      onExpandir={() => setExpandido((p) => ({ ...p, empresas: !p.empresas }))}
+                      onSelecionar={(item) =>
+                        setDetalhe({ titulo: item.nome, nomecoligada: item.nome })
+                      }
+                    />
+                  </TabsContent>
+                </Tabs>
+              </Card>
 
-            {/* TABELAS */}
-            <div className="grid grid-cols-1 gap-5">
-              <TabelaTop
-                titulo="Principais despesas — Conta Contábil"
-                itens={analise.topContas}
-                expandido={!!expandido.contas}
-                onExpandir={() => setExpandido((p) => ({ ...p, contas: !p.contas }))}
-                onSelecionar={(item) =>
-                  setDetalhe({ titulo: nomeConta(item.nome), contacontabil: item.nome })
-                }
-              />
-              <TabelaTop
-                titulo="Principais despesas — Rubrica (centro de custo)"
-                itens={analise.topRubricas}
-                expandido={!!expandido.rubricas}
-                onExpandir={() => setExpandido((p) => ({ ...p, rubricas: !p.rubricas }))}
-                onSelecionar={(item) => setDetalhe({ titulo: item.nome, nomecusto: item.nome })}
-              />
-              <TabelaTop
-                titulo="Principais despesas — Empresa"
-                itens={analise.topColigadas}
-                expandido={!!expandido.empresas}
-                onExpandir={() => setExpandido((p) => ({ ...p, empresas: !p.empresas }))}
-                onSelecionar={(item) => setDetalhe({ titulo: item.nome, nomecoligada: item.nome })}
-              />
+              <Secao
+                titulo="Distribuição por empresa"
+                subtitulo={`Participação no total de ${mesReferencia}`}
+              >
+                {analise.topColigadas.length ? (
+                  <ResponsiveContainer
+                    width="100%"
+                    height={Math.max(180, analise.topColigadas.slice(0, 8).length * 44)}
+                  >
+                    <BarChart
+                      layout="vertical"
+                      data={analise.topColigadas.slice(0, 8)}
+                      margin={{ top: 0, right: 48, left: 0, bottom: 0 }}
+                    >
+                      <XAxis type="number" hide />
+                      <YAxis
+                        type="category"
+                        dataKey="nome"
+                        width={130}
+                        tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        formatter={(v: number) => formatBRL(Number(v))}
+                        cursor={{ fill: "var(--muted)" }}
+                      />
+                      <Bar
+                        dataKey="valor"
+                        name="Valor"
+                        fill="var(--chart-1)"
+                        radius={[0, 3, 3, 0]}
+                        isAnimationActive={false}
+                        cursor="pointer"
+                        onClick={(d: unknown) => {
+                          const nome = (d as { payload: Item }).payload.nome;
+                          setDetalhe({ titulo: nome, nomecoligada: nome });
+                        }}
+                      >
+                        <LabelList
+                          dataKey="pct"
+                          position="right"
+                          fontSize={10}
+                          fill="var(--muted-foreground)"
+                          formatter={(v: number) => pctTexto(v)}
+                        />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="py-6 text-center text-sm text-muted-foreground">
+                    Sem lançamentos no mês.
+                  </p>
+                )}
+              </Secao>
             </div>
           </>
         )}
 
-        <p className="mt-10 border-t border-border pt-5 text-xs text-muted-foreground">
+        <p className="border-t border-border pt-5 text-xs text-muted-foreground">
           Valores apurados a partir da base contábil e dos ajustes gerenciais do período. Relatório
           de uso interno.
         </p>
@@ -965,15 +1111,189 @@ function AnaliseDespesasAdm() {
   );
 }
 
+/* ============================ Componentes ============================ */
+
 function Skeleton() {
   return (
-    <div className="animate-pulse space-y-8" aria-busy="true">
-      <div className="h-12 w-72 bg-muted" />
-      <div className="h-20 w-full bg-muted" />
-      <div className="h-24 w-full bg-muted" />
-      <div className="h-52 w-full bg-muted" />
-      <div className="h-52 w-full bg-muted" />
+    <div className="animate-pulse space-y-6" aria-busy="true">
+      <div className="h-48 w-full rounded-xl bg-muted" />
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-32 rounded-xl bg-muted" />
+        ))}
+      </div>
+      <div className="h-72 w-full rounded-xl bg-muted" />
     </div>
+  );
+}
+
+function Secao({
+  titulo,
+  subtitulo,
+  children,
+}: {
+  titulo: string;
+  subtitulo?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="min-w-0 print:break-inside-avoid print:border-0 print:shadow-none">
+      <CardContent className="p-5 sm:p-6 print:p-0">
+        <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+          {titulo}
+        </p>
+        {subtitulo && <p className="mt-0.5 mb-3 text-xs text-muted-foreground">{subtitulo}</p>}
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CardIndicador({
+  icone: Icone,
+  rotulo,
+  valor,
+  children,
+}: {
+  icone: React.ComponentType<{ className?: string }>;
+  rotulo: string;
+  valor: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <Card className="print:shadow-none">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[11px] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
+            {rotulo}
+          </p>
+          <span className="rounded-md bg-primary/10 p-1.5 text-primary">
+            <Icone className="size-4" />
+          </span>
+        </div>
+        <p className="mt-1 font-display text-xl font-semibold tabular-nums">{valor}</p>
+        {children && <div className="mt-3 text-xs">{children}</div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+function LinhaDelta({ delta, percentual }: { delta: number; percentual: number }) {
+  // Para despesa, cair é bom (verde) e subir é ruim (vermelho).
+  const subiu = delta > 0;
+  return (
+    <p className="flex flex-wrap items-center gap-x-2">
+      <span className="text-muted-foreground">Mês atual</span>
+      <span className={`font-medium tabular-nums ${subiu ? "text-destructive" : "text-primary"}`}>
+        {subiu ? "+" : ""}
+        {formatBRL(delta)}
+      </span>
+      <Variacao percentual={percentual} />
+    </p>
+  );
+}
+
+function BarraComparativa({
+  rotulo,
+  valor,
+  max,
+  cor,
+}: {
+  rotulo: string;
+  valor: number;
+  max: number;
+  cor: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-20 shrink-0 truncate text-muted-foreground">{rotulo}</span>
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+        <div
+          className={`h-full rounded-full ${cor}`}
+          style={{ width: `${(valor / max) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ChipVariacao({
+  rotulo,
+  percentual,
+  disponivel,
+}: {
+  rotulo: string;
+  percentual: number;
+  disponivel: boolean;
+}) {
+  const subiu = percentual > 0;
+  const cor =
+    !disponivel || Math.abs(percentual) < 0.05
+      ? "bg-muted text-muted-foreground"
+      : subiu
+        ? "bg-destructive/10 text-destructive"
+        : "bg-primary/10 text-primary";
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ${cor}`}>
+      <span className="opacity-80">{rotulo}</span>
+      <Variacao percentual={percentual} disponivel={disponivel} />
+    </span>
+  );
+}
+
+function CartaoAtencao({
+  tipo,
+  nome,
+  valor,
+  detalhe,
+  onClick,
+}: {
+  tipo: "alta" | "queda" | "novo";
+  nome: string;
+  valor: string;
+  detalhe: string;
+  onClick: () => void;
+}) {
+  const estilo = {
+    alta: {
+      rotulo: "Alta",
+      icone: TrendingUp,
+      cor: "border-destructive/40 text-destructive",
+      fundo: "bg-destructive/10",
+    },
+    queda: {
+      rotulo: "Queda",
+      icone: TrendingDown,
+      cor: "border-primary/40 text-primary",
+      fundo: "bg-primary/10",
+    },
+    novo: {
+      rotulo: "Não recorrente",
+      icone: AlertTriangle,
+      cor: "border-sidebar-primary/50 text-accent-foreground",
+      fundo: "bg-accent",
+    },
+  }[tipo];
+  const Icone = estilo.icone;
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-start gap-3 rounded-lg border-l-4 bg-card p-3 text-left shadow-xs transition-colors hover:bg-muted/50 ${estilo.cor}`}
+    >
+      <span className={`rounded-md p-1.5 ${estilo.fundo}`}>
+        <Icone className="size-4" />
+      </span>
+      <span className="min-w-0">
+        <span
+          className={`mb-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${estilo.fundo}`}
+        >
+          {estilo.rotulo}
+        </span>
+        <span className="block truncate text-sm font-medium text-foreground">{nome}</span>
+        <span className="block text-sm font-semibold tabular-nums">{valor}</span>
+        <span className="block text-xs text-muted-foreground">{detalhe}</span>
+      </span>
+    </button>
   );
 }
 
@@ -992,71 +1312,80 @@ function TabelaTop({
 }) {
   const limite = expandido ? TOP_EXPANDIDO : TOP_PADRAO;
   const visiveis = itens.slice(0, limite);
+  const maxPct = Math.max(...visiveis.map((i) => i.pct), 1);
   return (
-    <div className="rounded-lg border border-border bg-card p-5 shadow-xs print:border-0 print:p-0 print:shadow-none">
-      <div className="mb-3 flex items-baseline justify-between border-b border-border pb-2">
-        <p className="text-[10.5px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{titulo}</p>
-        {itens.length > TOP_PADRAO && (
-          <button
-            onClick={onExpandir}
-            className="text-xs text-primary hover:underline print:hidden"
-          >
-            {expandido ? "ver menos" : `ver top ${TOP_EXPANDIDO}`}
-          </button>
-        )}
-      </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-[10.5px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
-            <th className="pb-1 text-left font-normal">Descrição</th>
-            <th className="pb-1 text-right font-normal">Mês</th>
-            <th className="pb-1 text-right font-normal">% do total</th>
-            <th className="pb-1 text-right font-normal">Mês anterior</th>
-            <th className="pb-1 text-right font-normal">Variação</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visiveis.map((item) => {
-            const varPct = item.anterior ? (item.delta / item.anterior) * 100 : 0;
-            const destaque = item.delta > 0 && item.anterior > 0 && varPct > 25;
-            return (
-              <tr
-                key={item.nome}
-                onClick={() => onSelecionar(item)}
-                className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50"
-              >
-                <td className="py-2.5 pr-3">{item.nome}</td>
-                <td className="py-2.5 text-right font-medium tabular-nums whitespace-nowrap">
-                  {formatBRL(item.valor)}
-                </td>
-                <td className="py-2.5 text-right whitespace-nowrap text-muted-foreground">
-                  {pctTexto(item.pct)}
-                </td>
-                <td className="py-2.5 text-right tabular-nums whitespace-nowrap text-muted-foreground">
-                  {formatBRL(item.anterior)}
-                </td>
-                <td
-                  className={`py-2.5 text-right whitespace-nowrap ${
-                    item.delta > 0 ? "text-destructive" : "text-primary"
-                  } ${destaque ? "font-medium" : ""}`}
+    <div>
+      <p className="mb-2 hidden text-xs font-semibold print:block">{titulo}</p>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm print:min-w-0">
+          <thead>
+            <tr className="text-[10.5px] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
+              <th className="pb-2 text-left font-normal">Descrição</th>
+              <th className="pb-2 text-right font-normal">Mês</th>
+              <th className="w-36 pb-2 pl-4 text-left font-normal">% do total</th>
+              <th className="pb-2 pl-3 text-right font-normal">Mês anterior</th>
+              <th className="pb-2 pl-4 text-right font-normal">Variação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visiveis.map((item) => {
+              const varPct = item.anterior ? (item.delta / item.anterior) * 100 : 0;
+              return (
+                <tr
+                  key={item.nome}
+                  onClick={() => onSelecionar(item)}
+                  className="cursor-pointer border-t border-border transition-colors hover:bg-muted/50"
                 >
-                  {formatBRL(item.delta)}
-                  {item.anterior > 0 && (
-                    <span className="ml-1 text-xs">({formatPct(varPct)})</span>
-                  )}
+                  <td className="py-2.5 pr-3">{item.nome}</td>
+                  <td className="py-2.5 text-right font-medium tabular-nums whitespace-nowrap">
+                    {formatBRL(item.valor)}
+                  </td>
+                  <td className="py-2.5 pl-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${(item.pct / maxPct) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-11 text-right text-xs text-muted-foreground tabular-nums">
+                        {pctTexto(item.pct)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-2.5 pl-3 text-right whitespace-nowrap text-muted-foreground tabular-nums">
+                    {formatBRL(item.anterior)}
+                  </td>
+                  <td
+                    className={`py-2.5 pl-4 text-right whitespace-nowrap tabular-nums ${
+                      item.delta > 0 ? "text-destructive" : "text-primary"
+                    }`}
+                  >
+                    {formatBRL(item.delta)}
+                    {item.anterior > 0 && (
+                      <span className="ml-1 text-xs">({formatPct(varPct)})</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {!visiveis.length && (
+              <tr>
+                <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                  Nenhum lançamento neste período.
                 </td>
               </tr>
-            );
-          })}
-          {!visiveis.length && (
-            <tr>
-              <td colSpan={5} className="py-3 text-center text-muted-foreground">
-                Nenhum lançamento neste período.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {itens.length > TOP_PADRAO && (
+        <div className="mt-2 text-right print:hidden">
+          <Button variant="ghost" size="sm" onClick={onExpandir}>
+            {expandido ? "Ver menos" : `Ver top ${TOP_EXPANDIDO}`}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1095,29 +1424,21 @@ function DrilldownModal({
   }[];
   onClose: () => void;
 }) {
-  if (!titulo) return null;
   const ordenadas = useMemo(
-    () =>
-      linhas
-        .slice()
-        .sort((a, b) => Math.abs(Number(b.vlcusto)) - Math.abs(Number(a.vlcusto))),
+    () => linhas.slice().sort((a, b) => Math.abs(Number(b.vlcusto)) - Math.abs(Number(a.vlcusto))),
     [linhas],
   );
+  const total = ordenadas.reduce((a, r) => a + Number(r.vlcusto), 0);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl border border-border bg-card p-7 shadow-xl">
-        <div className="mb-4 flex items-start justify-between">
-          <div>
-            <p className="text-[11px] tracking-wider text-muted-foreground uppercase">
-              Detalhe de lançamentos
-            </p>
-            <h3 className="mt-0.5 font-display text-lg font-semibold tracking-tight">{titulo}</h3>
-          </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="size-4.5" />
-          </button>
-        </div>
-        <div className="max-h-80 overflow-auto border border-border">
+    <Dialog open={!!titulo} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <p className="text-[11px] tracking-wider text-muted-foreground uppercase">
+            Detalhe de lançamentos
+          </p>
+          <DialogTitle className="text-base">{titulo}</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[24rem] overflow-auto rounded-md border border-border max-sm:max-h-[60dvh]">
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-muted">
               <tr>
@@ -1131,16 +1452,20 @@ function DrilldownModal({
             <tbody>
               {ordenadas.map((r) => (
                 <tr key={r.id} className="border-t border-border">
-                  <td className="px-2 py-1">{new Date(r.data).toLocaleDateString("pt-BR")}</td>
+                  <td className="px-2 py-1 whitespace-nowrap">
+                    {new Date(r.data).toLocaleDateString("pt-BR")}
+                  </td>
                   <td className="max-w-40 truncate px-2 py-1">{r.produto}</td>
                   <td className="max-w-40 truncate px-2 py-1">{r.complemento}</td>
-                  <td className="px-2 py-1">{r.contacontabil}</td>
-                  <td className="px-2 py-1 text-right">{formatBRL(Number(r.vlcusto))}</td>
+                  <td className="px-2 py-1 whitespace-nowrap">{r.contacontabil}</td>
+                  <td className="num px-2 py-1 text-right whitespace-nowrap">
+                    {formatBRL(Number(r.vlcusto))}
+                  </td>
                 </tr>
               ))}
               {!ordenadas.length && (
                 <tr>
-                  <td colSpan={5} className="px-2 py-3 text-center text-muted-foreground">
+                  <td colSpan={5} className="px-2 py-4 text-center text-muted-foreground">
                     {carregando ? "Carregando lançamentos…" : "Nenhum lançamento encontrado."}
                   </td>
                 </tr>
@@ -1148,13 +1473,10 @@ function DrilldownModal({
             </tbody>
           </table>
         </div>
-        <button
-          onClick={onClose}
-          className="mt-5 border border-foreground px-4 py-2 text-sm font-medium"
-        >
-          Fechar
-        </button>
-      </div>
-    </div>
+        {!!ordenadas.length && (
+          <p className="num text-right text-xs font-medium">Total: {formatBRL(total)}</p>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
