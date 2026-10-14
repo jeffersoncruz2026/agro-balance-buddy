@@ -51,7 +51,17 @@ import {
   ReferenceLine,
   Cell,
 } from "recharts";
-import { AlertTriangle, ChevronDown, ChevronRight, RotateCcw, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  FileDown,
+  RotateCcw,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import { Sparkline } from "@/components/Sparkline";
+import { exportarPdfPaisagem } from "@/lib/imprimir";
 
 export const Route = createFileRoute("/_authenticated/performance-rentabilidade")({
   head: () => ({
@@ -106,7 +116,9 @@ type OrdemKey =
 function PerformanceRentabilidade() {
   const [safra, setSafra] = useState(SAFRA_ATUAL);
   const [mesIni, setMesIni] = useState(4);
-  const [mesFim, setMesFim] = useState(3);
+  // Padrão: até o mês corrente, para comparar janelas equivalentes com a safra anterior
+  // (comparar a safra em andamento até Março contra a anterior completa distorce as variações).
+  const [mesFim, setMesFim] = useState(hoje.getMonth() + 1);
   const [filtros, setFiltros] = useState<Record<FiltroKey, string>>({
     atividade: "",
   });
@@ -223,6 +235,9 @@ function PerformanceRentabilidade() {
     });
   }, [visiveisAtual, mesIni, mesFim, unidadeRef]);
 
+  /** Tendência dos KPIs só com meses que já têm movimento (evita queda nos meses futuros). */
+  const serieComDados = useMemo(() => serie.filter((p) => p.receita !== 0), [serie]);
+
   const [indicadorBarras, setIndicadorBarras] = useState<
     "margem" | "margemPct" | "margemUnitaria"
   >("margem");
@@ -259,24 +274,23 @@ function PerformanceRentabilidade() {
   };
 
   const alertas = useMemo(() => {
-    const lista: string[] = [];
+    const lista: { texto: string; ok: boolean }[] = [];
+    const add = (texto: string, ok: boolean) => lista.push({ texto, ok });
     const q = variacoes.quantidade;
     const mu = variacoes.margemUnitaria;
     if (q !== null && mu !== null) {
       if (q > 0 && mu > 0)
-        lista.push("Crescimento de volume acompanhado de melhora da rentabilidade por unidade.");
+        add("Crescimento de volume acompanhado de melhora da rentabilidade por unidade.", true);
       if (q > 0 && mu < 0)
-        lista.push("Volume vendido cresceu, porém houve redução da margem por unidade.");
+        add("Volume vendido cresceu, porém houve redução da margem por unidade.", false);
     }
     if (variacoes.cpvUnitario !== null && variacoes.precoMedio !== null) {
       if (variacoes.cpvUnitario > variacoes.precoMedio)
-        lista.push("CPV por unidade está crescendo acima do preço médio.");
+        add("CPV por unidade está crescendo acima do preço médio.", false);
       else if (variacoes.precoMedio > variacoes.cpvUnitario)
-        lista.push(
-          "Preço médio evoluiu acima do CPV unitário, melhorando o spread operacional.",
-        );
+        add("Preço médio evoluiu acima do CPV unitário, melhorando o spread operacional.", true);
     }
-    if (q !== null && q < 0) lista.push("Volume vendido apresentou redução no período.");
+    if (q !== null && q < 0) add("Volume vendido apresentou redução no período.", false);
     return lista;
   }, [variacoes]);
 
@@ -388,10 +402,15 @@ function PerformanceRentabilidade() {
     <AppLayout
       titulo="Performance e Rentabilidade por Atividade"
       descricao={`Volume, preço, custo e margem por atividade — safra ${safraLabel(safra)} comparada com ${safraLabel(safra - 1)}.`}
+      acoes={
+        <Button variant="outline" onClick={exportarPdfPaisagem} disabled={isLoading}>
+          <FileDown className="size-4" /> Exportar PDF
+        </Button>
+      }
     >
       <div className="space-y-6">
         {/* ---------- Filtros ---------- */}
-        <Card>
+        <Card className="print:hidden">
           <CardContent className="flex flex-wrap items-end gap-3 pt-6">
             <Campo label="Ano / Safra">
               <Select value={String(safra)} onValueChange={(v) => setSafra(Number(v))}>
@@ -466,83 +485,77 @@ function PerformanceRentabilidade() {
           )
         )}
 
-        {/* ---------- Cards ---------- */}
+        {/* ---------- KPIs principais (diretoria) ---------- */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <CardIndicador
-            titulo="Quantidade Vendida"
-            valor={
-              total.quantidade !== null
-                ? `${formatNum(total.quantidade)}${total.unidade ? ` ${total.unidade}` : ""}`
-                : "—"
-            }
-            variacao={variacoes.quantidade}
-            detalhe={
-              total.quantidade === null && Object.keys(total.quantidadePorUnidade).length
-                ? Object.entries(total.quantidadePorUnidade)
-                    .map(([u, q]) => `${formatNum(q)} ${u}`)
-                    .join(" · ")
-                : undefined
-            }
-          />
           <CardIndicador
             titulo="Receita Líquida"
             valor={formatCompacto(total.receitaLiquida)}
             completo={formatBRL(total.receitaLiquida)}
             variacao={variacoes.receita}
-          />
-          <CardIndicador
-            titulo="CPV / CMV"
-            valor={formatCompacto(total.cpv)}
-            completo={formatBRL(total.cpv)}
-            variacao={variacoes.cpv}
-            inverso
+            tendencia={serieComDados.map((p) => p.receita)}
           />
           <CardIndicador
             titulo="Margem Bruta"
             valor={formatCompacto(total.margem)}
             completo={formatBRL(total.margem)}
             variacao={variacoes.margem}
-          />
-          <CardIndicador titulo="Margem Bruta %" valor={formatPct(total.margemPct)} pp={variacoes.margemPP} />
-          <CardIndicador
-            titulo={`Preço Médio / Unidade${sufixoUn}`}
-            valor={total.precoMedio !== null ? formatBRL(total.precoMedio) : "—"}
-            variacao={variacoes.precoMedio}
+            tendencia={serieComDados.map((p) => p.margem)}
           />
           <CardIndicador
-            titulo={`CPV / Unidade${sufixoUn}`}
-            valor={total.cpvUnitario !== null ? formatBRL(total.cpvUnitario) : "—"}
-            variacao={variacoes.cpvUnitario}
-            inverso
+            titulo="Margem Bruta %"
+            valor={formatPct(total.margemPct)}
+            pp={variacoes.margemPP}
+            tendencia={serieComDados.map((p) => p.margemPct)}
           />
           <CardIndicador
             titulo={`Margem / Unidade${sufixoUn}`}
             valor={total.margemUnitaria !== null ? formatBRL(total.margemUnitaria) : "—"}
             variacao={variacoes.margemUnitaria}
+            tendencia={serieComDados.map((p) => p.margemUnitaria)}
           />
         </div>
 
-        {/* ---------- Faixa executiva ---------- */}
+        {/* ---------- Indicadores secundários ---------- */}
         <Card>
-          <CardContent className="flex flex-wrap gap-x-8 gap-y-3 pt-6 text-sm">
-            <Faixa rotulo="QUANTIDADE" valor={formatVar(variacoes.quantidade)} v={variacoes.quantidade} />
-            <Faixa rotulo="RECEITA" valor={formatVar(variacoes.receita)} v={variacoes.receita} />
-            <Faixa rotulo="PREÇO MÉDIO" valor={formatVar(variacoes.precoMedio)} v={variacoes.precoMedio} />
-            <Faixa rotulo="CPV" valor={formatVar(variacoes.cpv)} v={variacoes.cpv} inverso />
-            <Faixa
-              rotulo="CPV / UNIDADE"
-              valor={formatVar(variacoes.cpvUnitario)}
+          <CardContent className="grid grid-cols-2 gap-x-6 gap-y-4 pt-4 sm:grid-cols-3 sm:pt-6 lg:grid-cols-5">
+            <IndicadorSecundario
+              rotulo="Quantidade vendida"
+              valor={
+                total.quantidade !== null
+                  ? `${formatNum(total.quantidade)}${total.unidade ? ` ${total.unidade}` : ""}`
+                  : total.quantidade === null && Object.keys(total.quantidadePorUnidade).length
+                    ? Object.entries(total.quantidadePorUnidade)
+                        .map(([u, q]) => `${formatNum(q)} ${u}`)
+                        .join(" · ")
+                    : "—"
+              }
+              v={variacoes.quantidade}
+            />
+            <IndicadorSecundario
+              rotulo="CPV / CMV"
+              valor={formatCompacto(total.cpv)}
+              completo={formatBRL(total.cpv)}
+              v={variacoes.cpv}
+              inverso
+            />
+            <IndicadorSecundario
+              rotulo={`Preço médio / un${sufixoUn}`}
+              valor={total.precoMedio !== null ? formatBRL(total.precoMedio) : "—"}
+              v={variacoes.precoMedio}
+            />
+            <IndicadorSecundario
+              rotulo={`CPV / un${sufixoUn}`}
+              valor={total.cpvUnitario !== null ? formatBRL(total.cpvUnitario) : "—"}
               v={variacoes.cpvUnitario}
               inverso
             />
-            <Faixa
-              rotulo="MARGEM / UNIDADE"
-              valor={formatVar(variacoes.margemUnitaria)}
-              v={variacoes.margemUnitaria}
-            />
-            <Faixa rotulo="MARGEM %" valor={formatPP(variacoes.margemPP)} v={variacoes.margemPP} />
             {total.hedge !== 0 && (
-              <Faixa rotulo="HEDGE (+/-)" valor={formatCompacto(total.hedge)} v={total.hedge} />
+              <IndicadorSecundario
+                rotulo="Hedge (+/-)"
+                valor={formatCompacto(total.hedge)}
+                completo={formatBRL(total.hedge)}
+                v={null}
+              />
             )}
           </CardContent>
         </Card>
@@ -557,11 +570,23 @@ function PerformanceRentabilidade() {
               <p key={p}>{p}</p>
             ))}
             {alertas.length > 0 && (
-              <ul className="mt-3 space-y-1 border-t border-border pt-3 text-muted-foreground">
+              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
                 {alertas.map((a) => (
-                  <li key={a}>• {a}</li>
+                  <span
+                    key={a.texto}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                      a.ok ? "bg-primary/10 text-primary" : "bg-accent text-accent-foreground"
+                    }`}
+                  >
+                    {a.ok ? (
+                      <TrendingUp className="size-3.5" />
+                    ) : (
+                      <AlertTriangle className="size-3.5" />
+                    )}
+                    {a.texto}
+                  </span>
                 ))}
-              </ul>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -689,13 +714,13 @@ function PerformanceRentabilidade() {
               <YAxis yAxisId="m" orientation="right" fontSize={12} />
               <Tooltip formatter={(v: number) => formatNum(Number(v))} />
               <Legend />
-              <Bar yAxisId="q" dataKey="quantidade" name="Quantidade" fill="hsl(var(--chart-1))" />
+              <Bar yAxisId="q" dataKey="quantidade" name="Quantidade" fill="var(--chart-1)" />
               <Line
                 yAxisId="m"
                 type="monotone"
                 dataKey="margemUnitaria"
                 name="Margem / Unidade"
-                stroke="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
                 strokeWidth={2}
               />
             </ComposedChart>
@@ -708,8 +733,8 @@ function PerformanceRentabilidade() {
               <YAxis fontSize={12} />
               <Tooltip formatter={(v: number) => formatBRL(Number(v))} />
               <Legend />
-              <Line type="monotone" dataKey="precoMedio" name="Preço Médio / Un" stroke="hsl(var(--chart-1))" strokeWidth={2} />
-              <Line type="monotone" dataKey="cpvUnitario" name="CPV / Un" stroke="hsl(var(--chart-4))" strokeWidth={2} />
+              <Line type="monotone" dataKey="precoMedio" name="Preço Médio / Un" stroke="var(--chart-1)" strokeWidth={2} />
+              <Line type="monotone" dataKey="cpvUnitario" name="CPV / Un" stroke="var(--chart-4)" strokeWidth={2} />
             </LineChart>
           </Grafico>
 
@@ -721,8 +746,8 @@ function PerformanceRentabilidade() {
               <YAxis yAxisId="p" orientation="right" fontSize={12} unit="%" />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="q" dataKey="quantidade" name="Quantidade" fill="hsl(var(--chart-3))" />
-              <Line yAxisId="p" type="monotone" dataKey="margemPct" name="Margem %" stroke="hsl(var(--chart-2))" strokeWidth={2} />
+              <Bar yAxisId="q" dataKey="quantidade" name="Quantidade" fill="var(--chart-3)" />
+              <Line yAxisId="p" type="monotone" dataKey="margemPct" name="Margem %" stroke="var(--chart-2)" strokeWidth={2} />
             </ComposedChart>
           </Grafico>
 
@@ -758,7 +783,7 @@ function PerformanceRentabilidade() {
                       indicadorBarras === "margemPct" ? formatPct(Number(v)) : formatBRL(Number(v))
                     }
                   />
-                  <Bar dataKey="valor" fill="hsl(var(--chart-2))" />
+                  <Bar dataKey="valor" fill="var(--chart-2)" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -775,7 +800,7 @@ function PerformanceRentabilidade() {
               <XAxis dataKey="atividade" fontSize={10} interval={0} angle={-15} height={50} textAnchor="end" />
               <YAxis fontSize={12} unit="%" />
               <Tooltip formatter={(v: number) => formatPct(Number(v))} />
-              <Bar dataKey="pct" name="% da margem total" fill="hsl(var(--chart-1))">
+              <Bar dataKey="pct" name="% da margem total" fill="var(--chart-1)">
                 {linhas.map((l) => (
                   <Cell key={l.atividade} />
                 ))}
@@ -808,7 +833,7 @@ function PerformanceRentabilidade() {
                       n === "Receita Líquida" ? formatCompacto(Number(v)) : formatPct(Number(v))
                     }
                   />
-                  <Scatter data={matriz} fill="hsl(var(--chart-2))" />
+                  <Scatter data={matriz} fill="var(--chart-2)" />
                 </ScatterChart>
               </ResponsiveContainer>
               <p className="mt-2 text-xs text-muted-foreground">
@@ -941,7 +966,7 @@ function CardIndicador({
   variacao: v,
   pp,
   inverso,
-  detalhe,
+  tendencia,
 }: {
   titulo: string;
   valor: string;
@@ -949,54 +974,68 @@ function CardIndicador({
   variacao?: number | null;
   pp?: number | null;
   inverso?: boolean;
-  detalhe?: string;
+  tendencia?: number[];
 }) {
   const numero = pp ?? v ?? null;
   const bom = numero === null ? null : inverso ? numero < 0 : numero > 0;
   return (
     <Card>
-      <CardContent className="pt-6">
-        <p className="text-xs text-muted-foreground">{titulo}</p>
-        <p className="mt-1 text-xl font-semibold tabular-nums" title={completo}>
+      <CardContent className="pt-4 sm:pt-6">
+        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {titulo}
+        </p>
+        <p className="mt-1 text-2xl font-semibold tabular-nums" title={completo}>
           {valor}
         </p>
-        {numero !== null && (
+        {numero !== null ? (
           <p
-            className={`mt-1 flex items-center gap-1 text-xs ${bom ? "text-emerald-600" : "text-destructive"}`}
+            className={`mt-1 flex items-center gap-1 text-xs ${bom ? "text-primary" : "text-destructive"}`}
           >
             {bom ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-            {pp !== undefined && pp !== null ? formatPP(pp) : formatVar(v ?? null)} vs. período
+            {pp !== undefined && pp !== null ? formatPP(pp) : formatVar(v ?? null)} vs. safra
             anterior
           </p>
+        ) : (
+          <p className="mt-1 text-xs text-muted-foreground">sem base de comparação</p>
         )}
-        {detalhe && <p className="mt-1 text-xs text-muted-foreground">{detalhe}</p>}
+        {tendencia && tendencia.length > 1 && (
+          <div className="mt-2">
+            <Sparkline
+              data={tendencia}
+              color={bom === false ? "var(--destructive)" : "var(--primary)"}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-function Faixa({
+function IndicadorSecundario({
   rotulo,
   valor,
+  completo,
   v,
   inverso,
 }: {
   rotulo: string;
   valor: string;
+  completo?: string;
   v: number | null;
   inverso?: boolean;
 }) {
   const bom = v === null ? null : inverso ? v < 0 : v > 0;
   return (
-    <div>
-      <p className="text-[11px] tracking-wide text-muted-foreground">{rotulo}</p>
-      <p
-        className={`text-sm font-semibold tabular-nums ${
-          bom === null ? "" : bom ? "text-emerald-600" : "text-destructive"
-        }`}
-      >
+    <div className="min-w-0">
+      <p className="text-[11px] tracking-wide text-muted-foreground uppercase">{rotulo}</p>
+      <p className="truncate text-base font-semibold tabular-nums" title={completo ?? valor}>
         {valor}
       </p>
+      {v !== null && (
+        <p className={`text-xs tabular-nums ${bom ? "text-primary" : "text-destructive"}`}>
+          {formatVar(v)}
+        </p>
+      )}
     </div>
   );
 }
