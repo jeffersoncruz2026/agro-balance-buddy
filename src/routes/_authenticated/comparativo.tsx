@@ -297,7 +297,7 @@ function Comparativo() {
                     <th />
                   </tr>
                   <tr className="bg-primary text-primary-foreground">
-                    <th className="sticky left-0 z-10 min-w-64 bg-primary px-2 py-1.5 text-center font-semibold">
+                    <th className="sticky left-0 z-10 min-w-40 sm:min-w-64 bg-primary px-2 py-1.5 text-center font-semibold">
                       Atividade / Indicador
                     </th>
                     {porMes.map((m) => (
@@ -330,7 +330,7 @@ function Comparativo() {
                           key={ind.key}
                           className={`hover:bg-muted/50 ${ind.saldo ? "border-t border-primary" : ""} ${ind.destaque ? "font-semibold" : ""}`}
                         >
-                          <td className="sticky left-0 bg-card px-2 py-0.5 whitespace-nowrap">
+                          <td className="sticky left-0 bg-card px-2 py-0.5 sm:whitespace-nowrap">
                             {ind.label}
                           </td>
                           {porMes.map((m, i) => (
@@ -347,7 +347,7 @@ function Comparativo() {
                         </tr>
                       ))}
                       <tr className="italic">
-                        <td className="sticky left-0 bg-card px-2 py-0.5 whitespace-nowrap">
+                        <td className="sticky left-0 bg-card px-2 py-0.5 sm:whitespace-nowrap">
                           Margem do Resultado (% Rec. Líquida)
                         </td>
                         {porMes.map((m, i) => (
