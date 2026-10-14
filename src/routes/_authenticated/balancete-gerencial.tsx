@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { colunasAjustes } from "@/lib/ajustes";
 import { exportarPdfPaisagem } from "@/lib/imprimir";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -172,7 +173,7 @@ function BalanceteGerencial() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("ajustes")
-        .select("*")
+        .select(await colunasAjustes())
         .in("safra_ano", [safraAtual - 1, safraAtual]);
       if (error) throw error;
       return (data ?? []) as unknown as Ajuste[];
