@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { exportarPdfPaisagem } from "@/lib/imprimir";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,15 +29,6 @@ import {
 
 import { exportarBalancete } from "@/lib/excel";
 import { Download, FileDown, AlertTriangle } from "lucide-react";
-
-/** Imprime só esta página em A4 paisagem, sem afetar o print das demais telas. */
-function exportarPdfPaisagem() {
-  const style = document.createElement("style");
-  style.textContent = "@page { size: A4 landscape; margin: 10mm; }";
-  document.head.appendChild(style);
-  window.print();
-  window.addEventListener("afterprint", () => style.remove(), { once: true });
-}
 
 export const Route = createFileRoute("/_authenticated/balancete-gerencial")({
   head: () => ({
